@@ -24,6 +24,31 @@ app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// ルートパス
+app.get('/', (_req, res) => {
+  res.json({ 
+    message: 'Botarhythm Coffee Roaster LINE Mini App API',
+    status: 'running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      status: '/api/status',
+      user: '/api/user/:lineUid',
+      checkin: '/api/checkin',
+      purchase: '/api/purchase',
+      history: '/api/history/:lineUid'
+    }
+  });
+});
+
+// APIテスト用エンドポイント
+app.get('/api/hello', (_req, res) => {
+  res.json({ 
+    message: 'Hello from Botarhythm Coffee Roaster API!',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // APIルート
 app.get('/api/status', (_req, res) => {
   res.json({ 
