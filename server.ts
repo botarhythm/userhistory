@@ -2,14 +2,22 @@ import express from 'express';
 import 'dotenv/config';
 import { findOrCreateCustomer, recordPurchase, getHistory, getProductList } from './src/api/notion.js';
 import { Client } from '@notionhq/client';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let app: express.Express;
 
 try {
   app = express();
-  const port = 3001;
+  const port = process.env.PORT || 3001;
 
   app.use(express.json());
+
+  // 静的ファイル配信
+  app.use(express.static(path.join(__dirname, 'dist')));
 
   app.post('/api/recordPurchase', async (req, res) => {
     const { lineUserId, lineDisplayName, itemName, memo } = req.body;
@@ -67,6 +75,11 @@ try {
     } catch (error) {
       res.status(500).json({ error: error instanceof Error ? error.message : '商品リスト取得エラー' });
     }
+  });
+
+  // SPA対応: すべてのGETリクエストでindex.htmlを返す
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
   });
 
   app.listen(port, () => {
