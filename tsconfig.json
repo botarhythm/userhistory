@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "commonjs",
-    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM"],
     "outDir": "./dist",
     "rootDir": "./",
     "strict": true,
@@ -24,23 +25,21 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
     "allowUnusedLabels": false,
-    "allowUnreachableCode": false
+    "allowUnreachableCode": false,
+    "jsx": "react-jsx",
+    "isolatedModules": true,
+    "noEmit": true
   },
   "include": [
     "server.ts",
-    "src/api/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "src/**/*.tsx",
-    "src/**/*.test.ts",
-    "src/**/*.test.tsx",
-    "src/App.tsx",
-    "src/main.tsx",
-    "src/pages/**/*",
-    "src/components/**/*",
-    "src/styles/**/*",
-    "src/utils/**/*"
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
   ]
 }

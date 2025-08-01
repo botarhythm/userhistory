@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.NotionAPI = void 0;
-const client_1 = require("@notionhq/client");
-class NotionAPI {
+import { Client } from '@notionhq/client';
+export class NotionAPI {
     client;
     customerDatabaseId;
     historyDatabaseId;
@@ -11,7 +8,7 @@ class NotionAPI {
         if (!apiKey) {
             throw new Error('NOTION_API_KEY environment variable is required');
         }
-        this.client = new client_1.Client({
+        this.client = new Client({
             auth: apiKey,
         });
         this.customerDatabaseId = process.env['NOTION_CUSTOMER_DB_ID'] || '';
@@ -219,5 +216,4 @@ class NotionAPI {
         });
     }
 }
-exports.NotionAPI = NotionAPI;
 //# sourceMappingURL=notion.js.map

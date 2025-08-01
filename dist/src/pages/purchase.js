@@ -1,185 +1,78 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useState } from 'react';
+const Purchase = ({ userProfile }) => {
+    const [items, setItems] = useState([
+        { name: '', quantity: 1, price: 0 }
+    ]);
+    const [memo, setMemo] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [message, setMessage] = useState(null);
+    const addItem = () => {
+        setItems([...items, { name: '', quantity: 1, price: 0 }]);
     };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const react_1 = __importStar(require("react"));
-const liff_1 = __importDefault(require("@line/liff"));
-const Purchase = () => {
-    const [lineUserId, setLineUserId] = (0, react_1.useState)('');
-    const [lineDisplayName, setLineDisplayName] = (0, react_1.useState)('');
-    const [itemName, setItemName] = (0, react_1.useState)('');
-    const [memo, setMemo] = (0, react_1.useState)('');
-    const [isLoading, setIsLoading] = (0, react_1.useState)(false);
-    const [message, setMessage] = (0, react_1.useState)('');
-    const [isProfileLoading, setIsProfileLoading] = (0, react_1.useState)(true);
-    const [productOptions, setProductOptions] = (0, react_1.useState)([]);
-    const [isProductLoading, setIsProductLoading] = (0, react_1.useState)(true);
-    const getLiffProfile = async (retry = 10) => {
-        setIsProfileLoading(true);
-        try {
-            await window.liffInitPromise;
-            // LIFF認証が完了するまでリトライ
-            if (!liff_1.default.isLoggedIn()) {
-                setMessage("LIFF未ログイン。liff.login()を実行します。");
-                liff_1.default.login();
-                return;
-            }
-            // 認証済みならプロフィール取得
-            const profile = await liff_1.default.getProfile();
-            setLineUserId(profile.userId);
-            setLineDisplayName(profile.displayName);
-            setIsProfileLoading(false);
-        }
-        catch (error) {
-            if (retry > 0) {
-                setTimeout(() => getLiffProfile(retry - 1), 300);
-            }
-            else {
-                const errMsg = "LIFFプロファイル取得エラー: " + (error instanceof Error ? error.message : String(error));
-                setMessage(errMsg);
-                alert(errMsg);
-                console.error(errMsg);
-                setIsProfileLoading(false);
-            }
+    const removeItem = (index) => {
+        if (items.length > 1) {
+            setItems(items.filter((_, i) => i !== index));
         }
     };
-    (0, react_1.useEffect)(() => {
-        getLiffProfile();
-        const handleVisibility = (_event) => {
-            if (document.visibilityState === 'visible') {
-                getLiffProfile();
-            }
-        };
-        const handleFocus = (_event) => {
-            getLiffProfile();
-        };
-        window.addEventListener('visibilitychange', handleVisibility);
-        window.addEventListener('focus', handleFocus);
-        return () => {
-            window.removeEventListener('visibilitychange', handleVisibility);
-            window.removeEventListener('focus', handleFocus);
-        };
-    }, []);
-    (0, react_1.useEffect)(() => {
-        // 商品リスト取得
-        const fetchProducts = async () => {
-            setIsProductLoading(true);
-            try {
-                const res = await fetch('/api/products');
-                const data = await res.json();
-                setProductOptions([...data.products, 'その他']);
-            }
-            catch (e) {
-                setProductOptions(['その他']);
-            }
-            finally {
-                setIsProductLoading(false);
-            }
-        };
-        fetchProducts();
-    }, []);
-    const handleRecordPurchase = async () => {
-        if (!lineUserId || !lineDisplayName || !itemName) {
-            setMessage('商品名とユーザー情報が必須です。');
+    const updateItem = (index, field, value) => {
+        const newItems = [...items];
+        newItems[index] = { ...newItems[index], [field]: value };
+        setItems(newItems);
+    };
+    const calculateTotal = () => {
+        return items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!userProfile) {
+            setMessage({ type: 'error', text: 'ユーザー情報が取得できません' });
             return;
         }
-        setIsLoading(true);
-        setMessage('');
+        // バリデーション
+        const validItems = items.filter(item => item.name.trim() && item.price > 0);
+        if (validItems.length === 0) {
+            setMessage({ type: 'error', text: '商品名と価格を入力してください' });
+            return;
+        }
+        setIsSubmitting(true);
+        setMessage(null);
         try {
-            const response = await fetch('/api/recordPurchase', {
+            const response = await fetch('/api/purchase', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    lineUserId,
-                    lineDisplayName,
-                    itemName,
-                    memo,
+                    lineUid: userProfile.userId,
+                    displayName: userProfile.displayName,
+                    items: validItems,
+                    total: calculateTotal(),
+                    memo: memo.trim() || undefined,
+                    timestamp: new Date().toISOString()
                 }),
             });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || '購入履歴の記録に失敗しました。');
-            }
             const result = await response.json();
-            setMessage(result.message || '購入履歴が正常に記録されました！');
-            setItemName('');
-            setMemo('');
+            if (response.ok) {
+                setMessage({ type: 'success', text: '購入履歴を記録しました！' });
+                setItems([{ name: '', quantity: 1, price: 0 }]);
+                setMemo('');
+            }
+            else {
+                setMessage({ type: 'error', text: result.error || 'エラーが発生しました' });
+            }
         }
         catch (error) {
-            const errorMessage = error instanceof Error ? error.message : '不明なエラーが発生しました。';
-            setMessage(`エラー: ${errorMessage}`);
+            console.error('Purchase submission error:', error);
+            setMessage({ type: 'error', text: '通信エラーが発生しました' });
         }
         finally {
-            setIsLoading(false);
+            setIsSubmitting(false);
         }
     };
-    return (<div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="mb-4 p-2 bg-yellow-100 text-xs rounded flex items-center gap-2 min-h-[32px]">
-        {isProfileLoading
-            ? (<>
-              <span className="inline-block w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
-              <span>LINE認証中です。しばらくお待ちください</span>
-            </>)
-            : <div>こんにちは、{lineDisplayName} さん</div>}
-      </div>
-      <h1 className="text-2xl font-bold mb-6">購入履歴登録</h1>
-      <div className="w-full max-w-md bg-white p-6 rounded-lg shadow-md">
-        <div className="mb-4">
-          <label htmlFor="itemName" className="block text-gray-700 text-sm font-bold mb-2">商品名:</label>
-          {isProductLoading ? (<div className="text-gray-500 text-sm">商品リスト取得中...</div>) : (<>
-              <select id="itemName" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={itemName} onChange={(e) => setItemName(e.target.value)}>
-                <option value="">選択してください</option>
-                {productOptions.map(option => (<option key={option} value={option}>{option}</option>))}
-              </select>
-              {itemName === 'その他' && (<input type="text" className="mt-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="商品名を入力" onChange={e => setItemName(e.target.value)}/>)}
-            </>)}
-        </div>
-        <div className="mb-6">
-          <label htmlFor="memo" className="block text-gray-700 text-sm font-bold mb-2">数量、豆・粉、風味や感想など自由にご記入ください</label>
-          <textarea id="memo" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24 resize-none" value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="例: 1袋、豆のまま／酸味が爽やかで美味しい／次回は細挽きで試したい など"></textarea>
-        </div>
-        <button onClick={handleRecordPurchase} disabled={isLoading || !lineUserId || !itemName} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full disabled:bg-gray-400 disabled:cursor-not-allowed">
-          {isLoading ? '記録中...' : '購入を記録'}
-        </button>
-        {message && <p className="mt-4 text-center text-sm text-gray-600">{message}</p>}
-      </div>
-    </div>);
+    return (_jsx("div", { className: "max-w-2xl mx-auto", children: _jsxs("div", { className: "bg-white rounded-lg shadow-sm border p-6", children: [_jsx("h2", { className: "text-2xl font-bold text-gray-900 mb-6", children: "\u8CFC\u5165\u5C65\u6B74\u3092\u8A18\u9332" }), message && (_jsx("div", { className: `mb-4 p-4 rounded-lg ${message.type === 'success'
+                        ? 'bg-green-50 text-green-800 border border-green-200'
+                        : 'bg-red-50 text-red-800 border border-red-200'}`, children: message.text })), _jsxs("form", { onSubmit: handleSubmit, className: "space-y-6", children: [_jsxs("div", { children: [_jsx("h3", { className: "text-lg font-medium text-gray-900 mb-4", children: "\u5546\u54C1" }), _jsx("div", { className: "space-y-4", children: items.map((item, index) => (_jsxs("div", { className: "flex items-center space-x-4 p-4 bg-gray-50 rounded-lg", children: [_jsx("div", { className: "flex-1", children: _jsx("input", { type: "text", placeholder: "\u5546\u54C1\u540D", value: item.name, onChange: (e) => updateItem(index, 'name', e.target.value), className: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", required: true }) }), _jsx("div", { className: "w-24", children: _jsx("input", { type: "number", placeholder: "\u6570\u91CF", value: item.quantity, onChange: (e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1), min: "1", className: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" }) }), _jsx("div", { className: "w-32", children: _jsx("input", { type: "number", placeholder: "\u4FA1\u683C", value: item.price, onChange: (e) => updateItem(index, 'price', parseInt(e.target.value) || 0), min: "0", className: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" }) }), _jsx("div", { className: "w-20 text-right", children: _jsxs("span", { className: "text-sm font-medium text-gray-900", children: ["\u00A5", (item.price * item.quantity).toLocaleString()] }) }), items.length > 1 && (_jsx("button", { type: "button", onClick: () => removeItem(index), className: "text-red-500 hover:text-red-700", children: _jsx("svg", { className: "w-5 h-5", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: _jsx("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" }) }) }))] }, index))) }), _jsxs("button", { type: "button", onClick: addItem, className: "mt-4 flex items-center text-blue-600 hover:text-blue-800", children: [_jsx("svg", { className: "w-5 h-5 mr-2", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: _jsx("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 6v6m0 0v6m0-6h6m-6 0H6" }) }), "\u5546\u54C1\u3092\u8FFD\u52A0"] })] }), _jsx("div", { className: "border-t pt-4", children: _jsxs("div", { className: "flex justify-between items-center text-lg font-bold", children: [_jsx("span", { children: "\u5408\u8A08" }), _jsxs("span", { className: "text-2xl text-blue-600", children: ["\u00A5", calculateTotal().toLocaleString()] })] }) }), _jsxs("div", { children: [_jsx("label", { htmlFor: "memo", className: "block text-sm font-medium text-gray-700 mb-2", children: "\u30E1\u30E2\uFF08\u4EFB\u610F\uFF09" }), _jsx("textarea", { id: "memo", value: memo, onChange: (e) => setMemo(e.target.value), rows: 3, placeholder: "\u7279\u8A18\u4E8B\u9805\u304C\u3042\u308C\u3070\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044", className: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" })] }), _jsx("button", { type: "submit", disabled: isSubmitting, className: "w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed", children: isSubmitting ? (_jsxs("div", { className: "flex items-center justify-center", children: [_jsx("div", { className: "animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" }), "\u9001\u4FE1\u4E2D..."] })) : ('購入履歴を記録') })] })] }) }));
 };
-exports.default = Purchase;
+export default Purchase;
 //# sourceMappingURL=purchase.js.map

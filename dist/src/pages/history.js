@@ -1,127 +1,78 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const react_1 = __importStar(require("react"));
-const liff_1 = __importDefault(require("@line/liff"));
-const History = () => {
-    const [lineUserId, setLineUserId] = (0, react_1.useState)('');
-    const [histories, setHistories] = (0, react_1.useState)([]);
-    const [isLoading, setIsLoading] = (0, react_1.useState)(false);
-    const [error, setError] = (0, react_1.useState)('');
-    const [editMemoId, setEditMemoId] = (0, react_1.useState)(null);
-    const [editMemoValue, setEditMemoValue] = (0, react_1.useState)('');
-    const [savingMemoId, setSavingMemoId] = (0, react_1.useState)(null);
-    (0, react_1.useEffect)(() => {
-        const getLiffProfileAndFetchHistory = async () => {
-            setIsLoading(true);
-            setError('');
-            try {
-                await window.liffInitPromise;
-                if (liff_1.default.isLoggedIn()) {
-                    const profile = await liff_1.default.getProfile();
-                    setLineUserId(profile.userId);
-                    // 履歴取得
-                    const res = await fetch(`/api/getHistory?lineUserId=${profile.userId}`);
-                    if (!res.ok)
-                        throw new Error('履歴取得に失敗しました');
-                    const data = await res.json();
-                    setHistories(data.histories || []);
-                }
-                else {
-                    setError('LIFF未ログインです');
-                }
-            }
-            catch (e) {
-                setError(e.message || '不明なエラー');
-            }
-            finally {
-                setIsLoading(false);
-            }
-        };
-        getLiffProfileAndFetchHistory();
-    }, []);
-    const handleEdit = (id, currentMemo) => {
-        setEditMemoId(id);
-        setEditMemoValue(currentMemo || '');
-    };
-    const handleSave = async (id) => {
-        setSavingMemoId(id);
-        try {
-            const res = await fetch('/api/updateMemo', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ historyId: id, memo: editMemoValue }),
-            });
-            if (!res.ok)
-                throw new Error('メモ更新に失敗しました');
-            // ローカル状態も更新
-            setHistories(histories.map(h => h.id === id ? { ...h, memo: editMemoValue } : h));
-            setEditMemoId(null);
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useState, useEffect } from 'react';
+const History = ({ userProfile }) => {
+    const [history, setHistory] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [filterType, setFilterType] = useState('all');
+    useEffect(() => {
+        if (userProfile) {
+            fetchHistory();
         }
-        catch (e) {
-            alert(e instanceof Error ? e.message : 'メモ更新エラー');
+    }, [userProfile, filterType]);
+    const fetchHistory = async () => {
+        if (!userProfile)
+            return;
+        setIsLoading(true);
+        setError(null);
+        try {
+            const params = new URLSearchParams();
+            if (filterType !== 'all') {
+                params.append('type', filterType);
+            }
+            params.append('limit', '50');
+            const response = await fetch(`/api/history/${userProfile.userId}?${params}`);
+            const result = await response.json();
+            if (response.ok) {
+                setHistory(result.history || []);
+            }
+            else {
+                setError(result.error || '履歴の取得に失敗しました');
+            }
+        }
+        catch (error) {
+            console.error('History fetch error:', error);
+            setError('通信エラーが発生しました');
         }
         finally {
-            setSavingMemoId(null);
+            setIsLoading(false);
         }
     };
-    return (<div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      <h1 className="text-2xl font-bold mb-4">履歴一覧</h1>
-      {isLoading ? (<p>読み込み中...</p>) : error ? (<p className="text-red-500">{error}</p>) : histories.length === 0 ? (<p>履歴がありません。</p>) : (<div className="w-full max-w-md bg-white p-4 rounded shadow">
-          <ul>
-            {histories.map((h) => (<li key={h.id} className="border-b py-2">
-                <div className="text-xs text-gray-500 mb-1">{h.date && new Date(h.date).toLocaleString()}</div>
-                <div className="font-bold">{h.itemName}</div>
-                <div className="text-sm mt-1">
-                  <label className="block text-gray-700 text-xs mb-1">数量、豆・粉、風味や感想など自由にご記入ください</label>
-                  {editMemoId === h.id ? (<div className="flex gap-2 items-center">
-                      <textarea className="border rounded p-1 w-full text-sm" value={editMemoValue} onChange={e => setEditMemoValue(e.target.value)} placeholder="例: 1袋、豆のまま／酸味が爽やかで美味しい／次回は細挽きで試したい など" rows={2}/>
-                      <button className="bg-blue-500 text-white px-2 py-1 rounded text-xs" onClick={() => handleSave(h.id)} disabled={savingMemoId === h.id}>{savingMemoId === h.id ? '保存中...' : '保存'}</button>
-                      <button className="bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs" onClick={() => setEditMemoId(null)} disabled={savingMemoId === h.id}>キャンセル</button>
-                    </div>) : (<div className="flex gap-2 items-center">
-                      <span>{h.memo || <span className="text-gray-400">（未記入）</span>}</span>
-                      <button className="bg-yellow-400 text-white px-2 py-1 rounded text-xs" onClick={() => handleEdit(h.id, h.memo)}>編集</button>
-                    </div>)}
-                </div>
-              </li>))}
-          </ul>
-        </div>)}
-    </div>);
+    const formatDate = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleDateString('ja-JP', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+    const formatItems = (items) => {
+        if (!items || items.length === 0)
+            return '';
+        return items.map(item => `${item.name} x${item.quantity}`).join(', ');
+    };
+    const getTypeLabel = (type) => {
+        return type === 'checkin' ? '来店' : '購入';
+    };
+    const getTypeColor = (type) => {
+        return type === 'checkin'
+            ? 'bg-green-100 text-green-800 border-green-200'
+            : 'bg-blue-100 text-blue-800 border-blue-200';
+    };
+    if (!userProfile) {
+        return (_jsx("div", { className: "max-w-4xl mx-auto", children: _jsx("div", { className: "bg-white rounded-lg shadow-sm border p-6", children: _jsx("div", { className: "text-center text-gray-500", children: "\u30E6\u30FC\u30B6\u30FC\u60C5\u5831\u304C\u53D6\u5F97\u3067\u304D\u307E\u305B\u3093" }) }) }));
+    }
+    return (_jsx("div", { className: "max-w-4xl mx-auto", children: _jsxs("div", { className: "bg-white rounded-lg shadow-sm border", children: [_jsx("div", { className: "px-6 py-4 border-b border-gray-200", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsx("h2", { className: "text-2xl font-bold text-gray-900", children: "\u5C65\u6B74\u4E00\u89A7" }), _jsx("button", { onClick: fetchHistory, disabled: isLoading, className: "text-blue-600 hover:text-blue-800 disabled:opacity-50", children: _jsx("svg", { className: "w-5 h-5", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: _jsx("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" }) }) })] }) }), _jsx("div", { className: "px-6 py-4 border-b border-gray-200", children: _jsxs("div", { className: "flex space-x-4", children: [_jsx("button", { onClick: () => setFilterType('all'), className: `px-4 py-2 rounded-lg text-sm font-medium ${filterType === 'all'
+                                    ? 'bg-gray-900 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`, children: "\u3059\u3079\u3066" }), _jsx("button", { onClick: () => setFilterType('checkin'), className: `px-4 py-2 rounded-lg text-sm font-medium ${filterType === 'checkin'
+                                    ? 'bg-green-600 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`, children: "\u6765\u5E97" }), _jsx("button", { onClick: () => setFilterType('purchase'), className: `px-4 py-2 rounded-lg text-sm font-medium ${filterType === 'purchase'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`, children: "\u8CFC\u5165" })] }) }), _jsx("div", { className: "p-6", children: isLoading ? (_jsxs("div", { className: "flex items-center justify-center py-12", children: [_jsx("div", { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" }), _jsx("span", { className: "ml-3 text-gray-600", children: "\u8AAD\u307F\u8FBC\u307F\u4E2D..." })] })) : error ? (_jsxs("div", { className: "text-center py-12", children: [_jsx("div", { className: "text-red-600 mb-4", children: error }), _jsx("button", { onClick: fetchHistory, className: "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700", children: "\u518D\u8A66\u884C" })] })) : history.length === 0 ? (_jsxs("div", { className: "text-center py-12", children: [_jsx("div", { className: "text-gray-500 mb-4", children: filterType === 'all'
+                                    ? '履歴がありません'
+                                    : `${getTypeLabel(filterType)}履歴がありません` }), _jsx("p", { className: "text-sm text-gray-400", children: "\u521D\u56DE\u306E\u6765\u5E97\u3084\u8CFC\u5165\u3092\u8A18\u9332\u3057\u3066\u307F\u3066\u304F\u3060\u3055\u3044" })] })) : (_jsx("div", { className: "space-y-4", children: history.map((record) => (_jsx("div", { className: "border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow", children: _jsx("div", { className: "flex items-start justify-between", children: _jsxs("div", { className: "flex-1", children: [_jsxs("div", { className: "flex items-center space-x-3 mb-2", children: [_jsx("span", { className: `px-2 py-1 rounded-full text-xs font-medium border ${getTypeColor(record.type)}`, children: getTypeLabel(record.type) }), _jsx("span", { className: "text-sm text-gray-500", children: formatDate(record.timestamp) })] }), record.type === 'purchase' && (_jsxs("div", { className: "space-y-2", children: [record.items && record.items.length > 0 && (_jsx("div", { className: "text-gray-900", children: formatItems(record.items) })), record.total && (_jsxs("div", { className: "text-lg font-semibold text-blue-600", children: ["\u00A5", record.total.toLocaleString()] }))] })), record.memo && (_jsx("div", { className: "mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded", children: record.memo }))] }) }) }, record.id))) })) })] }) }));
 };
-exports.default = History;
+export default History;
 //# sourceMappingURL=history.js.map

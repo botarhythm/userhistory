@@ -1,118 +1,235 @@
-import React, { useState, useEffect } from "react";
-import liff from "@line/liff";
+import React, { useState, useEffect } from 'react';
 
-const History: React.FC = () => {
-  const [lineUserId, setLineUserId] = useState('');
-  const [histories, setHistories] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [editMemoId, setEditMemoId] = useState<string | null>(null);
-  const [editMemoValue, setEditMemoValue] = useState('');
-  const [savingMemoId, setSavingMemoId] = useState<string | null>(null);
+interface UserProfile {
+  userId: string;
+  displayName: string;
+  pictureUrl?: string;
+}
+
+interface HistoryRecord {
+  id: string;
+  customerId: string;
+  type: 'checkin' | 'purchase';
+  timestamp: string;
+  items?: Array<{
+    name: string;
+    quantity: number;
+    price?: number;
+  }>;
+  total?: number;
+  memo?: string;
+}
+
+interface HistoryProps {
+  userProfile: UserProfile | null;
+}
+
+const History: React.FC<HistoryProps> = ({ userProfile }) => {
+  const [history, setHistory] = useState<HistoryRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filterType, setFilterType] = useState<'all' | 'checkin' | 'purchase'>('all');
 
   useEffect(() => {
-    const getLiffProfileAndFetchHistory = async () => {
-      setIsLoading(true);
-      setError('');
-      try {
-        await window.liffInitPromise;
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          setLineUserId(profile.userId);
-          // 履歴取得
-          const res = await fetch(`/api/getHistory?lineUserId=${profile.userId}`);
-          if (!res.ok) throw new Error('履歴取得に失敗しました');
-          const data = await res.json();
-          setHistories(data.histories || []);
-        } else {
-          setError('LIFF未ログインです');
-        }
-      } catch (e: any) {
-        setError(e.message || '不明なエラー');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    getLiffProfileAndFetchHistory();
-  }, []);
+    if (userProfile) {
+      fetchHistory();
+    }
+  }, [userProfile, filterType]);
 
-  const handleEdit = (id: string, currentMemo: string) => {
-    setEditMemoId(id);
-    setEditMemoValue(currentMemo || '');
-  };
+  const fetchHistory = async () => {
+    if (!userProfile) return;
 
-  const handleSave = async (id: string) => {
-    setSavingMemoId(id);
+    setIsLoading(true);
+    setError(null);
+
     try {
-      const res = await fetch('/api/updateMemo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ historyId: id, memo: editMemoValue }),
-      });
-      if (!res.ok) throw new Error('メモ更新に失敗しました');
-      // ローカル状態も更新
-      setHistories(histories.map(h => h.id === id ? { ...h, memo: editMemoValue } : h));
-      setEditMemoId(null);
-    } catch (e) {
-      alert(e instanceof Error ? e.message : 'メモ更新エラー');
+      const params = new URLSearchParams();
+      if (filterType !== 'all') {
+        params.append('type', filterType);
+      }
+      params.append('limit', '50');
+
+      const response = await fetch(`/api/history/${userProfile.userId}?${params}`);
+      const result = await response.json();
+
+      if (response.ok) {
+        setHistory(result.history || []);
+      } else {
+        setError(result.error || '履歴の取得に失敗しました');
+      }
+    } catch (error) {
+      console.error('History fetch error:', error);
+      setError('通信エラーが発生しました');
     } finally {
-      setSavingMemoId(null);
+      setIsLoading(false);
     }
   };
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      <h1 className="text-2xl font-bold mb-4">履歴一覧</h1>
-      {isLoading ? (
-        <p>読み込み中...</p>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : histories.length === 0 ? (
-        <p>履歴がありません。</p>
-      ) : (
-        <div className="w-full max-w-md bg-white p-4 rounded shadow">
-          <ul>
-            {histories.map((h) => (
-              <li key={h.id} className="border-b py-2">
-                <div className="text-xs text-gray-500 mb-1">{h.date && new Date(h.date).toLocaleString()}</div>
-                <div className="font-bold">{h.itemName}</div>
-                <div className="text-sm mt-1">
-                  <label className="block text-gray-700 text-xs mb-1">数量、豆・粉、風味や感想など自由にご記入ください</label>
-                  {editMemoId === h.id ? (
-                    <div className="flex gap-2 items-center">
-                      <textarea
-                        className="border rounded p-1 w-full text-sm"
-                        value={editMemoValue}
-                        onChange={e => setEditMemoValue(e.target.value)}
-                        placeholder="例: 1袋、豆のまま／酸味が爽やかで美味しい／次回は細挽きで試したい など"
-                        rows={2}
-                      />
-                      <button
-                        className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
-                        onClick={() => handleSave(h.id)}
-                        disabled={savingMemoId === h.id}
-                      >{savingMemoId === h.id ? '保存中...' : '保存'}</button>
-                      <button
-                        className="bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs"
-                        onClick={() => setEditMemoId(null)}
-                        disabled={savingMemoId === h.id}
-                      >キャンセル</button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2 items-center">
-                      <span>{h.memo || <span className="text-gray-400">（未記入）</span>}</span>
-                      <button
-                        className="bg-yellow-400 text-white px-2 py-1 rounded text-xs"
-                        onClick={() => handleEdit(h.id, h.memo)}
-                      >編集</button>
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
+  const formatDate = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('ja-JP', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatItems = (items?: Array<{ name: string; quantity: number; price?: number }>) => {
+    if (!items || items.length === 0) return '';
+    return items.map(item => `${item.name} x${item.quantity}`).join(', ');
+  };
+
+  const getTypeLabel = (type: 'checkin' | 'purchase') => {
+    return type === 'checkin' ? '来店' : '購入';
+  };
+
+  const getTypeColor = (type: 'checkin' | 'purchase') => {
+    return type === 'checkin' 
+      ? 'bg-green-100 text-green-800 border-green-200' 
+      : 'bg-blue-100 text-blue-800 border-blue-200';
+  };
+
+  if (!userProfile) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="text-center text-gray-500">
+            ユーザー情報が取得できません
+          </div>
         </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white rounded-lg shadow-sm border">
+        {/* ヘッダー */}
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">履歴一覧</h2>
+            <button
+              onClick={fetchHistory}
+              disabled={isLoading}
+              className="text-blue-600 hover:text-blue-800 disabled:opacity-50"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* フィルター */}
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex space-x-4">
+            <button
+              onClick={() => setFilterType('all')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                filterType === 'all'
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              すべて
+            </button>
+            <button
+              onClick={() => setFilterType('checkin')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                filterType === 'checkin'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              来店
+            </button>
+            <button
+              onClick={() => setFilterType('purchase')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                filterType === 'purchase'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              購入
+            </button>
+          </div>
+        </div>
+
+        {/* コンテンツ */}
+        <div className="p-6">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-3 text-gray-600">読み込み中...</span>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <div className="text-red-600 mb-4">{error}</div>
+              <button
+                onClick={fetchHistory}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                再試行
+              </button>
+            </div>
+          ) : history.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-gray-500 mb-4">
+                {filterType === 'all' 
+                  ? '履歴がありません' 
+                  : `${getTypeLabel(filterType)}履歴がありません`
+                }
+              </div>
+              <p className="text-sm text-gray-400">
+                初回の来店や購入を記録してみてください
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {history.map((record) => (
+                <div key={record.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getTypeColor(record.type)}`}>
+                          {getTypeLabel(record.type)}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {formatDate(record.timestamp)}
+                        </span>
+                      </div>
+                      
+                      {record.type === 'purchase' && (
+                        <div className="space-y-2">
+                          {record.items && record.items.length > 0 && (
+                            <div className="text-gray-900">
+                              {formatItems(record.items)}
+                            </div>
+                          )}
+                          {record.total && (
+                            <div className="text-lg font-semibold text-blue-600">
+                              ¥{record.total.toLocaleString()}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {record.memo && (
+                        <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                          {record.memo}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
