@@ -6,6 +6,11 @@ const port = process.env.PORT || 3000;
 console.log('process.env.PORT:', process.env.PORT);
 console.log(`サーバーlistenポート: ${port}`);
 
+// ルートエンドポイントを追加
+app.get('/', (_req, res) => {
+  res.json({ message: 'Botarhythm Coffee Roaster API', status: 'running' });
+});
+
 app.get('/api/hello', (_req, res) => {
   res.json({ message: 'Hello, Railway!' });
 });
@@ -14,7 +19,8 @@ app.get('/health', (_req, res) => {
   res.status(200).send('ok');
 });
 
-app.listen(port, () => {
+// 0.0.0.0でリッスンしてRailwayのルーティングに対応
+app.listen(port, '0.0.0.0', () => {
   console.log(`Test API server running on port ${port}`);
 });
 
