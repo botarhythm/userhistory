@@ -1,7 +1,8 @@
 {
   "name": "userhistory",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/server.js",
+  "type": "module",
   "scripts": {
     "dev": "concurrently \"npm:dev:front\" \"npm:dev:api\"",
     "dev:front": "vite",
