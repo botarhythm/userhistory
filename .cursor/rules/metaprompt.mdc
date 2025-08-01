@@ -42,3 +42,19 @@ Botarhythm Coffee Roaster の来店客の「来店履歴」と「購入履歴」
 - スタイルはLINEに馴染む構成を厳守
 
 このプロンプトは、開発環境での思考整理・構造設計・コーディング支援に使います。
+
+## 🛤️ Railway本番運用・CI/CD・自動バージョン管理
+
+- サーバー公開・運用：**Railway（クラウドPaaS）で常時本番公開**
+- デプロイ方式：GitHub Actions（mainブランチpushで自動デプロイ）
+- CI/CD: `.github/workflows/railway-deploy.yml` で自動化
+- バージョン管理: GitHub（mainブランチが本番）
+- 環境変数: Railwayダッシュボードで管理し、`.env.example`はリポジトリに含める
+- セキュリティ: `.env`やシークレットはGit履歴に残さず、Push Protection・履歴消去済み
+- Node.jsバージョン: `package.json`の`engines`で20以上を要求、RailwayはNode.js 22でビルド
+- Vite/React/Express/Notion API連携は全てESM/最新構成に準拠
+- バージョンアップ/依存更新: DependabotやRenovateの導入を推奨（自動PRで依存更新）
+- デプロイ失敗時: Railwayのビルドログを自動取得・AIが即時デバッグ・修正案提示
+- MCP/CLI連携: Railway CLI/MCPでAIが自律的に状態監視・再デプロイ・環境変数同期を自動化
+
+---

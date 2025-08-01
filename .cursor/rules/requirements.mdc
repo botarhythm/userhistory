@@ -33,6 +33,11 @@ Botarhythm Coffee Roaster において、顧客の「来店履歴」および「
 | 使用環境       | Cursor（React + Tailwind）                |
 | サーバー運用   | **Railway（クラウドPaaS）で本番・検証サーバーを常時公開** |
 | 環境変数管理   | **Railwayのダッシュボードで設定。`.env.example`をリポジトリに含める** |
+| CI/CD         | **GitHub Actionsでmainブランチpush時に自動デプロイ** |
+| バージョン管理 | **GitHub（mainブランチが本番）、依存はDependabot/自動PRで更新** |
+| Node.jsバージョン | **package.jsonのenginesで20以上を要求、RailwayはNode.js 22でビルド** |
+| デプロイ失敗時 | **RailwayのビルドログをAIが自動取得・即時デバッグ・修正案提示** |
+| MCP/CLI連携   | **Railway CLI/MCPでAIが自律的に状態監視・再デプロイ・環境変数同期を自動化** |
 | 拡張予定       | 将来的に電話番号照合やSquare連携を検討   |
 
 - 本番・検証用URLはRailwayのサブドメインまたはカスタムドメインを利用
