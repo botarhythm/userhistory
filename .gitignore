@@ -1,6 +1,7 @@
 # Node
 node_modules/
 dist/
+!test-server/dist/
 
 # 環境変数・シークレット
 .env
