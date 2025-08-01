@@ -17,6 +17,12 @@ try {
 
   app.use(express.json());
 
+  // 全リクエストログ
+  app.use((req, res, next) => {
+    console.log(`[REQ] ${req.method} ${req.url}`);
+    next();
+  });
+
   // サーバー起動時にdist配下のファイル一覧と参照パスを出力
   const distPaths = [
     path.join(__dirname, 'dist'),
@@ -124,6 +130,11 @@ try {
   });
   process.on('uncaughtException', (err) => {
     console.error('Uncaught Exception thrown:', err);
+  });
+  process.on('SIGTERM', () => {
+    console.error('SIGTERM received. Shutting down gracefully.');
+    console.trace();
+    process.exit(0);
   });
 
   app.listen(port, () => {
