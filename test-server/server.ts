@@ -20,7 +20,7 @@ app.get('/health', (_req, res) => {
 });
 
 // 0.0.0.0でリッスンしてRailwayのルーティングに対応
-app.listen(port, '0.0.0.0', () => {
+app.listen(Number(port), '0.0.0.0', () => {
   console.log(`Test API server running on port ${port}`);
 });
 
