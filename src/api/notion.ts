@@ -35,8 +35,8 @@ export class NotionAPI {
     this.client = new Client({
       auth: apiKey,
     });
-    this.customerDatabaseId = process.env['NOTION_CUSTOMER_DB_ID'] || '';
-    this.historyDatabaseId = process.env['NOTION_HISTORY_DB_ID'] || '';
+    this.customerDatabaseId = process.env['NOTION_CUSTOMER_DATABASE_ID'] || '';
+    this.historyDatabaseId = process.env['NOTION_DATABASE_ID'] || '';
   }
 
   // 顧客の検索・作成
