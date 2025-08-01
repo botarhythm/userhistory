@@ -17,7 +17,7 @@ try {
   app.use(express.json());
 
   // 静的ファイル配信
-  app.use(express.static(path.join(__dirname, 'dist')));
+  app.use(express.static(path.join(process.cwd(), 'dist')));
 
   app.post('/api/recordPurchase', async (req, res) => {
     const { lineUserId, lineDisplayName, itemName, memo } = req.body;
@@ -79,7 +79,7 @@ try {
 
   // SPA対応: すべてのGETリクエストでindex.htmlを返す
   app.get('*', (_req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    res.sendFile(path.join(process.cwd(), 'dist', 'index.html'));
   });
 
   app.listen(port, () => {
