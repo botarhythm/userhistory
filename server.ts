@@ -29,9 +29,20 @@ try {
     }
   });
 
+  const clientDistPaths = [
+    path.join(__dirname, 'dist', 'client'),
+    path.join(process.cwd(), 'dist', 'client'),
+  ];
+  clientDistPaths.forEach((p) => {
+    if (fs.existsSync(p)) {
+      console.log(`[DEBUG] client distディレクトリ: ${p}`);
+      console.log('[DEBUG] client dist内ファイル:', fs.readdirSync(p));
+    }
+  });
+
   // 静的ファイル配信
   app.use((req, res, next) => {
-    for (const base of distPaths) {
+    for (const base of clientDistPaths) {
       const staticPath = path.join(base, req.path);
       if (fs.existsSync(staticPath) && fs.statSync(staticPath).isFile()) {
         return res.sendFile(staticPath);
@@ -100,7 +111,7 @@ try {
 
   // SPA対応: すべてのGETリクエストでindex.htmlを返す
   app.get('*', (_req, res) => {
-    for (const base of distPaths) {
+    for (const base of clientDistPaths) {
       const indexPath = path.join(base, 'index.html');
       if (fs.existsSync(indexPath)) {
         console.log(`[DEBUG] index.html返却パス: ${indexPath}`);
