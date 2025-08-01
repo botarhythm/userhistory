@@ -110,7 +110,7 @@ try {
   });
 
   // SPA対応: すべてのGETリクエストでindex.htmlを返す
-  app.get('*', (_req, res) => {
+  app.use((req, res) => {
     for (const base of clientDistPaths) {
       const indexPath = path.join(base, 'index.html');
       if (fs.existsSync(indexPath)) {
