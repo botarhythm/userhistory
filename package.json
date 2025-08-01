@@ -16,8 +16,8 @@
     "lint": "eslint . --ext .ts,.tsx",
     "type-check": "tsc --noEmit",
     "preview": "vite preview",
-    "troubleshoot": "node ai-troubleshooter.js",
-    "auto-fix": "node ai-troubleshooter.js --auto-fix"
+    "check-integrity": "npm run build:server && node dist/scripts/check-db-integrity.js",
+    "fix-integrity": "npm run build:server && node dist/scripts/auto-fix-integrity.js"
   },
   "keywords": [
     "line",

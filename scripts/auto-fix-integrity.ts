@@ -57,6 +57,16 @@ async function main() {
       console.log(`✅ 孤立レコード削除完了: 成功${cleanupResult.success}件, 失敗${cleanupResult.failed}件\n`);
     }
 
+    // 重複顧客の統合
+    if (result.details.duplicateLineUids.length > 0) {
+      console.log('🔄 重複顧客の統合を開始...');
+      const mergeResult = await integrityChecker.mergeDuplicateCustomers(
+        result.details.duplicateLineUids
+      );
+      
+      console.log(`✅ 重複顧客統合完了: 統合${mergeResult.merged}件, 失敗${mergeResult.failed}件\n`);
+    }
+
     // 修正後の整合性チェック
     console.log('🔍 修正後の整合性チェックを実行...');
     const finalResult = await integrityChecker.performFullIntegrityCheck();

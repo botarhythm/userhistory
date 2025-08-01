@@ -30,6 +30,7 @@ export const DatabaseIntegrityPanel: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cleanupResult, setCleanupResult] = useState<CleanupResult | null>(null);
+  const [mergeResult, setMergeResult] = useState<{ merged: number; failed: number } | null>(null);
 
   const performIntegrityCheck = async () => {
     setLoading(true);
@@ -86,6 +87,41 @@ export const DatabaseIntegrityPanel: React.FC = () => {
     }
   };
 
+  const mergeDuplicateCustomers = async () => {
+    if (!integrityResult || integrityResult.details.duplicateLineUids.length === 0) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/debug/merge-duplicate-customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          duplicateLineUids: integrityResult.details.duplicateLineUids
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`重複顧客統合に失敗しました: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setMergeResult(data.result);
+      
+      // 統合後に再度整合性チェックを実行
+      await performIntegrityCheck();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '予期しないエラーが発生しました');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     // コンポーネントマウント時に自動で整合性チェックを実行
     performIntegrityCheck();
@@ -121,6 +157,16 @@ export const DatabaseIntegrityPanel: React.FC = () => {
             {loading ? 'クリーンアップ中...' : '孤立レコード削除'}
           </button>
         )}
+
+        {integrityResult && integrityResult.details.duplicateLineUids.length > 0 && (
+          <button
+            onClick={mergeDuplicateCustomers}
+            disabled={loading}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? '統合中...' : '重複顧客統合'}
+          </button>
+        )}
       </div>
 
       {/* エラー表示 */}
@@ -153,6 +199,25 @@ export const DatabaseIntegrityPanel: React.FC = () => {
               <h3 className="text-sm font-medium text-green-800">クリーンアップ完了</h3>
               <div className="mt-2 text-sm text-green-700">
                 成功: {cleanupResult.success}件, 失敗: {cleanupResult.failed}件
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 統合結果 */}
+      {mergeResult && (
+        <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-purple-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-purple-800">重複顧客統合完了</h3>
+              <div className="mt-2 text-sm text-purple-700">
+                統合: {mergeResult.merged}件, 失敗: {mergeResult.failed}件
               </div>
             </div>
           </div>

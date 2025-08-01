@@ -238,10 +238,69 @@ export class DatabaseIntegrityChecker {
 
     for (const lineUid of duplicateLineUids) {
       try {
-        // 重複顧客の履歴を統合する処理を実装
-        // ここでは基本的な構造のみ提供
-        console.log(`🔄 重複顧客の統合処理: ${lineUid}`);
+        console.log(`🔄 重複顧客の統合処理開始: ${lineUid}`);
+        
+        // 同じLINE UIDを持つ顧客を取得
+        const allCustomers = await this.getAllCustomers();
+        const duplicateCustomers = allCustomers.filter(c => c.lineUid === lineUid);
+        
+        if (duplicateCustomers.length < 2) {
+          console.log(`⚠️  重複顧客が見つかりません: ${lineUid}`);
+          continue;
+        }
+
+        // 最初の顧客をメインとして保持し、残りを削除
+        const [mainCustomer, ...duplicatesToRemove] = duplicateCustomers;
+        
+        if (!mainCustomer) {
+          console.log(`⚠️  メイン顧客が見つかりません: ${lineUid}`);
+          continue;
+        }
+        
+        // 重複顧客の履歴をメイン顧客に移行
+        const allHistoryRecords = await this.getAllHistoryRecords();
+        const historiesToUpdate = allHistoryRecords.filter(h => 
+          duplicatesToRemove.some(d => d.id === h.customerId)
+        );
+
+        // 履歴の顧客IDを更新
+        for (const history of historiesToUpdate) {
+          try {
+            await this.notionAPI.client.pages.update({
+              page_id: history.id,
+              properties: {
+                [this.getPropertyName(
+                  (await this.notionAPI.getDatabaseStructure(this.notionAPI.historyDatabaseId))?.properties || {},
+                  'relation'
+                ) || '関連顧客ID']: {
+                  relation: [{ id: mainCustomer.id }]
+                }
+              }
+            });
+            console.log(`✅ 履歴移行完了: ${history.id} → ${mainCustomer.id}`);
+          } catch (error) {
+            console.error(`❌ 履歴移行失敗: ${history.id}`, error);
+          }
+        }
+
+        // 重複顧客を削除（アーカイブ）
+        for (const duplicate of duplicatesToRemove) {
+          try {
+            await this.notionAPI.client.pages.update({
+              page_id: duplicate.id,
+              archived: true
+            });
+            console.log(`✅ 重複顧客削除完了: ${duplicate.id}`);
+          } catch (error) {
+            console.error(`❌ 重複顧客削除失敗: ${duplicate.id}`, error);
+            failed++;
+            continue;
+          }
+        }
+
         merged++;
+        console.log(`✅ 重複顧客統合完了: ${lineUid} (${duplicatesToRemove.length}件を統合)`);
+        
       } catch (error) {
         failed++;
         console.error(`❌ 重複顧客統合失敗: ${lineUid}`, error);
