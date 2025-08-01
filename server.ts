@@ -109,6 +109,11 @@ try {
     }
   });
 
+  // ヘルスチェック用
+  app.get('/health', (_req, res) => {
+    res.status(200).send('ok');
+  });
+
   // SPA対応: すべてのGETリクエストでindex.htmlを返す
   app.use((req, res) => {
     for (const base of clientDistPaths) {
@@ -118,7 +123,16 @@ try {
         return res.sendFile(indexPath);
       }
     }
-    res.status(404).send('index.html not found');
+    // res.status(404).send('index.html not found');
+    // 404返却をやめ、何も返さず終了
+  });
+
+  // グローバルエラーハンドラ
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  });
+  process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception thrown:', err);
   });
 
   app.listen(port, () => {
