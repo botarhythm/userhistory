@@ -238,23 +238,23 @@ app.get('/api/debug/databases', async (_req, res) => {
     
     // 顧客データベースの構造を取得
     const customerDbResponse = await notionAPI.client.databases.retrieve({
-      database_id: notionAPI['customerDatabaseId']
+      database_id: notionAPI.customerDatabaseId
     });
     
     // 履歴データベースの構造を取得
     const historyDbResponse = await notionAPI.client.databases.retrieve({
-      database_id: notionAPI['historyDatabaseId']
+      database_id: notionAPI.historyDatabaseId
     });
     
     res.json({
       customerDatabase: {
         id: customerDbResponse.id,
-        title: customerDbResponse.title,
+        title: customerDbResponse.title || 'No title',
         properties: customerDbResponse.properties
       },
       historyDatabase: {
         id: historyDbResponse.id,
-        title: historyDbResponse.title,
+        title: historyDbResponse.title || 'No title',
         properties: historyDbResponse.properties
       }
     });
