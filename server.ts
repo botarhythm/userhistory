@@ -249,12 +249,12 @@ app.get('/api/debug/databases', async (_req, res) => {
     res.json({
       customerDatabase: {
         id: customerDbResponse.id,
-        title: customerDbResponse.title || 'No title',
+        title: (customerDbResponse as any).title || 'No title',
         properties: customerDbResponse.properties
       },
       historyDatabase: {
         id: historyDbResponse.id,
-        title: historyDbResponse.title || 'No title',
+        title: (historyDbResponse as any).title || 'No title',
         properties: historyDbResponse.properties
       }
     });
