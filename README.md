@@ -84,12 +84,40 @@ GitHub Actionsでデプロイが失敗した場合、自動的にAIトラブル�
 
 ## 🔧 環境変数
 
-### Railway環境変数
+### Railway環境変数（本番環境）
+
+Railwayダッシュボードで以下の環境変数を設定してください：
 
 - `NOTION_API_KEY`: Notion API キー
 - `NOTION_CUSTOMER_DB_ID`: 顧客データベースID
 - `NOTION_HISTORY_DB_ID`: 履歴データベースID
+- `NOTION_PRODUCT_DB_ID`: 商品データベースID
 - `VITE_LIFF_ID`: LINE LIFF ID
+
+### 開発環境設定
+
+ローカル開発時は、プロジェクトルートに `.env.local` ファイルを作成し、`env.example`の内容をコピーして使用してください：
+
+```bash
+# .env.local
+# Railway Deployment Configuration
+PORT=3000
+NODE_ENV=development
+
+# Notion API Configuration
+NOTION_API_KEY=your_notion_api_key_here
+NOTION_CUSTOMER_DB_ID=your_customer_db_id_here
+NOTION_HISTORY_DB_ID=your_history_db_id_here
+NOTION_PRODUCT_DB_ID=your_product_db_id_here
+
+# LINE LIFF Configuration (for frontend)
+VITE_LIFF_ID=your_line_liff_id_here
+```
+
+**重要**: 
+- `.env`ファイルは直接編集せず、Railwayダッシュボードで設定してください
+- ローカル開発時は`.env.local`ファイルを使用してください
+- 機密情報は絶対にGitにコミットしないでください
 
 ## 🔗 Notion MCPサーバー設定
 
