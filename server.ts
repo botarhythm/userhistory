@@ -40,15 +40,19 @@ try {
     }
   });
 
-  // 静的ファイル配信
-  app.use((req, res, next) => {
-    for (const base of clientDistPaths) {
-      const staticPath = path.join(base, req.path);
-      if (fs.existsSync(staticPath) && fs.statSync(staticPath).isFile()) {
-        return res.sendFile(staticPath);
-      }
-    }
-    next();
+  // 静的ファイル配信（公式推奨）
+  app.use(express.static(path.join(process.cwd(), 'dist', 'client')));
+
+  // ルートパスでindex.htmlを返す
+  app.get('/', (req, res) => {
+    const indexPath = path.join(process.cwd(), 'dist', 'client', 'index.html');
+    res.sendFile(indexPath);
+  });
+
+  // SPA対応: すべてのGETリクエストでindex.htmlを返す
+  app.get('*', (req, res) => {
+    const indexPath = path.join(process.cwd(), 'dist', 'client', 'index.html');
+    res.sendFile(indexPath);
   });
 
   app.post('/api/recordPurchase', async (req, res) => {
@@ -112,28 +116,6 @@ try {
   // ヘルスチェック用
   app.get('/health', (_req, res) => {
     res.status(200).send('ok');
-  });
-
-  // ルートパスでindex.htmlを返す
-  app.get('/', (req, res) => {
-    const indexPath = path.join(process.cwd(), 'dist', 'client', 'index.html');
-    if (fs.existsSync(indexPath)) {
-      return res.sendFile(indexPath);
-    } else {
-      console.error(`[ERROR] index.html not found at ${indexPath}`);
-      return res.status(500).send('index.html not found');
-    }
-  });
-
-  // SPA対応: すべてのGETリクエストでindex.htmlを返す
-  app.use((req, res) => {
-    const indexPath = path.join(process.cwd(), 'dist', 'client', 'index.html');
-    if (fs.existsSync(indexPath)) {
-      return res.sendFile(indexPath);
-    } else {
-      console.error(`[ERROR] index.html not found at ${indexPath}`);
-      return res.status(500).send('index.html not found');
-    }
   });
 
   // グローバルエラーハンドラ
