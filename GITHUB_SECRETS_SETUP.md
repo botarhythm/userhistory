@@ -8,8 +8,8 @@ Railway CI/CDで必要なGitHub Secretsを設定します。
 ### 1. RAILWAY_TOKEN
 Railway API Token（Railwayアカウントから取得）
 
-### 2. RAILWAY_SERVICE  
-Railway Service ID（Railwayダッシュボードから取得）
+### 2. RAILWAY_PROJECT_ID  
+Railway Project ID（Railwayダッシュボードから取得）
 
 ---
 
@@ -23,13 +23,12 @@ Railway Service ID（Railwayダッシュボードから取得）
 4. "Create Token" をクリック
 5. 生成されたTokenをコピー（一度しか表示されません）
 
-### Step 2: Railway Service IDの取得
+### Step 2: Railway Project IDの取得
 
 1. [Railway Dashboard](https://railway.app/dashboard) にアクセス
 2. プロジェクトを選択
-3. サービスを選択
-4. Settings タブを開く
-5. "Service ID" をコピー
+3. Settings タブを開く
+4. "Project ID" をコピー
 
 ### Step 3: GitHub Secrets設定
 
@@ -42,9 +41,9 @@ Railway Service ID（Railwayダッシュボードから取得）
 - **Value**: Step 1で取得したRailway API Token
 - "Add secret" をクリック
 
-#### RAILWAY_SERVICE設定
-- **Name**: `RAILWAY_SERVICE`
-- **Value**: Step 2で取得したRailway Service ID
+#### RAILWAY_PROJECT_ID設定
+- **Name**: `RAILWAY_PROJECT_ID`
+- **Value**: Step 2で取得したRailway Project ID
 - "Add secret" をクリック
 
 ---
@@ -70,8 +69,8 @@ Railway Service ID（Railwayダッシュボードから取得）
    - GitHub Secretsに正しく設定されているか確認
    - Tokenが有効か確認
 
-2. **"RAILWAY_SERVICE not found" エラー**
-   - Service IDが正しいか確認
+2. **"RAILWAY_PROJECT_ID not found" エラー**
+   - Project IDが正しいか確認
    - Railwayプロジェクトにアクセス権限があるか確認
 
 3. **デプロイが実行されない**
@@ -94,4 +93,4 @@ railway logs
 
 - Railway API Tokenは機密情報です。絶対に公開しないでください
 - Tokenは定期的に更新することを推奨します
-- Service IDはプロジェクトごとに異なります 
+- Project IDはプロジェクトごとに異なります 
