@@ -5,4 +5,4 @@ RUN npm ci
 COPY . .
 ENV FORCE_REBUILD="$(date +%s)"
 RUN npm run build
-CMD ["node", "dist/server.js"]
+CMD ["node", "test-server/dist/server.js"]
