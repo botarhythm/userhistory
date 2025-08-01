@@ -138,6 +138,22 @@ try {
   });
 
   app.listen(port, () => {
+    const now = new Date().toISOString();
+    const pid = process.pid;
+    const cwd = process.cwd();
+    const distPath = path.join(process.cwd(), 'dist');
+    const clientPath = path.join(process.cwd(), 'dist', 'client');
+    let distFiles = [];
+    let clientFiles = [];
+    try {
+      distFiles = fs.readdirSync(distPath);
+    } catch {}
+    try {
+      clientFiles = fs.readdirSync(clientPath);
+    } catch {}
+    console.log(`[起動完了] ${now} | PID: ${pid} | CWD: ${cwd}`);
+    console.log(`[dist配下]`, distFiles);
+    console.log(`[dist/client配下]`, clientFiles);
     console.log(`APIサーバーがポート${port}で起動しました`);
   });
 } catch (error) {
