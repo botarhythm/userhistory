@@ -6,10 +6,9 @@
     "dev": "concurrently \"npm:dev:front\" \"npm:dev:api\"",
     "dev:front": "vite",
     "dev:api": "tsc && nodemon dist/server.js",
-    "build": "vite build",
+    "build": "node node_modules/vite/bin/vite.js build",
     "preview": "vite preview",
-    "test": "vitest",
-    "postinstall": "chmod +x node_modules/.bin/vite"
+    "test": "vitest"
   },
   "keywords": [],
   "author": "",
