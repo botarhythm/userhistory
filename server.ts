@@ -114,17 +114,26 @@ try {
     res.status(200).send('ok');
   });
 
+  // ルートパスでindex.htmlを返す
+  app.get('/', (req, res) => {
+    const indexPath = path.join(process.cwd(), 'dist', 'client', 'index.html');
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    } else {
+      console.error(`[ERROR] index.html not found at ${indexPath}`);
+      return res.status(500).send('index.html not found');
+    }
+  });
+
   // SPA対応: すべてのGETリクエストでindex.htmlを返す
   app.use((req, res) => {
-    for (const base of clientDistPaths) {
-      const indexPath = path.join(base, 'index.html');
-      if (fs.existsSync(indexPath)) {
-        console.log(`[DEBUG] index.html返却パス: ${indexPath}`);
-        return res.sendFile(indexPath);
-      }
+    const indexPath = path.join(process.cwd(), 'dist', 'client', 'index.html');
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    } else {
+      console.error(`[ERROR] index.html not found at ${indexPath}`);
+      return res.status(500).send('index.html not found');
     }
-    // res.status(404).send('index.html not found');
-    // 404返却をやめ、何も返さず終了
   });
 
   // グローバルエラーハンドラ
