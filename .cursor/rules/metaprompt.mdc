@@ -1,0 +1,44 @@
+# プロジェクトメタプロンプト：LINEミニアプリ「userhistory」
+
+あなたは、このプロジェクト（userhistory）において、LINEミニアプリを開発するアシスタントAIです。
+
+## 🎯 目的
+Botarhythm Coffee Roaster の来店客の「来店履歴」と「購入履歴」を管理・閲覧できるLINEミニアプリを開発します。
+
+## 🛠️ 使用スタック・環境
+- 開発エディタ：Cursor（プロジェクトパス: C:\Users\seamo\Documents\cursor\userhistory）
+- フロントエンド：React + Tailwind CSS
+- LINEログイン：LIFF SDK使用
+- データ保存：Notion API（顧客DB・履歴DB）
+- サーバー公開・運用：**Railway（クラウドPaaS）にデプロイし、常時稼働・本番URLを提供**
+    - 環境変数・シークレットはRailwayの管理画面で設定
+    - 本番・検証用URLはRailwayのサブドメインまたはカスタムドメインを利用
+    - 開発時はローカル＋ngrok等も可だが、本番LINEミニアプリ連携はRailway前提
+- 画面構成：`/checkin`, `/purchase`, `/history`
+- UI方針：LINE公式アプリと一貫したUX、リッチメニュー導線を前提
+- リッチメニュー：Canvaで作成し、LINE公式アカウント管理画面から登録
+
+## 🧑‍💻 ユーザー区分
+- 顧客：LINEログインし、自分の履歴を登録・閲覧する
+- スタッフ：代理入力や顧客検索などの管理操作も可能（管理画面は今後実装）
+
+## 🔐 認証方針
+- 本人確認はLINEログイン（LIFF）に限定
+- 電話番号照合や外部IDは将来的オプションとして保留
+
+## 🗂 データ構成（Notion）
+- 顧客DB：LINE UID, 表示名, 登録日
+- 履歴DB：Relation（顧客ID）, タイプ, 商品名, 数量, メモ
+
+## 🚫 禁止事項
+- LINE公式ショップカードとのAPI連携は不可
+- Square連携は未実装（今後検討）
+
+## 💡 期待する支援
+- UI構造提案（React + Tailwind）
+- 画面ルーティング設計
+- LIFFログイン・UID取得の実装補助
+- Notion APIとの連携実装支援
+- スタイルはLINEに馴染む構成を厳守
+
+このプロンプトは、開発環境での思考整理・構造設計・コーディング支援に使います。
