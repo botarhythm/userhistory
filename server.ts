@@ -231,6 +231,59 @@ app.get('/api/history/:lineUid', async (req, res) => {
   }
 });
 
+// データベース構造確認用エンドポイント
+app.get('/api/debug/databases', async (_req, res) => {
+  try {
+    log('debug_databases', {}, 'Database structure check requested', 'Verify Notion database configuration');
+    
+    // 顧客データベースの構造を取得
+    const customerDbResponse = await notionAPI.client.databases.retrieve({
+      database_id: notionAPI['customerDatabaseId']
+    });
+    
+    // 履歴データベースの構造を取得
+    const historyDbResponse = await notionAPI.client.databases.retrieve({
+      database_id: notionAPI['historyDatabaseId']
+    });
+    
+    res.json({
+      customerDatabase: {
+        id: customerDbResponse.id,
+        title: customerDbResponse.title,
+        properties: customerDbResponse.properties
+      },
+      historyDatabase: {
+        id: historyDbResponse.id,
+        title: historyDbResponse.title,
+        properties: historyDbResponse.properties
+      }
+    });
+  } catch (error) {
+    log('debug_databases_error', { error: error instanceof Error ? error.message : String(error) }, 'Database structure check failed', 'Check Notion API connection and database IDs');
+    console.error('Database structure check error:', error);
+    res.status(500).json({ error: 'Failed to retrieve database structure' });
+  }
+});
+
+// テスト用の顧客作成エンドポイント
+app.post('/api/debug/create-test-customer', async (_req, res) => {
+  try {
+    log('debug_create_test_customer', {}, 'Test customer creation requested', 'Verify customer creation functionality');
+    
+    const customerId = await notionAPI.findOrCreateCustomer('test-user-123', 'テストユーザー');
+    
+    res.json({
+      success: true,
+      customerId,
+      message: 'Test customer created successfully'
+    });
+  } catch (error) {
+    log('debug_create_test_customer_error', { error: error instanceof Error ? error.message : String(error) }, 'Test customer creation failed', 'Check Notion API and database permissions');
+    console.error('Test customer creation error:', error);
+    res.status(500).json({ error: 'Failed to create test customer' });
+  }
+});
+
 // SPA用のフォールバックルート
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {

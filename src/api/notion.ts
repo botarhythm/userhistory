@@ -22,9 +22,9 @@ export interface HistoryRecord {
 }
 
 export class NotionAPI {
-  private client: Client;
-  private customerDatabaseId: string;
-  private historyDatabaseId: string;
+  public client: Client;
+  public customerDatabaseId: string;
+  public historyDatabaseId: string;
 
   constructor() {
     const apiKey = process.env['NOTION_API_KEY'];
