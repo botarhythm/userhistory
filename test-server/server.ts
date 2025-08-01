@@ -1,7 +1,7 @@
 import express from 'express';
 
 const app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 
 app.get('/api/hello', (_req, res) => {
   res.json({ message: 'Hello, Railway!' });
