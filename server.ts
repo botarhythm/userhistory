@@ -4,6 +4,7 @@ import { findOrCreateCustomer, recordPurchase, getHistory, getProductList } from
 import { Client } from '@notionhq/client';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,8 +17,28 @@ try {
 
   app.use(express.json());
 
+  // サーバー起動時にdist配下のファイル一覧と参照パスを出力
+  const distPaths = [
+    path.join(__dirname, 'dist'),
+    path.join(process.cwd(), 'dist'),
+  ];
+  distPaths.forEach((p) => {
+    if (fs.existsSync(p)) {
+      console.log(`[DEBUG] distディレクトリ: ${p}`);
+      console.log('[DEBUG] dist内ファイル:', fs.readdirSync(p));
+    }
+  });
+
   // 静的ファイル配信
-  app.use(express.static(path.join(process.cwd(), 'dist')));
+  app.use((req, res, next) => {
+    for (const base of distPaths) {
+      const staticPath = path.join(base, req.path);
+      if (fs.existsSync(staticPath) && fs.statSync(staticPath).isFile()) {
+        return res.sendFile(staticPath);
+      }
+    }
+    next();
+  });
 
   app.post('/api/recordPurchase', async (req, res) => {
     const { lineUserId, lineDisplayName, itemName, memo } = req.body;
@@ -79,7 +100,14 @@ try {
 
   // SPA対応: すべてのGETリクエストでindex.htmlを返す
   app.get('*', (_req, res) => {
-    res.sendFile(path.join(process.cwd(), 'dist', 'index.html'));
+    for (const base of distPaths) {
+      const indexPath = path.join(base, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        console.log(`[DEBUG] index.html返却パス: ${indexPath}`);
+        return res.sendFile(indexPath);
+      }
+    }
+    res.status(404).send('index.html not found');
   });
 
   app.listen(port, () => {
