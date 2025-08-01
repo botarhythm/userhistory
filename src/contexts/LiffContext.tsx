@@ -39,8 +39,23 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
   useEffect(() => {
     const initializeLiff = async () => {
       try {
+        // 開発環境でのテスト用設定
+        const liffId = import.meta.env.VITE_LIFF_ID;
+        if (!liffId) {
+          console.warn('LIFF IDが設定されていません。開発環境ではモックユーザーを使用します。');
+          setUser({
+            userId: 'dev-user-123',
+            displayName: '開発用ユーザー',
+            pictureUrl: undefined,
+            statusMessage: '開発環境'
+          });
+          setIsLoggedIn(true);
+          setIsInitialized(true);
+          return;
+        }
+
         // LIFFの初期化
-        await liff.init({ liffId: import.meta.env.VITE_LIFF_ID || '' });
+        await liff.init({ liffId });
         
         // ログイン状態の確認
         if (liff.isLoggedIn()) {
