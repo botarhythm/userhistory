@@ -8,7 +8,7 @@
     "dev:front": "vite",
     "dev:api": "tsc && nodemon dist/server.js",
     "build": "node node_modules/typescript/bin/tsc && node node_modules/vite/bin/vite.js build",
-    "start": "node dist/server.js",
+    "start": "node dist/server/server.js",
     "preview": "vite preview",
     "test": "vitest"
   },
