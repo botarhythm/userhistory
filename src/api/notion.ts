@@ -39,6 +39,33 @@ export class NotionAPI {
     this.historyDatabaseId = process.env['NOTION_DATABASE_ID'] || '';
   }
 
+  // データベース構造を取得
+  async getDatabaseStructure(databaseId: string) {
+    try {
+      const response = await this.client.databases.retrieve({
+        database_id: databaseId
+      });
+      return {
+        id: response.id,
+        title: (response as any).title || 'No title',
+        properties: response.properties
+      };
+    } catch (error) {
+      console.error('Database structure fetch error:', error);
+      return null;
+    }
+  }
+
+  // プロパティ名を動的に取得
+  private getPropertyName(properties: any, type: string): string | null {
+    for (const [name, prop] of Object.entries(properties)) {
+      if ((prop as any).type === type) {
+        return name;
+      }
+    }
+    return null;
+  }
+
   // 顧客の検索・作成
   async findOrCreateCustomer(lineUid: string, displayName: string): Promise<string> {
     try {
@@ -48,17 +75,27 @@ export class NotionAPI {
         return existingCustomer.id;
       }
 
+      // データベース構造を取得してプロパティ名を動的に決定
+      const dbStructure = await this.getDatabaseStructure(this.customerDatabaseId);
+      if (!dbStructure) {
+        throw new Error('Failed to get database structure');
+      }
+
+      const lineUidProperty = this.getPropertyName(dbStructure.properties, 'title') || 'LINE UID';
+      const displayNameProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || '表示名';
+      const dateProperty = this.getPropertyName(dbStructure.properties, 'date') || '登録日';
+
       // 新規顧客を作成
       const response = await this.client.pages.create({
         parent: { database_id: this.customerDatabaseId },
         properties: {
-          'LINE UID': {
+          [lineUidProperty]: {
             title: [{ text: { content: lineUid } }]
           },
-          '表示名': {
+          [displayNameProperty]: {
             rich_text: [{ text: { content: displayName } }]
           },
-          '登録日': {
+          [dateProperty]: {
             date: { start: new Date().toISOString() }
           }
         }
@@ -74,10 +111,20 @@ export class NotionAPI {
   // LINE UIDで顧客を検索
   async findCustomerByLineUid(lineUid: string): Promise<Customer | null> {
     try {
+      // データベース構造を取得してプロパティ名を動的に決定
+      const dbStructure = await this.getDatabaseStructure(this.customerDatabaseId);
+      if (!dbStructure) {
+        return null;
+      }
+
+      const lineUidProperty = this.getPropertyName(dbStructure.properties, 'title') || 'LINE UID';
+      const displayNameProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || '表示名';
+      const dateProperty = this.getPropertyName(dbStructure.properties, 'date') || '登録日';
+
       const response = await this.client.databases.query({
         database_id: this.customerDatabaseId,
         filter: {
-          property: 'LINE UID',
+          property: lineUidProperty,
           title: {
             equals: lineUid
           }
@@ -95,9 +142,9 @@ export class NotionAPI {
 
       return {
         id: page.id,
-        lineUid: this.getPropertyValue(page, 'LINE UID', 'title'),
-        displayName: this.getPropertyValue(page, '表示名', 'rich_text'),
-        createdAt: this.getPropertyValue(page, '登録日', 'date')
+        lineUid: this.getPropertyValue(page, lineUidProperty, 'title'),
+        displayName: this.getPropertyValue(page, displayNameProperty, 'rich_text'),
+        createdAt: this.getPropertyValue(page, dateProperty, 'date')
       };
     } catch (error) {
       console.error('Customer search error:', error);
@@ -108,16 +155,26 @@ export class NotionAPI {
   // 来店履歴を記録
   async recordCheckin(customerId: string, timestamp?: string): Promise<string> {
     try {
+      // データベース構造を取得してプロパティ名を動的に決定
+      const dbStructure = await this.getDatabaseStructure(this.historyDatabaseId);
+      if (!dbStructure) {
+        throw new Error('Failed to get database structure');
+      }
+
+      const relationProperty = this.getPropertyName(dbStructure.properties, 'relation') || '関連顧客';
+      const typeProperty = this.getPropertyName(dbStructure.properties, 'select') || 'タイプ';
+      const dateProperty = this.getPropertyName(dbStructure.properties, 'date') || '日時';
+
       const response = await this.client.pages.create({
         parent: { database_id: this.historyDatabaseId },
         properties: {
-          '関連顧客': {
+          [relationProperty]: {
             relation: [{ id: customerId }]
           },
-          'タイプ': {
+          [typeProperty]: {
             select: { name: '来店' }
           },
-          '日時': {
+          [dateProperty]: {
             date: { start: timestamp || new Date().toISOString() }
           }
         }
@@ -139,28 +196,42 @@ export class NotionAPI {
     timestamp?: string
   ): Promise<string> {
     try {
+      // データベース構造を取得してプロパティ名を動的に決定
+      const dbStructure = await this.getDatabaseStructure(this.historyDatabaseId);
+      if (!dbStructure) {
+        throw new Error('Failed to get database structure');
+      }
+
+      const relationProperty = this.getPropertyName(dbStructure.properties, 'relation') || '関連顧客';
+      const typeProperty = this.getPropertyName(dbStructure.properties, 'select') || 'タイプ';
+      const dateProperty = this.getPropertyName(dbStructure.properties, 'date') || '日時';
+      const itemProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || '商品名';
+      const quantityProperty = this.getPropertyName(dbStructure.properties, 'number') || '数量';
+      const totalProperty = this.getPropertyName(dbStructure.properties, 'number') || '合計金額';
+      const memoProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || 'メモ';
+
       const response = await this.client.pages.create({
         parent: { database_id: this.historyDatabaseId },
         properties: {
-          '関連顧客': {
+          [relationProperty]: {
             relation: [{ id: customerId }]
           },
-          'タイプ': {
+          [typeProperty]: {
             select: { name: '購入' }
           },
-          '日時': {
+          [dateProperty]: {
             date: { start: timestamp || new Date().toISOString() }
           },
-          '商品名': {
+          [itemProperty]: {
             rich_text: [{ text: { content: items.map(item => `${item.name} x${item.quantity}`).join(', ') } }]
           },
-          '数量': {
+          [quantityProperty]: {
             number: items.reduce((sum, item) => sum + item.quantity, 0)
           },
-          '合計金額': {
+          [totalProperty]: {
             number: total
           },
-          'メモ': {
+          [memoProperty]: {
             rich_text: memo ? [{ text: { content: memo } }] : []
           }
         }
@@ -176,8 +247,21 @@ export class NotionAPI {
   // 履歴を取得
   async getHistory(customerId: string, type?: 'checkin' | 'purchase', limit: number = 10): Promise<HistoryRecord[]> {
     try {
+      // データベース構造を取得してプロパティ名を動的に決定
+      const dbStructure = await this.getDatabaseStructure(this.historyDatabaseId);
+      if (!dbStructure) {
+        return [];
+      }
+
+      const relationProperty = this.getPropertyName(dbStructure.properties, 'relation') || '関連顧客';
+      const typeProperty = this.getPropertyName(dbStructure.properties, 'select') || 'タイプ';
+      const dateProperty = this.getPropertyName(dbStructure.properties, 'date') || '日時';
+      const itemProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || '商品名';
+      const totalProperty = this.getPropertyName(dbStructure.properties, 'number') || '合計金額';
+      const memoProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || 'メモ';
+
       const filter: any = {
-        property: '関連顧客',
+        property: relationProperty,
         relation: {
           contains: customerId
         }
@@ -186,7 +270,7 @@ export class NotionAPI {
       if (type) {
         filter.and = [
           {
-            property: 'タイプ',
+            property: typeProperty,
             select: {
               equals: type === 'checkin' ? '来店' : '購入'
             }
@@ -199,7 +283,7 @@ export class NotionAPI {
         filter,
         sorts: [
           {
-            property: '日時',
+            property: dateProperty,
             direction: 'descending'
           }
         ],
@@ -209,11 +293,11 @@ export class NotionAPI {
       return response.results.map(page => ({
         id: page.id,
         customerId,
-        type: this.getPropertyValue(page, 'タイプ', 'select') === '来店' ? 'checkin' : 'purchase',
-        timestamp: this.getPropertyValue(page, '日時', 'date'),
-        items: this.parseItems(this.getPropertyValue(page, '商品名', 'rich_text')),
-        total: this.getPropertyValue(page, '合計金額', 'number'),
-        memo: this.getPropertyValue(page, 'メモ', 'rich_text')
+        type: this.getPropertyValue(page, typeProperty, 'select') === '来店' ? 'checkin' : 'purchase',
+        timestamp: this.getPropertyValue(page, dateProperty, 'date'),
+        items: this.parseItems(this.getPropertyValue(page, itemProperty, 'rich_text')),
+        total: this.getPropertyValue(page, totalProperty, 'number'),
+        memo: this.getPropertyValue(page, memoProperty, 'rich_text')
       }));
     } catch (error) {
       console.error('History fetch error:', error);
