@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import PurchasePage from './pages/purchase';
 import HistoryPage from './pages/history';
+import CheckinPage from './pages/checkin';
 
 const App: React.FC = () => {
   return (
@@ -9,7 +10,8 @@ const App: React.FC = () => {
       <div className="min-h-screen bg-gray-50">
         <Header />
         <Routes>
-          <Route path="/" element={<PurchasePage />} />
+          <Route path="/" element={<CheckinPage />} />
+          <Route path="/checkin" element={<CheckinPage />} />
           <Route path="/purchase" element={<PurchasePage />} />
           <Route path="/history" element={<HistoryPage />} />
         </Routes>
@@ -37,12 +39,22 @@ const Header: React.FC = () => {
           </div>
 
           {/* ナビゲーション */}
-          <nav className="flex space-x-8">
+          <nav className="flex space-x-4">
+            <Link
+              to="/checkin"
+              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                location.pathname === '/' || location.pathname === '/checkin'
+                  ? 'bg-green-600 text-white'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              チェックイン
+            </Link>
             <Link
               to="/purchase"
               className={`px-3 py-2 rounded-md text-sm font-medium ${
-                location.pathname === '/' || location.pathname === '/purchase'
-                  ? 'bg-gray-900 text-white'
+                location.pathname === '/purchase'
+                  ? 'bg-blue-600 text-white'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >

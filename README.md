@@ -1,93 +1,124 @@
 # Botarhythm Coffee Roaster LINE Mini App
 
-Botarhythm Coffee Roaster の顧客来店・購入履歴管理システム
+Botarhythm Coffee Roaster の顧客来店・購入履歴管理用LINEミニアプリ
 
-## 機能
+## 🚀 機能
 
 - LINEログイン（LIFF）
 - 来店チェックイン
-- 購入履歴記録
-- 履歴一覧表示
-- Notionデータベース連携
+- 購入履歴登録
+- 履歴閲覧
+- Notion連携
 
-## 技術スタック
+## 🛠️ 開発環境
 
-- **フロントエンド**: React + TypeScript + Tailwind CSS
-- **バックエンド**: Node.js + Express + TypeScript
-- **データベース**: Notion API
-- **デプロイ**: Railway
-- **認証**: LINE LIFF
+- Node.js 22+
+- React + TypeScript
+- Vite
+- Tailwind CSS
+- Railway (デプロイ)
 
-## 環境変数
-
-以下の環境変数を設定してください：
+## 📦 インストール
 
 ```bash
-# Notion API
-NOTION_API_KEY=your_notion_api_key
-NOTION_CUSTOMER_DATABASE_ID=your_customer_database_id
-NOTION_DATABASE_ID=your_history_database_id
-
-# LINE LIFF
-VITE_LIFF_ID=your_liff_id
-```
-
-## Notion MCP設定
-
-Notion MCPサーバーを使用する場合は、以下の設定ファイルを作成してください：
-
-### `notion-mcp-config.json`
-```json
-{
-  "mcpServers": {
-    "notion": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-notion"],
-      "env": {
-        "NOTION_API_KEY": "${NOTION_API_KEY}"
-      }
-    }
-  }
-}
-```
-
-## 開発
-
-```bash
-# 依存関係のインストール
 npm install
+```
 
-# 開発サーバーの起動
+## 🚀 開発サーバー起動
+
+```bash
 npm run dev
+```
 
-# ビルド
-npm run build
+## 🧪 テスト実行
 
-# テスト
+```bash
 npm test
 ```
 
-## デプロイ
+## 🔨 ビルド
 
-Railwayを使用して自動デプロイされます。mainブランチにプッシュすると自動的にデプロイされます。
+```bash
+npm run build
+```
 
-## データベース構造
+## 🤖 AI自動トラブルシューティング
 
-### 顧客データベース
-- LINE UID (Title)
-- 表示名 (Rich Text)
-- 登録日 (Date)
+デプロイ失敗時や問題発生時に、AIが自動的にログを解析し修正案を提示します。
 
-### 履歴データベース
-- 関連顧客 (Relation)
-- タイプ (Select: 来店/購入)
-- 日時 (Date)
-- 商品名 (Rich Text)
-- 数量 (Number)
-- 合計金額 (Number)
-- メモ (Rich Text)
+### 使用方法
 
-## ライセンス
+```bash
+# 診断のみ実行
+npm run troubleshoot
 
-MIT
+# 診断 + 自動修正実行
+npm run auto-fix
+```
+
+### 機能
+
+- 🔍 **自動診断**: Railwayログの自動取得・解析
+- 🤖 **AI解析**: Gemini CLIを使用したログ分析
+- 📊 **レポート生成**: 詳細な診断レポート
+- 🛠️ **自動修正**: 依存関係更新・ビルド・デプロイ
+- 📝 **ログ監視**: リアルタイムログ確認
+
+### 必要な環境変数
+
+```bash
+export RAILWAY_TOKEN="your-railway-token"
+export RAILWAY_PROJECT_ID="your-project-id"
+```
+
+### 自動実行
+
+GitHub Actionsでデプロイが失敗した場合、自動的にAIトラブルシューティングが実行されます。
+
+## 📚 ドキュメント
+
+- [GitHub Secrets設定手順](GITHUB_SECRETS_SETUP.md)
+- [デプロイ失敗時の自動修正ガイド](DEPLOYMENT_TROUBLESHOOTING.md)
+- [AI自動トラブルシューティングガイド](AI_TROUBLESHOOTING_GUIDE.md)
+- [Notion MCPサーバー設定ガイド](notion-mcp-setup.md)
+
+## 🔧 環境変数
+
+### Railway環境変数
+
+- `NOTION_API_KEY`: Notion API キー
+- `NOTION_CUSTOMER_DB_ID`: 顧客データベースID
+- `NOTION_HISTORY_DB_ID`: 履歴データベースID
+- `VITE_LIFF_ID`: LINE LIFF ID
+
+## 🔗 Notion MCPサーバー設定
+
+AIが直接Notionデータベースにアクセスしてデータ分析・管理を行うためのMCPサーバー設定が利用可能です。
+
+### 設定手順
+
+1. **MCPサーバーインストール**:
+   ```bash
+   npm install -g @modelcontextprotocol/server-notion
+   ```
+
+2. **環境変数設定**:
+   ```bash
+   export NOTION_API_KEY="your-notion-api-key"
+   ```
+
+3. **設定ファイル配置**: `notion-mcp-config.json`をCursorの設定ディレクトリに配置
+
+詳細は[Notion MCPサーバー設定ガイド](notion-mcp-setup.md)を参照してください。
+
+### 利用可能な機能
+
+- 📊 **データベース分析**: 顧客行動パターンの自動分析
+- 🔍 **リアルタイム監視**: データベース状態の監視
+- 🛠️ **自動データ修正**: 不整合データの検出・修正
+- 📈 **レポート生成**: 自動的なレポート生成
+
+## 📄 ライセンス
+
+MIT License
 

@@ -6,7 +6,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "dev:server": "ts-node server.ts",
+    "dev:server": "npm run build:server && node dist/server.js",
     "dev:client": "vite",
     "build": "npm run build:server && npm run build:client",
     "build:server": "tsc -p tsconfig.server.json",
@@ -15,7 +15,9 @@
     "test": "jest",
     "lint": "eslint . --ext .ts,.tsx",
     "type-check": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "troubleshoot": "node ai-troubleshooter.js",
+    "auto-fix": "node ai-troubleshooter.js --auto-fix"
   },
   "keywords": [
     "line",

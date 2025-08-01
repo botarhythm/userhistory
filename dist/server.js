@@ -112,23 +112,24 @@ app.get('/api/user/:lineUid', async (req, res) => {
 // 来店チェックインAPI
 app.post('/api/checkin', async (req, res) => {
     try {
-        const { lineUid, displayName, timestamp } = req.body;
+        const { lineUid, displayName, timestamp, memo } = req.body;
         if (!lineUid) {
             log('checkin_validation_error', { lineUid, displayName }, 'Check-in request missing lineUid', 'Validate required fields');
             return res.status(400).json({ error: 'lineUid is required' });
         }
-        log('checkin_request', { lineUid, displayName, timestamp }, 'Check-in request received', 'Process check-in in Notion');
+        log('checkin_request', { lineUid, displayName, timestamp, hasMemo: !!memo }, 'Check-in request received', 'Process check-in in Notion');
         // 顧客を検索または作成
         const customerId = await notionAPI.findOrCreateCustomer(lineUid, displayName || 'Unknown User');
         // 来店履歴を記録
-        const historyId = await notionAPI.recordCheckin(customerId, timestamp);
+        const historyId = await notionAPI.recordCheckin(customerId, timestamp, memo);
         log('checkin_success', { lineUid, customerId, historyId }, 'Check-in recorded successfully', 'Notify user of successful check-in');
         return res.json({
             success: true,
             message: 'Check-in recorded',
             customerId,
             historyId,
-            timestamp: timestamp || new Date().toISOString()
+            timestamp: timestamp || new Date().toISOString(),
+            memo: memo || undefined
         });
     }
     catch (error) {
@@ -194,6 +195,102 @@ app.get('/api/history/:lineUid', async (req, res) => {
         log('history_error', { lineUid: req.params.lineUid, error: error instanceof Error ? error.message : String(error) }, 'History fetch failed', 'Check Notion API connection');
         console.error('History fetch error:', error);
         return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+// 商品一覧取得API
+app.get('/api/products', async (req, res) => {
+    try {
+        log('get_products', { query: req.query }, 'Products requested', 'Fetch product list');
+        const notion = new NotionAPI();
+        const products = await notion.getProducts();
+        res.json({
+            success: true,
+            products: products
+        });
+    }
+    catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        log('get_products_error', { error: errorMessage }, 'Failed to get products', 'Handle product fetch error');
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch products'
+        });
+    }
+});
+// 商品検索API
+app.get('/api/products/search', async (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q || typeof q !== 'string') {
+            res.status(400).json({
+                success: false,
+                error: 'Search query is required'
+            });
+            return;
+        }
+        log('search_products', { query: q }, 'Product search requested', 'Search products');
+        const notion = new NotionAPI();
+        const products = await notion.searchProducts(q);
+        res.json({
+            success: true,
+            products: products
+        });
+    }
+    catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        log('search_products_error', { error: errorMessage }, 'Failed to search products', 'Handle product search error');
+        res.status(500).json({
+            success: false,
+            error: 'Failed to search products'
+        });
+    }
+});
+// データベース構造確認用エンドポイント
+app.get('/api/debug/databases', async (_req, res) => {
+    try {
+        log('debug_databases', {}, 'Database structure check requested', 'Verify Notion database configuration');
+        // 顧客データベースの構造を取得
+        const customerDbResponse = await notionAPI.client.databases.retrieve({
+            database_id: notionAPI.customerDatabaseId
+        });
+        // 履歴データベースの構造を取得
+        const historyDbResponse = await notionAPI.client.databases.retrieve({
+            database_id: notionAPI.historyDatabaseId
+        });
+        res.json({
+            customerDatabase: {
+                id: customerDbResponse.id,
+                title: customerDbResponse.title || 'No title',
+                properties: customerDbResponse.properties
+            },
+            historyDatabase: {
+                id: historyDbResponse.id,
+                title: historyDbResponse.title || 'No title',
+                properties: historyDbResponse.properties
+            }
+        });
+    }
+    catch (error) {
+        log('debug_databases_error', { error: error instanceof Error ? error.message : String(error) }, 'Database structure check failed', 'Check Notion API connection and database IDs');
+        console.error('Database structure check error:', error);
+        res.status(500).json({ error: 'Failed to retrieve database structure' });
+    }
+});
+// テスト用の顧客作成エンドポイント
+app.post('/api/debug/create-test-customer', async (_req, res) => {
+    try {
+        log('debug_create_test_customer', {}, 'Test customer creation requested', 'Verify customer creation functionality');
+        const customerId = await notionAPI.findOrCreateCustomer('test-user-123', 'テストユーザー');
+        res.json({
+            success: true,
+            customerId,
+            message: 'Test customer created successfully'
+        });
+    }
+    catch (error) {
+        log('debug_create_test_customer_error', { error: error instanceof Error ? error.message : String(error) }, 'Test customer creation failed', 'Check Notion API and database permissions');
+        console.error('Test customer creation error:', error);
+        res.status(500).json({ error: 'Failed to create test customer' });
     }
 });
 // SPA用のフォールバックルート

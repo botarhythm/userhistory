@@ -16,7 +16,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
         cache: 'npm'
     
     - name: Install dependencies
@@ -31,14 +31,35 @@ jobs:
     - name: Deploy to Railway (CLI Method)
       if: github.ref == 'refs/heads/main'
       run: |
-        echo "Installing Railway CLI..."
+        echo "🚀 Starting Railway deployment..."
+        echo "📦 Installing Railway CLI..."
         npm install -g @railway/cli
         
-        echo "Logging into Railway..."
+        echo "🔐 Logging into Railway..."
         railway login --token ${{ secrets.RAILWAY_TOKEN }}
         
-        echo "Deploying to Railway project: ${{ secrets.RAILWAY_PROJECT_ID }}"
+        echo "📋 Checking Railway project status..."
+        railway status --project ${{ secrets.RAILWAY_PROJECT_ID }}
+        
+        echo "🚀 Deploying to Railway project: ${{ secrets.RAILWAY_PROJECT_ID }}"
         railway up --project ${{ secrets.RAILWAY_PROJECT_ID }} --detach
+        
+        echo "✅ Deployment completed successfully!"
+    
+    - name: AI Troubleshooting (on failure)
+      if: failure() && github.ref == 'refs/heads/main'
+      run: |
+        echo "🚨 Deploy failed! Starting AI troubleshooting..."
+        
+        # 環境変数設定
+        export RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
+        export RAILWAY_PROJECT_ID="${{ secrets.RAILWAY_PROJECT_ID }}"
+        
+        # AIトラブルシューティング実行
+        echo "🤖 Running AI troubleshooting..."
+        node ai-troubleshooter.js
+        
+        echo "📊 Troubleshooting report generated"
     
     # Alternative deployment method using Railway GitHub Action
     # - name: Deploy to Railway (GitHub Action Method)
