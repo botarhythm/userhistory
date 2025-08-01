@@ -8,7 +8,8 @@
     "dev:api": "tsc && nodemon dist/server.js",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "postinstall": "chmod +x node_modules/.bin/vite"
   },
   "keywords": [],
   "author": "",
@@ -26,7 +27,8 @@
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.7.1",
     "tailwindcss": "^3.4.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vite": "^7.0.6"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.0",
@@ -50,7 +52,6 @@
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
-    "vite": "^7.0.6",
     "vite-plugin-mkcert": "^1.17.8",
     "vitest": "^3.2.4"
   }
