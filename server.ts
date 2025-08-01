@@ -13,7 +13,7 @@ let app: express.Express;
 
 try {
   app = express();
-  const port = process.env.PORT || 3001;
+  const port = process.env.PORT;
 
   app.use(express.json());
 
