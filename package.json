@@ -4,7 +4,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node server.ts",
-    "build": "node node_modules/typescript/bin/tsc",
+    "build": "node node_modules/typescript/bin/tsc && cd test-server && npm run build",
     "start": "node test-server/dist/server.js"
   },
   "keywords": [],
