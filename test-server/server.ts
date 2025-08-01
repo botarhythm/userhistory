@@ -14,3 +14,12 @@ app.get('/health', (_req, res) => {
 app.listen(port, () => {
   console.log(`Test API server running on port ${port}`);
 });
+
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  process.exit(0);
+});
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  process.exit(0);
+});
