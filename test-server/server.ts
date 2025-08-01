@@ -3,6 +3,9 @@ import express from 'express';
 const app = express();
 const port = process.env.PORT || 3000;
 
+console.log('process.env.PORT:', process.env.PORT);
+console.log(`サーバーlistenポート: ${port}`);
+
 app.get('/api/hello', (_req, res) => {
   res.json({ message: 'Hello, Railway!' });
 });
