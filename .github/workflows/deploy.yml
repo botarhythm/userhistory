@@ -28,9 +28,22 @@ jobs:
     - name: Build application
       run: npm run build
     
-    - name: Deploy to Railway
+    - name: Deploy to Railway (CLI Method)
       if: github.ref == 'refs/heads/main'
       run: |
+        echo "Installing Railway CLI..."
         npm install -g @railway/cli
+        
+        echo "Logging into Railway..."
         railway login --token ${{ secrets.RAILWAY_TOKEN }}
-        railway up --project ${{ secrets.RAILWAY_PROJECT_ID }} 
+        
+        echo "Deploying to Railway project: ${{ secrets.RAILWAY_PROJECT_ID }}"
+        railway up --project ${{ secrets.RAILWAY_PROJECT_ID }} --detach
+    
+    # Alternative deployment method using Railway GitHub Action
+    # - name: Deploy to Railway (GitHub Action Method)
+    #   if: github.ref == 'refs/heads/main'
+    #   uses: railway/deploy@v1
+    #   with:
+    #     service: ${{ secrets.RAILWAY_PROJECT_ID }}
+    #     token: ${{ secrets.RAILWAY_TOKEN }} 
