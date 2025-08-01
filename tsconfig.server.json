@@ -28,7 +28,11 @@
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
     "isolatedModules": true,
-    "noEmit": false
+    "noEmit": false,
+    "baseUrl": "./",
+    "paths": {
+      "*": ["*"]
+    }
   },
   "include": [
     "server.ts",

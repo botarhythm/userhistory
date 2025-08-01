@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { NotionAPI } from './src/api/notion';
+import { NotionAPI } from './src/api/notion.js';
 import path from 'path';
 
 const app = express();
