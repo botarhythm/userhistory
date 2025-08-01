@@ -1,32 +1,14 @@
 import express from 'express';
 import 'dotenv/config';
+import cors from 'cors';
 import { findOrCreateCustomer, recordPurchase, getHistory, getProductList } from './src/api/notion.js';
 import { Client } from '@notionhq/client';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT;
 
 app.use(express.json());
-
-// 静的ファイル配信（dist/clientのみ）
-app.use(express.static(path.join(process.cwd(), 'dist', 'client')));
-
-// ルートパスでindex.htmlを返す
-app.get('/', (req, res) => {
-  const indexPath = path.join(process.cwd(), 'dist', 'client', 'index.html');
-  res.sendFile(indexPath);
-});
-
-// SPA対応: すべてのGETリクエストでindex.htmlを返す
-app.get('*', (req, res) => {
-  const indexPath = path.join(process.cwd(), 'dist', 'client', 'index.html');
-  res.sendFile(indexPath);
-});
+app.use(cors()); // CORS対応
 
 // APIエンドポイント
 app.post('/api/recordPurchase', async (req, res) => {
