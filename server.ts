@@ -32,7 +32,7 @@ app.use(cors());
 app.use(express.json());
 
 // 静的ファイル配信（Railwayデプロイ用）
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'dist', 'public')));
 
 // ログ設定
 app.use((req, _res, next) => {
@@ -347,7 +347,7 @@ app.get('*', (req, res) => {
   
   // フロントエンドのルートを配信
   log('spa_fallback', { path: req.path }, 'Serving SPA fallback', 'Ensure frontend routing works');
-  return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  return res.sendFile(path.join(__dirname, 'dist', 'public', 'index.html'));
 });
 
 // エラーハンドリング
