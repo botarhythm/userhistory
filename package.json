@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "ts-node server.ts",
     "build": "node node_modules/typescript/bin/tsc",
-    "start": "node dist/server/server.js"
+    "start": "node test-server/dist/server.js"
   },
   "keywords": [],
   "author": "",
