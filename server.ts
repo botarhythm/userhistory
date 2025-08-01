@@ -143,8 +143,8 @@ try {
     const cwd = process.cwd();
     const distPath = path.join(process.cwd(), 'dist');
     const clientPath = path.join(process.cwd(), 'dist', 'client');
-    let distFiles = [];
-    let clientFiles = [];
+    let distFiles: string[] = [];
+    let clientFiles: string[] = [];
     try {
       distFiles = fs.readdirSync(distPath);
     } catch {}
