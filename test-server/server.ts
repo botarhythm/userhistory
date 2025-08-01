@@ -8,10 +8,12 @@ console.log(`サーバーlistenポート: ${port}`);
 
 // ルートエンドポイントを追加
 app.get('/', (_req, res) => {
+  console.log('ルートエンドポイント / にアクセスされました');
   res.json({ message: 'Botarhythm Coffee Roaster API', status: 'running' });
 });
 
 app.get('/api/hello', (_req, res) => {
+  console.log('APIエンドポイント /api/hello にアクセスされました');
   res.json({ message: 'Hello, Railway!' });
 });
 
@@ -22,6 +24,7 @@ app.get('/health', (_req, res) => {
 // 0.0.0.0でリッスンしてRailwayのルーティングに対応
 app.listen(Number(port), '0.0.0.0', () => {
   console.log(`Test API server running on port ${port}`);
+  console.log('ルートエンドポイント / が利用可能です');
 });
 
 process.on('SIGTERM', () => {
