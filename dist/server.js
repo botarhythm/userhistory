@@ -1,79 +1,157 @@
-import express from 'express';
-import 'dotenv/config';
-import { findOrCreateCustomer, recordPurchase, getHistory, getProductList } from './src/api/notion.js';
-import { Client } from '@notionhq/client';
-let app;
-try {
-    app = express();
-    const port = 3001;
-    app.use(express.json());
-    app.post('/api/recordPurchase', async (req, res) => {
-        const { lineUserId, lineDisplayName, itemName, memo } = req.body;
-        if (!lineUserId || !lineDisplayName || !itemName) {
-            return res.status(400).json({ error: '必須パラメータが不足しています' });
-        }
-        try {
-            const customerPageId = await findOrCreateCustomer(lineUserId, lineDisplayName);
-            await recordPurchase(customerPageId, itemName, memo);
-            res.status(200).json({ message: '購入履歴を記録しました' });
-        }
-        catch (error) {
-            console.error('Notion API Error:', error);
-            res.status(500).json({ error: error instanceof Error ? error.message : 'データベース処理中にエラーが発生しました' });
-        }
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const notion_1 = require("./src/api/notion");
+const app = (0, express_1.default)();
+const port = process.env['PORT'] || 3000;
+// Notion APIインスタンスの初期化
+const notionAPI = new notion_1.NotionAPI();
+// ミドルウェア設定
+app.use((0, cors_1.default)());
+app.use(express_1.default.json());
+app.use(express_1.default.static('public'));
+// ログ設定
+app.use((req, _res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    next();
+});
+// ヘルスチェック
+app.get('/health', (_req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+// APIルート
+app.get('/api/status', (_req, res) => {
+    res.json({
+        message: 'Botarhythm Coffee Roaster API',
+        status: 'running',
+        version: '1.0.0'
     });
-    app.get('/api/getHistory', async (req, res) => {
-        const { lineUserId } = req.query;
-        if (!lineUserId) {
-            return res.status(400).json({ error: 'lineUserIdが必要です' });
-        }
-        try {
-            const customerPageId = await findOrCreateCustomer(lineUserId, '');
-            const histories = await getHistory(customerPageId);
-            res.status(200).json({ histories });
-        }
-        catch (error) {
-            console.error('履歴取得エラー:', error);
-            res.status(500).json({ error: '履歴取得中にエラーが発生しました' });
-        }
-    });
-    app.post('/api/updateMemo', async (req, res) => {
-        const { historyId, memo } = req.body;
-        if (!historyId) {
-            return res.status(400).json({ error: 'historyIdが必要です' });
-        }
-        try {
-            const notion = new Client({ auth: process.env.NOTION_API_KEY });
-            await notion.pages.update({
-                page_id: historyId,
-                properties: {
-                    'メモ': { rich_text: [{ text: { content: memo || '' } }] },
-                },
+});
+// LINEミニアプリ用API
+app.get('/api/user/:lineUid', async (req, res) => {
+    try {
+        const { lineUid } = req.params;
+        const customer = await notionAPI.findCustomerByLineUid(lineUid);
+        if (customer) {
+            res.json({
+                lineUid,
+                status: 'user_found',
+                customer
             });
-            res.status(200).json({ message: 'メモを更新しました' });
         }
-        catch (error) {
-            res.status(500).json({ error: error instanceof Error ? error.message : 'メモ更新エラー' });
+        else {
+            res.json({
+                lineUid,
+                status: 'user_not_found'
+            });
         }
-    });
-    app.get('/api/products', async (_req, res) => {
-        try {
-            const products = await getProductList();
-            res.json({ products });
-        }
-        catch (error) {
-            res.status(500).json({ error: error instanceof Error ? error.message : '商品リスト取得エラー' });
-        }
-    });
-    app.listen(port, () => {
-        console.log(`APIサーバーがポート${port}で起動しました`);
-    });
-}
-catch (error) {
-    console.error('サーバー起動時の致命的エラー:', error);
-    if (error instanceof Error && error.stack) {
-        console.error(error.stack);
     }
-    process.exit(1);
-}
-export default app;
+    catch (error) {
+        console.error('User fetch error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+// 来店チェックインAPI
+app.post('/api/checkin', async (req, res) => {
+    try {
+        const { lineUid, displayName, timestamp } = req.body;
+        if (!lineUid) {
+            return res.status(400).json({ error: 'lineUid is required' });
+        }
+        // 顧客を検索または作成
+        const customerId = await notionAPI.findOrCreateCustomer(lineUid, displayName || 'Unknown User');
+        // 来店履歴を記録
+        const historyId = await notionAPI.recordCheckin(customerId, timestamp);
+        return res.json({
+            success: true,
+            message: 'Check-in recorded',
+            customerId,
+            historyId,
+            timestamp: timestamp || new Date().toISOString()
+        });
+    }
+    catch (error) {
+        console.error('Check-in error:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+// 購入履歴API
+app.post('/api/purchase', async (req, res) => {
+    try {
+        const { lineUid, displayName, items, total, memo, timestamp } = req.body;
+        if (!lineUid || !items || !total) {
+            return res.status(400).json({ error: 'lineUid, items, and total are required' });
+        }
+        // 顧客を検索または作成
+        const customerId = await notionAPI.findOrCreateCustomer(lineUid, displayName || 'Unknown User');
+        // 購入履歴を記録
+        const historyId = await notionAPI.recordPurchase(customerId, items, total, memo, timestamp);
+        return res.json({
+            success: true,
+            message: 'Purchase recorded',
+            customerId,
+            historyId,
+            items,
+            total,
+            timestamp: timestamp || new Date().toISOString()
+        });
+    }
+    catch (error) {
+        console.error('Purchase error:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+// 履歴取得API
+app.get('/api/history/:lineUid', async (req, res) => {
+    try {
+        const { lineUid } = req.params;
+        const { type, limit = 10 } = req.query;
+        // 顧客を検索
+        const customer = await notionAPI.findCustomerByLineUid(lineUid);
+        if (!customer) {
+            return res.status(404).json({ error: 'Customer not found' });
+        }
+        // 履歴を取得
+        const history = await notionAPI.getHistory(customer.id, type, parseInt(limit));
+        return res.json({
+            lineUid,
+            customer,
+            type,
+            limit,
+            history
+        });
+    }
+    catch (error) {
+        console.error('History fetch error:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+// エラーハンドリング
+app.use((err, _req, res, _next) => {
+    console.error('Server error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+});
+// 404ハンドリング
+app.use('*', (_req, res) => {
+    res.status(404).json({ error: 'Not found' });
+});
+// サーバー起動
+app.listen(Number(port), '0.0.0.0', () => {
+    console.log(`🚀 Botarhythm Coffee Roaster API running on port ${port}`);
+    console.log(`📊 Health check: http://localhost:${port}/health`);
+    console.log(`🔗 API status: http://localhost:${port}/api/status`);
+});
+// グレースフルシャットダウン
+process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    process.exit(0);
+});
+process.on('SIGINT', () => {
+    console.log('SIGINT received, shutting down gracefully');
+    process.exit(0);
+});
+//# sourceMappingURL=server.js.map
