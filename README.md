@@ -1,178 +1,225 @@
 # Botarhythm Coffee Roaster LINE Mini App
 
-Botarhythm Coffee Roaster の顧客来店・購入履歴管理用LINEミニアプリ
+Botarhythm Coffee Roaster の顧客来店・購入履歴管理用LINEミニアプリです。
 
-## 🚀 機能
+## 🚀 開発状況
 
-- LINEログイン（LIFF）
-- 来店チェックイン
-- 購入履歴登録
-- 履歴閲覧
-- Notion連携
+### ✅ 実装済み機能
 
-## 🛠️ 開発環境
+1. **LIFF認証システム**
+   - LINEログイン機能
+   - ユーザー情報の取得と表示
+   - 開発環境でのモックユーザー対応
 
-- Node.js 22+
-- React + TypeScript
-- Vite
-- Tailwind CSS
-- Railway (デプロイ)
+2. **来店チェックイン機能**
+   - ワンタップチェックイン
+   - メモ機能付き
+   - 実際のLINEユーザー情報での記録
 
-## 📦 インストール
+3. **購入履歴記録機能**
+   - 商品検索・選択機能
+   - 数量・価格入力
+   - 複数商品対応
+   - 合計金額計算
 
+4. **履歴閲覧機能**
+   - 来店・購入履歴の一覧表示
+   - フィルタリング機能
+   - 実際のLINEユーザーの履歴取得
+
+5. **管理機能**
+   - データベース整合性チェック
+   - 自動修復機能
+
+6. **Railway MCPサーバー**
+   - デプロイメント自動化
+   - ログ監視
+   - 自動修復機能
+
+### 🔧 技術スタック
+
+- **フロントエンド**: React + TypeScript + Vite
+- **バックエンド**: Node.js + Express
+- **スタイリング**: Tailwind CSS
+- **データベース**: Notion API
+- **認証**: LINE LIFF
+- **デプロイ**: Railway
+- **MCP**: Railway MCP Server
+
+## 🚂 Railway MCP サーバー設定
+
+このプロジェクトはRailway MCPサーバーを使用してデプロイメントと管理を自動化しています。
+
+### セットアップ
+
+1. **Railway CLIのインストール（フォールバック用）**
 ```bash
-npm install
+npm install -g @railway/cli
 ```
 
-## 🚀 開発サーバー起動
-
+2. **環境変数の設定**
 ```bash
-npm run dev
+# .envファイルに以下を追加
+RAILWAY_TOKEN=your_railway_token_here
+RAILWAY_PROJECT_ID=093e4f04-ebb8-44d8-b87c-8e9e06743e54
 ```
-
-## 🧪 テスト実行
-
-```bash
-npm test
-```
-
-## 🔨 ビルド
-
-```bash
-npm run build
-```
-
-## 🔍 データベース整合性チェック
-
-データベースの整合性を確認し、問題のあるレコードを検出・修正できます。
-
-### コマンドライン実行
-
-```bash
-# 整合性チェックのみ実行
-npm run check-integrity
-
-# 自動修正実行（孤立レコード削除・重複顧客統合）
-npm run fix-integrity
-```
-
-### Web管理画面
-
-ブラウザで `/admin/integrity` にアクセスして、Web UIから整合性チェックを実行できます。
-
-### 機能
-
-- 🔍 **自動検出**: 孤立レコード、無効リレーション、重複顧客の検出
-- 🗑️ **自動削除**: 孤立した履歴レコードの安全な削除
-- 🔄 **自動統合**: 重複顧客の履歴統合と重複削除
-- 📊 **詳細レポート**: 問題の詳細な分析と推奨アクション
-- 🛡️ **安全な操作**: 削除前に確認、ロールバック可能な操作
-
-## 🤖 AI自動トラブルシューティング
-
-デプロイ失敗時や問題発生時に、AIが自動的にログを解析し修正案を提示します。
 
 ### 使用方法
 
-```bash
-# 診断のみ実行
-npm run troubleshoot
+#### AIからの使用（推奨）
 
-# 診断 + 自動修正実行
-npm run auto-fix
+CursorでAIと対話する際に、以下のような自然言語でRailwayの操作を実行できます：
+
+```
+"Railwayにデプロイして"
+"デプロイメントのログを確認して"
+"デプロイメントの状態を教えて"
+"問題があれば自動修復して"
 ```
 
-### 機能
+#### コマンドラインからの使用（フォールバック）
 
-- 🔍 **自動診断**: Railwayログの自動取得・解析
-- 🤖 **AI解析**: Gemini CLIを使用したログ分析
-- 📊 **レポート生成**: 詳細な診断レポート
-- 🛠️ **自動修正**: 依存関係更新・ビルド・デプロイ
-- 📝 **ログ監視**: リアルタイムログ確認
+MCPサーバーが使用できない場合のみ、以下のコマンドを使用してください：
+
+```bash
+# 本番環境にデプロイ
+npm run railway:deploy
+
+# ステージング環境にデプロイ
+npm run railway:deploy:staging
+
+# ログの確認
+npm run railway:logs
+
+# リアルタイムログの確認
+npm run railway:logs:follow
+
+# ステータスの確認
+npm run railway:status
+
+# 健全性チェック
+npm run railway:health
+
+# 自動修復
+npm run railway:autofix
+
+# 環境変数の更新
+npm run railway:update-env
+```
+
+## 開発環境
 
 ### 必要な環境変数
 
 ```bash
-export RAILWAY_TOKEN="your-railway-token"
-export RAILWAY_PROJECT_ID="your-project-id"
-```
-
-### 自動実行
-
-GitHub Actionsでデプロイが失敗した場合、自動的にAIトラブルシューティングが実行されます。
-
-## 📚 ドキュメント
-
-- [GitHub Secrets設定手順](GITHUB_SECRETS_SETUP.md)
-- [デプロイ失敗時の自動修正ガイド](DEPLOYMENT_TROUBLESHOOTING.md)
-- [AI自動トラブルシューティングガイド](AI_TROUBLESHOOTING_GUIDE.md)
-- [Notion MCPサーバー設定ガイド](notion-mcp-setup.md)
-
-## 🔧 環境変数
-
-### Railway環境変数（本番環境）
-
-Railwayダッシュボードで以下の環境変数を設定してください：
-
-- `NOTION_API_KEY`: Notion API キー
-- `NOTION_CUSTOMER_DB_ID`: 顧客データベースID
-- `NOTION_HISTORY_DB_ID`: 履歴データベースID
-- `NOTION_PRODUCT_DB_ID`: 商品データベースID
-- `VITE_LIFF_ID`: LINE LIFF ID
-
-### 開発環境設定
-
-ローカル開発時は、プロジェクトルートに `.env.local` ファイルを作成し、`env.example`の内容をコピーして使用してください：
-
-```bash
-# .env.local
 # Railway Deployment Configuration
 PORT=3000
-NODE_ENV=development
+NODE_ENV=production
+
+# Railway MCP Server Configuration
+RAILWAY_TOKEN=your_railway_token_here
+RAILWAY_PROJECT_ID=093e4f04-ebb8-44d8-b87c-8e9e06743e54
 
 # Notion API Configuration
 NOTION_API_KEY=your_notion_api_key_here
-NOTION_CUSTOMER_DB_ID=your_customer_db_id_here
-NOTION_HISTORY_DB_ID=your_history_db_id_here
-NOTION_PRODUCT_DB_ID=your_product_db_id_here
+NOTION_CUSTOMER_DB_ID=your_customer_database_id_here
+NOTION_HISTORY_DB_ID=your_history_database_id_here
+NOTION_PRODUCT_DB_ID=your_product_database_id_here
 
 # LINE LIFF Configuration (for frontend)
 VITE_LIFF_ID=your_line_liff_id_here
 ```
 
-**重要**: 
-- `.env`ファイルは直接編集せず、Railwayダッシュボードで設定してください
-- ローカル開発時は`.env.local`ファイルを使用してください
-- 機密情報は絶対にGitにコミットしないでください
+### 開発サーバーの起動
 
-## 🔗 Notion MCPサーバー設定
+```bash
+# 開発環境の起動
+npm run dev
 
-AIが直接Notionデータベースにアクセスしてデータ分析・管理を行うためのMCPサーバー設定が利用可能です。
+# サーバーのみ起動
+npm run dev:server
 
-### 設定手順
+# クライアントのみ起動
+npm run dev:client
+```
 
-1. **MCPサーバーインストール**:
-   ```bash
-   npm install -g @modelcontextprotocol/server-notion
-   ```
+### ビルド
 
-2. **環境変数設定**:
-   ```bash
-   export NOTION_API_KEY="your-notion-api-key"
-   ```
+```bash
+# 全体のビルド
+npm run build
 
-3. **設定ファイル配置**: `notion-mcp-config.json`をCursorの設定ディレクトリに配置
+# サーバーのビルド
+npm run build:server
 
-詳細は[Notion MCPサーバー設定ガイド](notion-mcp-setup.md)を参照してください。
+# クライアントのビルド
+npm run build:client
+```
 
-### 利用可能な機能
+### テスト
 
-- 📊 **データベース分析**: 顧客行動パターンの自動分析
-- 🔍 **リアルタイム監視**: データベース状態の監視
-- 🛠️ **自動データ修正**: 不整合データの検出・修正
-- 📈 **レポート生成**: 自動的なレポート生成
+```bash
+# テストの実行
+npm run test
 
-## 📄 ライセンス
+# 型チェック
+npm run type-check
+
+# リント
+npm run lint
+```
+
+## データベース整合性チェック
+
+```bash
+# 整合性チェック
+npm run check-integrity
+
+# 自動修復
+npm run fix-integrity
+```
+
+## プロジェクト構造
+
+```
+userhistory/
+├── src/
+│   ├── api/           # Notion API連携
+│   ├── components/    # Reactコンポーネント
+│   ├── contexts/      # React Context (LIFF)
+│   ├── pages/         # ページコンポーネント
+│   ├── styles/        # スタイルファイル
+│   └── utils/         # ユーティリティ
+├── scripts/           # 管理スクリプト
+├── public/            # 静的ファイル
+└── docs/              # ドキュメント
+```
+
+## 📋 次のステップ
+
+### 1. LINE LIFF設定
+- [ ] LINE Developers ConsoleでLIFFアプリを作成
+- [ ] LIFF IDを環境変数に設定
+- [ ] 本番環境でのLIFF動作確認
+
+### 2. Notionデータベース設定
+- [ ] 顧客データベースの作成
+- [ ] 履歴データベースの作成
+- [ ] 商品データベースの作成
+- [ ] APIキーの取得と設定
+
+### 3. 本番デプロイ
+- [ ] Railwayでの本番環境構築
+- [ ] 環境変数の設定
+- [ ] 動作確認
+
+### 4. 機能拡張
+- [ ] リッチメニューとの連携
+- [ ] プッシュ通知機能
+- [ ] 統計・分析機能
+- [ ] スタッフ向け管理画面
+
+## ライセンス
 
 MIT License
 

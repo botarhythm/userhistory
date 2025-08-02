@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLiff } from '../contexts/LiffContext';
 
 interface Product {
   id: string;
@@ -18,6 +19,7 @@ interface PurchaseItem {
 
 const PurchasePage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, isLoggedIn } = useLiff();
   const [items, setItems] = useState<PurchaseItem[]>([{ name: '', quantity: 1 }]);
   const [total, setTotal] = useState<number>(0);
   const [memo, setMemo] = useState<string>('');
@@ -167,6 +169,11 @@ const PurchasePage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!isLoggedIn || !user) {
+      alert('LINEログインが必要です');
+      return;
+    }
+    
     // バリデーション
     if (items.some(item => !item.name.trim())) {
       alert('商品名を入力してください');
@@ -187,8 +194,8 @@ const PurchasePage: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          lineUid: 'test-user', // 実際のLINE UIDに置き換え
-          displayName: 'テストユーザー',
+          lineUid: user.userId,
+          displayName: user.displayName,
           items: items.map(item => ({
             name: item.name.trim(),
             quantity: item.quantity,
@@ -214,12 +221,50 @@ const PurchasePage: React.FC = () => {
     }
   };
 
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              LINEログインが必要です
+            </h1>
+            <p className="text-gray-600 mb-4">
+              購入履歴を記録するにはLINEアカウントでログインしてください
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
           購入履歴を記録
         </h1>
+
+        {/* ユーザー情報表示 */}
+        <div className="bg-blue-50 p-4 rounded-lg mb-6">
+          <div className="text-sm text-blue-600 mb-1">ログイン中</div>
+          <div className="flex items-center space-x-3">
+            <img
+              className="h-8 w-8 rounded-full"
+              src={user.pictureUrl || 'https://via.placeholder.com/32x32'}
+              alt={user.displayName}
+            />
+            <div>
+              <div className="font-medium text-gray-900">{user.displayName}</div>
+              <div className="text-sm text-gray-600">ID: {user.userId}</div>
+            </div>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 商品セクション */}

@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import { NotionAPI } from './src/api/notion.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -10,8 +9,16 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env['PORT'] || 3000;
 
-// Notion APIインスタンスの初期化
-const notionAPI = new NotionAPI();
+// Notion APIインスタンスの初期化（エラーハンドリング付き）
+let notionAPI: any = null;
+try {
+  const { NotionAPI } = await import('./src/api/notion.js');
+  notionAPI = new NotionAPI();
+  console.log('✅ Notion API initialized successfully');
+} catch (error) {
+  console.warn('⚠️ Notion API initialization failed:', error instanceof Error ? error.message : error);
+  console.warn('⚠️ Some features may not work without proper Notion configuration');
+}
 
 // 簡素化されたログ関数
 const log = (operation: string, context: any, message: string) => {
@@ -49,7 +56,8 @@ app.get('/health', (_req, res) => {
     status: 'ok', 
     timestamp: new Date().toISOString(),
     environment: process.env['NODE_ENV'] || 'development',
-    version: '1.0.0'
+    version: '1.0.0',
+    notion: notionAPI ? 'connected' : 'not_configured'
   });
 });
 
@@ -60,6 +68,7 @@ app.get('/', (_req, res) => {
     message: 'Botarhythm Coffee Roaster LINE Mini App API',
     status: 'running',
     version: '1.0.0',
+    notion: notionAPI ? 'connected' : 'not_configured',
     endpoints: {
       health: '/health',
       status: '/api/status',
@@ -71,20 +80,23 @@ app.get('/', (_req, res) => {
   });
 });
 
-
-
 // APIルート
 app.get('/api/status', (_req, res) => {
   log('api_status', {}, 'API status requested');
   res.json({ 
     message: 'Botarhythm Coffee Roaster API', 
     status: 'running',
-    version: '1.0.0'
+    version: '1.0.0',
+    notion: notionAPI ? 'connected' : 'not_configured'
   });
 });
 
 // LINEミニアプリ用API
 app.get('/api/user/:lineUid', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
   try {
     const { lineUid } = req.params;
     log('user_lookup', { lineUid }, 'User lookup requested');
@@ -93,14 +105,14 @@ app.get('/api/user/:lineUid', async (req, res) => {
     
     if (customer) {
       log('user_found', { lineUid, customerId: customer.id }, 'User found in database');
-      res.json({ 
+      return res.json({ 
         lineUid, 
         status: 'user_found',
         customer 
       });
     } else {
       log('user_not_found', { lineUid }, 'User not found in database');
-      res.json({ 
+      return res.json({ 
         lineUid, 
         status: 'user_not_found' 
       });
@@ -108,12 +120,16 @@ app.get('/api/user/:lineUid', async (req, res) => {
   } catch (error) {
     log('user_lookup_error', { lineUid: req.params.lineUid, error: error instanceof Error ? error.message : String(error) }, 'User lookup failed');
     console.error('User fetch error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // 来店チェックインAPI
 app.post('/api/checkin', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
   try {
     const { lineUid, displayName, timestamp, memo } = req.body;
     
@@ -149,6 +165,10 @@ app.post('/api/checkin', async (req, res) => {
 
 // 購入履歴API
 app.post('/api/purchase', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
   try {
     const { lineUid, displayName, items, total, memo, timestamp } = req.body;
     
@@ -185,6 +205,10 @@ app.post('/api/purchase', async (req, res) => {
 
 // 履歴取得API
 app.get('/api/history/:lineUid', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
   try {
     const { lineUid } = req.params;
     const { type, limit = 10 } = req.query;
@@ -224,20 +248,23 @@ app.get('/api/history/:lineUid', async (req, res) => {
 
 // 商品一覧取得API
 app.get('/api/products', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
   try {
     log('get_products', { query: req.query }, 'Products requested');
     
-    const notion = new NotionAPI();
-    const products = await notion.getProducts();
+    const products = await notionAPI.getProducts();
     
-    res.json({
+    return res.json({
       success: true,
       products: products
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     log('get_products_error', { error: errorMessage }, 'Failed to get products');
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to fetch products'
     });
@@ -246,6 +273,11 @@ app.get('/api/products', async (req, res) => {
 
 // 商品検索API
 app.get('/api/products/search', async (req, res): Promise<void> => {
+  if (!notionAPI) {
+    res.status(503).json({ error: 'Notion API not configured' });
+    return;
+  }
+
   try {
     const { q } = req.query;
     if (!q || typeof q !== 'string') {
@@ -258,8 +290,7 @@ app.get('/api/products/search', async (req, res): Promise<void> => {
 
     log('search_products', { query: q }, 'Product search requested');
     
-    const notion = new NotionAPI();
-    const products = await notion.searchProducts(q);
+    const products = await notionAPI.searchProducts(q);
     
     res.json({
       success: true,
@@ -277,6 +308,10 @@ app.get('/api/products/search', async (req, res): Promise<void> => {
 
 // データベース整合性チェックAPI
 app.get('/api/debug/integrity-check', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
   try {
     log('integrity_check_request', {}, 'Database integrity check requested');
     
@@ -291,14 +326,14 @@ app.get('/api/debug/integrity-check', async (req, res) => {
       issuesFound: result.context.orphanedRecords + result.context.invalidRelations + result.context.duplicateCustomers
     }, 'Integrity check completed successfully');
     
-    res.json({
+    return res.json({
       success: true,
       result: result
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     log('integrity_check_error', { error: errorMessage }, 'Integrity check failed');
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to perform integrity check',
       details: errorMessage
@@ -308,15 +343,18 @@ app.get('/api/debug/integrity-check', async (req, res) => {
 
 // 孤立レコード削除API
 app.post('/api/debug/cleanup-orphaned-records', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
   try {
     const { orphanedIds } = req.body;
     
     if (!Array.isArray(orphanedIds)) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         error: 'orphanedIds must be an array'
       });
-      return;
     }
 
     log('cleanup_orphaned_records', { count: orphanedIds.length }, 'Cleanup orphaned records requested');
@@ -328,14 +366,14 @@ app.post('/api/debug/cleanup-orphaned-records', async (req, res) => {
     
     log('cleanup_orphaned_records_success', result, 'Cleanup completed successfully');
     
-    res.json({
+    return res.json({
       success: true,
       result: result
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     log('cleanup_orphaned_records_error', { error: errorMessage }, 'Cleanup failed');
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to cleanup orphaned records',
       details: errorMessage
@@ -345,15 +383,18 @@ app.post('/api/debug/cleanup-orphaned-records', async (req, res) => {
 
 // 重複顧客統合API
 app.post('/api/debug/merge-duplicate-customers', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
   try {
     const { duplicateLineUids } = req.body;
     
     if (!Array.isArray(duplicateLineUids)) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         error: 'duplicateLineUids must be an array'
       });
-      return;
     }
 
     log('merge_duplicate_customers', { count: duplicateLineUids.length }, 'Merge duplicate customers requested');
@@ -365,14 +406,14 @@ app.post('/api/debug/merge-duplicate-customers', async (req, res) => {
     
     log('merge_duplicate_customers_success', result, 'Merge completed successfully');
     
-    res.json({
+    return res.json({
       success: true,
       result: result
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     log('merge_duplicate_customers_error', { error: errorMessage }, 'Merge failed');
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to merge duplicate customers',
       details: errorMessage
@@ -387,9 +428,19 @@ app.get('*', (req, res) => {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
   
-  // フロントエンドのルートを配信
+  // 静的ファイルの存在確認
+  const staticPath = path.join(__dirname, 'dist', 'public', req.path);
+  const indexPath = path.join(__dirname, 'dist', 'public', 'index.html');
+  
+  // ファイルが存在する場合は静的ファイルを配信
+  if (require('fs').existsSync(staticPath) && !req.path.endsWith('/')) {
+    log('static_file_served', { path: req.path }, 'Serving static file');
+    return res.sendFile(staticPath);
+  }
+  
+  // それ以外はSPAのindex.htmlを配信
   log('spa_fallback', { path: req.path }, 'Serving SPA fallback');
-  return res.sendFile(path.join(__dirname, 'dist', 'public', 'index.html'));
+  return res.sendFile(indexPath);
 });
 
 // エラーハンドリング
@@ -405,6 +456,7 @@ app.listen(Number(port), '0.0.0.0', () => {
   console.log(`🚀 Botarhythm Coffee Roaster API running on port ${port}`);
   console.log(`📊 Health check: http://localhost:${port}/health`);
   console.log(`🔗 API status: http://localhost:${port}/api/status`);
+  console.log(`📝 Notion API: ${notionAPI ? '✅ Connected' : '⚠️ Not configured'}`);
 });
 
 // グレースフルシャットダウン

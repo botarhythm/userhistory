@@ -17,7 +17,20 @@
     "type-check": "tsc --noEmit",
     "preview": "vite preview",
     "check-integrity": "npm run build:server && node dist/scripts/check-db-integrity.js",
-    "fix-integrity": "npm run build:server && node dist/scripts/auto-fix-integrity.js"
+    "fix-integrity": "npm run build:server && node dist/scripts/auto-fix-integrity.js",
+    "deploy": "railway up",
+    "deploy:staging": "railway up --environment staging",
+    "logs": "railway logs",
+    "logs:follow": "railway logs --follow",
+    "status": "railway status",
+    "railway:deploy": "npm run build:server && node dist/scripts/railway-mcp.js deploy",
+    "railway:deploy:staging": "npm run build:server && node dist/scripts/railway-mcp.js deploy staging",
+    "railway:logs": "npm run build:server && node dist/scripts/railway-mcp.js logs",
+    "railway:logs:follow": "npm run build:server && node dist/scripts/railway-mcp.js logs --follow",
+    "railway:status": "npm run build:server && node dist/scripts/railway-mcp.js status",
+    "railway:health": "npm run build:server && node dist/scripts/railway-mcp.js health",
+    "railway:autofix": "npm run build:server && node dist/scripts/railway-mcp.js autofix",
+    "railway:update-env": "npm run build:server && node dist/scripts/railway-mcp.js update-env"
   },
   "keywords": [
     "line",
@@ -35,6 +48,7 @@
   "dependencies": {
     "@line/liff": "^2.22.3",
     "@notionhq/client": "^2.2.14",
+    "@railway/cli": "^4.6.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "4.18.2",

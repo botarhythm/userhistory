@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLiff } from '../contexts/LiffContext';
 
 interface HistoryRecord {
   id: string;
@@ -15,21 +16,26 @@ interface HistoryRecord {
 
 const HistoryPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, isLoggedIn } = useLiff();
   const [history, setHistory] = useState<HistoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'checkin' | 'purchase'>('all');
 
   useEffect(() => {
-    fetchHistory();
-  }, [filter]);
+    if (isLoggedIn && user) {
+      fetchHistory();
+    }
+  }, [filter, isLoggedIn, user]);
 
   const fetchHistory = async () => {
+    if (!user) return;
+    
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/history/test-user?type=${filter === 'all' ? '' : filter}`);
+      const response = await fetch(`/api/history/${user.userId}?type=${filter === 'all' ? '' : filter}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -61,6 +67,28 @@ const HistoryPage: React.FC = () => {
     if (!items || items.length === 0) return '';
     return items.map(item => `${item.name} x${item.quantity}`).join(', ');
   };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              LINEログインが必要です
+            </h1>
+            <p className="text-gray-600 mb-4">
+              履歴を確認するにはLINEアカウントでログインしてください
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -106,6 +134,22 @@ const HistoryPage: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           </button>
+        </div>
+
+        {/* ユーザー情報表示 */}
+        <div className="bg-blue-50 p-4 rounded-lg mb-6">
+          <div className="text-sm text-blue-600 mb-1">ログイン中</div>
+          <div className="flex items-center space-x-3">
+            <img
+              className="h-8 w-8 rounded-full"
+              src={user.pictureUrl || 'https://via.placeholder.com/32x32'}
+              alt={user.displayName}
+            />
+            <div>
+              <div className="font-medium text-gray-900">{user.displayName}</div>
+              <div className="text-sm text-gray-600">ID: {user.userId}</div>
+            </div>
+          </div>
         </div>
 
         {/* フィルターボタン */}
