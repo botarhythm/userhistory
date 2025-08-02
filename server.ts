@@ -440,13 +440,17 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 });
 
 // サーバー起動
-app.listen(Number(port), '0.0.0.0', () => {
+const server = app.listen(Number(port), '0.0.0.0', () => {
   log('server_start', { port, environment: process.env['NODE_ENV'] || 'development' }, 'Server started successfully');
   console.log(`🚀 Botarhythm Coffee Roaster API running on port ${port}`);
   console.log(`📊 Health check: http://localhost:${port}/health`);
   console.log(`🔗 API status: http://localhost:${port}/api/status`);
   console.log(`📝 Notion API: ${notionAPI ? '✅ Connected' : '⚠️ Not configured'}`);
 });
+
+// Railway用のヘルスチェック対応
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
 
 // グレースフルシャットダウン
 process.on('SIGTERM', () => {
