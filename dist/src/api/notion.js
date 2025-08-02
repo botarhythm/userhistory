@@ -389,14 +389,12 @@ export class NotionAPI {
         if (!itemsString)
             return [];
         return itemsString.split(', ').map(item => {
-            const match = item.match(/(.+) x(\d+)/);
-            if (match && match[1] && match[2]) {
-                return {
-                    name: match[1],
-                    quantity: parseInt(match[2])
-                };
-            }
-            return { name: item, quantity: 1 };
+            // 数量情報（x1, x2など）を除去して商品名のみを取得
+            const cleanName = item.replace(/\s*x\d+$/, '');
+            return {
+                name: cleanName,
+                quantity: 1 // 常に数量1として扱う
+            };
         });
     }
     // 履歴を更新

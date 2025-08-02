@@ -66,7 +66,7 @@ const HistoryPage: React.FC = () => {
 
   const formatItems = (items?: Array<{ name: string; quantity: number }>) => {
     if (!items || items.length === 0) return '';
-    return items.map(item => `${item.name} x${item.quantity}`).join(', ');
+    return items.map(item => item.name).join(', ');
   };
 
   const handleEdit = (record: HistoryRecord) => {
@@ -209,11 +209,6 @@ const HistoryPage: React.FC = () => {
                     {record.items && record.items.length > 0 && (
                       <div className="text-gray-800">
                         {formatItems(record.items)}
-                      </div>
-                    )}
-                    {record.total && record.total > 0 && (
-                      <div className="text-lg font-semibold text-blue-600">
-                        ¥{record.total.toLocaleString()}
                       </div>
                     )}
                   </div>
