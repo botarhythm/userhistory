@@ -9,7 +9,7 @@ const App: React.FC = () => {
   return (
     <LiffProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50">
+                 <div className="min-h-screen bg-gray-100">
           <Header />
           <Routes>
             <Route path="/" element={<PurchasePage />} />
@@ -29,7 +29,7 @@ const Header: React.FC = () => {
 
   if (!isInitialized) {
     return (
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -52,7 +52,7 @@ const Header: React.FC = () => {
 
   if (!isLoggedIn) {
     return (
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -73,7 +73,7 @@ const Header: React.FC = () => {
   }
 
   return (
-    <header className="bg-white shadow-sm border-b">
+    <header className="bg-white shadow-md border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 最上部: LINEユーザー情報 */}
         <div className="flex justify-between items-center py-3">

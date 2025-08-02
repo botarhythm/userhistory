@@ -110,10 +110,10 @@ const HistoryPage: React.FC = () => {
     setEditProductName('');
   };
 
-  if (!isLoggedIn) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+     if (!isLoggedIn) {
+     return (
+       <div className="min-h-screen bg-gray-100 py-8">
+         <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <div className="text-center">
             <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,10 +132,10 @@ const HistoryPage: React.FC = () => {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+     if (loading) {
+     return (
+       <div className="min-h-screen bg-gray-100 py-8">
+         <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             <span className="ml-3 text-gray-600">読み込み中...</span>
@@ -145,10 +145,10 @@ const HistoryPage: React.FC = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+     if (error) {
+     return (
+       <div className="min-h-screen bg-gray-100 py-8">
+         <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <div className="text-center py-8">
             <div className="text-red-600 text-lg mb-4">{error}</div>
             <button
@@ -163,9 +163,9 @@ const HistoryPage: React.FC = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-4 sm:p-6 mx-4 sm:mx-auto">
+     return (
+     <div className="min-h-screen bg-gray-100 py-4 sm:py-8">
+       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 mx-4 sm:mx-auto border border-gray-200">
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">履歴一覧</h1>
           <button
@@ -188,10 +188,10 @@ const HistoryPage: React.FC = () => {
             </div>
           ) : (
             history.map((record) => (
-              <div
-                key={record.id}
-                className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow"
-              >
+                             <div
+                 key={record.id}
+                 className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-lg transition-shadow bg-white"
+               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span
@@ -264,11 +264,11 @@ const HistoryPage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="mt-2 flex items-center justify-between">
-                    {record.memo && (
-                      <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded flex-1">
-                        {record.memo}
-                      </div>
-                    )}
+                                         {record.memo && (
+                       <div className="text-sm text-gray-600 bg-gray-100 p-2 rounded flex-1">
+                         {record.memo}
+                       </div>
+                     )}
                     <button
                       onClick={() => handleEdit(record)}
                       className="ml-2 px-2 py-1 text-blue-600 hover:text-blue-800 text-sm"
