@@ -120,12 +120,15 @@ const PurchasePage: React.FC = () => {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        console.log('Purchase success response:', result);
         alert('購入メモを記録しました');
         setSelectedProduct('');
         setMemo('');
         navigate('/history');
       } else {
         const error = await response.json();
+        console.error('Purchase error response:', error);
         alert(`エラー: ${error.error || '購入履歴の記録に失敗しました'}`);
       }
     } catch (error) {

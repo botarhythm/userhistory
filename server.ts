@@ -214,12 +214,7 @@ app.post('/api/purchase', async (req, res) => {
     
     return res.json({ 
       success: true, 
-      message: 'Purchase recorded',
-      customerId,
-      historyId,
-      items,
-      total,
-      timestamp: timestamp || new Date().toISOString()
+      message: 'Purchase recorded successfully'
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -239,9 +234,7 @@ app.post('/api/purchase', async (req, res) => {
     });
     
     return res.status(500).json({ 
-      error: 'Internal server error',
-      details: errorMessage,
-      timestamp: new Date().toISOString()
+      error: 'Internal server error'
     });
   }
 });
