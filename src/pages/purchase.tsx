@@ -20,14 +20,10 @@ interface PurchaseItem {
 const PurchasePage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isLoggedIn } = useLiff();
-  const [items, setItems] = useState<PurchaseItem[]>([{ name: '', quantity: 1 }]);
-  const [total, setTotal] = useState<number>(0);
+  const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [memo, setMemo] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
 
   // 商品一覧を取得
   useEffect(() => {
@@ -72,98 +68,9 @@ const PurchasePage: React.FC = () => {
     }
   };
 
-  // 商品検索
-  const searchProducts = async (query: string) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      console.log('Searching products for:', query);
-      const response = await fetch(`/api/products/search?q=${encodeURIComponent(query)}`);
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Search results:', data);
-        let results = data.products || [];
-        
-        // デバッグ用：APIから結果が取得できない場合はローカル検索
-        if (results.length === 0 && products.length > 0) {
-          console.log('No API results, searching local products');
-          const lowerQuery = query.toLowerCase();
-          results = products.filter(product => 
-            product.name.toLowerCase().includes(lowerQuery)
-          );
-        }
-        
-        setSearchResults(results);
-      } else {
-        console.error('Search failed:', response.status);
-        // APIが失敗した場合はローカル検索
-        const lowerQuery = query.toLowerCase();
-        const results = products.filter(product => 
-          product.name.toLowerCase().includes(lowerQuery)
-        );
-        setSearchResults(results);
-      }
-    } catch (error) {
-      console.error('Failed to search products:', error);
-      // エラー時もローカル検索
-      const lowerQuery = query.toLowerCase();
-      const results = products.filter(product => 
-        product.name.toLowerCase().includes(lowerQuery)
-      );
-      setSearchResults(results);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
   // 商品選択
-  const selectProduct = (index: number, product: Product) => {
-    console.log('Selecting product:', product, 'for index:', index);
-    const newItems = [...items];
-    newItems[index] = {
-      productId: product.id,
-      name: product.name,
-      quantity: newItems[index].quantity,
-      price: product.price || 0
-    };
-    setItems(newItems);
-    setSearchQuery('');
-    setSearchResults([]);
-    calculateTotal(newItems);
-  };
-
-  const addItem = () => {
-    setItems([...items, { name: '', quantity: 1 }]);
-  };
-
-  const removeItem = (index: number) => {
-    if (items.length > 1) {
-      const newItems = items.filter((_, i) => i !== index);
-      setItems(newItems);
-      calculateTotal(newItems);
-    }
-  };
-
-  const updateItem = (index: number, field: keyof PurchaseItem, value: string | number) => {
-    const newItems = [...items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    setItems(newItems);
-    
-    if (field === 'quantity' || field === 'price') {
-      calculateTotal(newItems);
-    }
-  };
-
-  const calculateTotal = (itemList: PurchaseItem[]) => {
-    const calculatedTotal = itemList.reduce((sum, item) => {
-      const itemPrice = item.price || 0;
-      return sum + (itemPrice * item.quantity);
-    }, 0);
-    setTotal(calculatedTotal);
+  const handleProductChange = (productId: string) => {
+    setSelectedProduct(productId);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -175,19 +82,15 @@ const PurchasePage: React.FC = () => {
     }
     
     // バリデーション
-    if (items.some(item => !item.name.trim())) {
-      alert('商品名を入力してください');
+    if (!selectedProduct) {
+      alert('商品を選択してください');
       return;
     }
     
-    if (total <= 0) {
-      alert('合計金額を入力してください');
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
+      const selectedProductData = products.find(p => p.id === selectedProduct);
       const response = await fetch('/api/purchase', {
         method: 'POST',
         headers: {
@@ -196,18 +99,20 @@ const PurchasePage: React.FC = () => {
         body: JSON.stringify({
           lineUid: user.userId,
           displayName: user.displayName,
-          items: items.map(item => ({
-            name: item.name.trim(),
-            quantity: item.quantity,
-            price: item.price || 0
-          })),
-          total: total,
+          items: [{
+            name: selectedProductData?.name || '',
+            quantity: 1,
+            price: 0
+          }],
+          total: 0,
           memo: memo.trim() || undefined
         }),
       });
 
       if (response.ok) {
         alert('購入履歴を記録しました');
+        setSelectedProduct('');
+        setMemo('');
         navigate('/history');
       } else {
         const error = await response.json();
@@ -250,132 +155,26 @@ const PurchasePage: React.FC = () => {
           購入履歴を記録
         </h1>
 
-        {/* ユーザー情報表示 */}
-        <div className="bg-blue-50 p-4 rounded-lg mb-6">
-          <div className="text-sm text-blue-600 mb-1">ログイン中</div>
-          <div className="flex items-center space-x-3">
-            <img
-              className="h-8 w-8 rounded-full"
-              src={user.pictureUrl || 'https://via.placeholder.com/32x32'}
-              alt={user.displayName}
-            />
-            <div>
-              <div className="font-medium text-gray-900">{user.displayName}</div>
-              <div className="text-sm text-gray-600">ID: {user.userId}</div>
-            </div>
-          </div>
-        </div>
+
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 商品セクション */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">商品</h2>
-            <div className="space-y-3">
-              {items.map((item, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex gap-2 items-start">
-                    <div className="flex-1">
-                      {/* 商品検索・選択 */}
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="商品名を入力または検索"
-                          value={item.name}
-                          onChange={(e) => {
-                            updateItem(index, 'name', e.target.value);
-                            setSearchQuery(e.target.value);
-                            searchProducts(e.target.value);
-                          }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        
-                        {/* 検索結果ドロップダウン */}
-                        {searchResults.length > 0 && (
-                          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                            {searchResults.map((product) => (
-                              <div
-                                key={product.id}
-                                onClick={() => selectProduct(index, product)}
-                                className="px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
-                              >
-                                <div className="font-medium">{product.name}</div>
-                                {product.order && (
-                                  <div className="text-xs text-gray-500">表示順: {product.order}</div>
-                                )}
-                                {product.available === false && (
-                                  <div className="text-xs text-red-500">販売停止中</div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="w-20">
-                      <input
-                        type="number"
-                        placeholder="数量"
-                        value={item.quantity}
-                        onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                        min="1"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    
-                    <div className="w-24">
-                      <input
-                        type="number"
-                        placeholder="価格"
-                        value={item.price || ''}
-                        onChange={(e) => updateItem(index, 'price', parseInt(e.target.value) || 0)}
-                        min="0"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    
-                    {items.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeItem(index)}
-                        className="px-2 py-2 text-red-600 hover:bg-red-50 rounded-md"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                  
-                  {/* 商品詳細表示 */}
-                  {item.productId && (
-                    <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                      商品ID: {item.productId}
-                    </div>
-                  )}
-                </div>
-              ))}
-              
-              <button
-                type="button"
-                onClick={addItem}
-                className="w-full py-2 text-blue-600 border border-blue-300 rounded-md hover:bg-blue-50"
-              >
-                + 商品を追加
-              </button>
-            </div>
-          </div>
-
-          {/* 合計金額 */}
+          {/* 商品選択 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              合計金額
+              商品を選択
             </label>
-            <input
-              type="number"
-              value={total}
-              onChange={(e) => setTotal(parseInt(e.target.value) || 0)}
-              min="0"
+            <select
+              value={selectedProduct}
+              onChange={(e) => handleProductChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            >
+              <option value="">商品を選択してください</option>
+              {products.map((product) => (
+                <option key={product.id} value={product.id}>
+                  {product.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* メモ */}

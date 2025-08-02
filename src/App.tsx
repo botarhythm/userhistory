@@ -13,7 +13,7 @@ const App: React.FC = () => {
         <div className="min-h-screen bg-gray-50">
           <Header />
           <Routes>
-            <Route path="/" element={<CheckinPage />} />
+            <Route path="/" element={<PurchasePage />} />
             <Route path="/checkin" element={<CheckinPage />} />
             <Route path="/purchase" element={<PurchasePage />} />
             <Route path="/history" element={<HistoryPage />} />
@@ -35,9 +35,12 @@ const Header: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">
-                Botarhythm Coffee
-              </h1>
+              <div className="flex items-center space-x-3">
+                <img src="/assets/logo.jpg" alt="Botarhythm Coffee Roaster" className="h-8 w-8" />
+                <h1 className="text-xl font-bold text-gray-900">
+                  Botarhythm Coffee Roaster
+                </h1>
+              </div>
             </div>
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
@@ -55,9 +58,12 @@ const Header: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">
-                Botarhythm Coffee
-              </h1>
+              <div className="flex items-center space-x-3">
+                <img src="/assets/logo.jpg" alt="Botarhythm Coffee Roaster" className="h-8 w-8" />
+                <h1 className="text-xl font-bold text-gray-900">
+                  Botarhythm Coffee Roaster
+                </h1>
+              </div>
             </div>
             <div className="flex items-center">
               <span className="text-sm text-gray-600">LINEログインが必要です</span>
@@ -74,9 +80,12 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* ロゴとアプリ名 */}
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-gray-900">
-              Botarhythm Coffee
-            </h1>
+            <div className="flex items-center space-x-3">
+              <img src="/assets/logo.jpg" alt="Botarhythm Coffee Roaster" className="h-8 w-8" />
+              <h1 className="text-xl font-bold text-gray-900">
+                Botarhythm Coffee Roaster
+              </h1>
+            </div>
           </div>
 
           {/* ナビゲーション */}
