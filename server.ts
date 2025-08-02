@@ -37,7 +37,8 @@ app.use(express.json());
 
 // 静的ファイル配信（Railwayデプロイ用）
 app.use(express.static(path.join(__dirname, 'dist', 'public'), {
-  index: false // index.htmlの自動配信を無効化
+  index: false, // index.htmlの自動配信を無効化
+  maxAge: '1h' // キャッシュ設定
 }));
 
 // ログ設定
@@ -410,8 +411,9 @@ app.post('/api/debug/merge-duplicate-customers', async (req, res) => {
   }
 });
 
-// SPA用のフォールバックルート
+// SPA用のフォールバックルート（Railway Station推奨設定）
 app.get('*', (req, res) => {
+  // APIルートの場合は404を返す
   if (req.path.startsWith('/api/')) {
     log('api_not_found', { path: req.path }, 'API endpoint not found');
     return res.status(404).json({ error: 'API endpoint not found' });
@@ -429,6 +431,7 @@ app.get('*', (req, res) => {
   
   // それ以外はSPAのindex.htmlを配信
   log('spa_fallback', { path: req.path }, 'Serving SPA fallback');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   return res.sendFile(indexPath);
 });
 
@@ -439,7 +442,7 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// サーバー起動
+// サーバー起動（Railway Station推奨設定）
 const server = app.listen(Number(port), '0.0.0.0', () => {
   log('server_start', { port, environment: process.env['NODE_ENV'] || 'development' }, 'Server started successfully');
   console.log(`🚀 Botarhythm Coffee Roaster API running on port ${port}`);
@@ -448,9 +451,10 @@ const server = app.listen(Number(port), '0.0.0.0', () => {
   console.log(`📝 Notion API: ${notionAPI ? '✅ Connected' : '⚠️ Not configured'}`);
 });
 
-// Railway用のヘルスチェック対応
+// Railway用の最適化設定（Railway Station推奨）
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;
+server.maxConnections = 1000;
 
 // グレースフルシャットダウン
 process.on('SIGTERM', () => {
