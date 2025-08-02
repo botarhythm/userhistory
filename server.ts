@@ -65,12 +65,21 @@ app.use((req, res, next) => {
 // ヘルスチェック
 app.get('/health', (_req, res) => {
   log('health_check', {}, 'Health check requested');
-  res.status(200).json({ 
+  if (!notionAPI) {
+    return res.status(503).json({
+      status: 'error',
+      message: 'Notion API not configured',
+      timestamp: new Date().toISOString(),
+      environment: process.env['NODE_ENV'] || 'development',
+      version: '1.0.0'
+    });
+  }
+  return res.status(200).json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
     environment: process.env['NODE_ENV'] || 'development',
     version: '1.0.0',
-    notion: notionAPI ? 'connected' : 'not_configured'
+    notion: 'connected'
   });
 });
 

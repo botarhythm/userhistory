@@ -1,0 +1,16 @@
+Starting Container
+npm warn config production Use `--omit=dev` instead.
+
+> botarhythm-userhistory@1.0.0 start
+> node dist/server.js
+
+✅ Notion API initialized successfully
+(node:15) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+2025-08-02T03:34:08.615704576Z [INFO] Server started successfully context={"environment":"production","port":"3000"} environment="production" operation="server_start" timestamp="2025-08-02T03:34:08.611Z"
+🚀 Botarhythm Coffee Roaster API running on port 3000
+📊 Health check: http://localhost:3000/health
+🔗 API status: http://localhost:3000/api/status
+📝 Notion API: ✅ Connected
+2025-08-02T03:34:09.718391473Z [INFO] GET /health context={"ip":"100.64.0.2","method":"GET","path":"/health","userAgent":"RailwayHealthCheck/1.0"} environment="production" operation="http_request" timestamp="2025-08-02T03:34:09.713Z"
+2025-08-02T03:34:09.718398653Z [INFO] Health check requested context={} environment="production" operation="health_check" timestamp="2025-08-02T03:34:09.714Z"
