@@ -14,6 +14,7 @@ interface LiffContextType {
   isLoggedIn: boolean;
   error: string | null;
   logout: () => void;
+  retryLogin: () => void;
 }
 
 const LiffContext = createContext<LiffContextType | undefined>(undefined);
@@ -68,8 +69,13 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
           });
           setIsLoggedIn(true);
         } else {
-          // ログインしていない場合は自動ログイン
-          liff.login();
+          // LINEミニアプリ内でログインしていない場合は自動ログイン
+          if (liff.isInClient()) {
+            liff.login();
+          } else {
+            // 外部ブラウザの場合はログイン画面を表示
+            console.log('外部ブラウザでアクセスされています');
+          }
         }
         
         setIsInitialized(true);
@@ -91,12 +97,23 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
     setIsLoggedIn(false);
   };
 
+  const retryLogin = () => {
+    setError(null);
+    setIsInitialized(false);
+    if (liff.isInClient() && !liff.isLoggedIn()) {
+      liff.login();
+    } else {
+      window.location.reload();
+    }
+  };
+
   const value: LiffContextType = {
     user,
     isInitialized,
     isLoggedIn,
     error,
-    logout
+    logout,
+    retryLogin
   };
 
   return (
