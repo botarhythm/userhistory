@@ -181,9 +181,25 @@ app.post('/api/purchase', async (req, res) => {
   try {
     const { lineUid, displayName, items, total, memo, timestamp } = req.body;
     
-    if (!lineUid || !items || !total) {
-      log('purchase_validation_error', { lineUid, hasItems: !!items, hasTotal: !!total }, 'Purchase request missing required fields');
-      return res.status(400).json({ error: 'lineUid, items, and total are required' });
+    // 詳細なバリデーション
+    const validationErrors: string[] = [];
+    if (!lineUid) validationErrors.push('lineUid is missing');
+    if (!items || !Array.isArray(items) || items.length === 0) validationErrors.push('items is missing or empty');
+    if (total === undefined || total === null) validationErrors.push('total is missing');
+    
+    if (validationErrors.length > 0) {
+      log('purchase_validation_error', { 
+        lineUid: !!lineUid, 
+        hasItems: !!items, 
+        itemsLength: items?.length, 
+        hasTotal: total !== undefined && total !== null,
+        total,
+        validationErrors 
+      }, 'Purchase request validation failed');
+      return res.status(400).json({ 
+        error: `Validation failed: ${validationErrors.join(', ')}`,
+        details: validationErrors
+      });
     }
 
     log('purchase_request', { lineUid, displayName, itemsCount: items.length, total }, 'Purchase request received');

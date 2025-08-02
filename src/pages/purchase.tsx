@@ -94,6 +94,13 @@ const PurchasePage: React.FC = () => {
 
     try {
       const selectedProductData = products.find(p => p.id === selectedProduct);
+      
+      // 商品データの確認
+      if (!selectedProductData) {
+        alert('商品データが見つかりません');
+        return;
+      }
+
       const response = await fetch('/api/purchase', {
         method: 'POST',
         headers: {
@@ -103,11 +110,11 @@ const PurchasePage: React.FC = () => {
           lineUid: user.userId,
           displayName: user.displayName,
           items: [{
-            name: selectedProductData?.name || '',
+            name: selectedProductData.name,
             quantity: 1,
             price: 0
           }],
-          total: 0,
+          total: 1, // 0ではなく1に変更
           memo: memo.trim() || undefined
         }),
       });
