@@ -223,16 +223,12 @@ export class NotionAPI {
                 throw new Error('Failed to get database structure');
             }
             const relationProperty = this.getPropertyName(dbStructure.properties, 'relation') || '関連顧客ID';
-            const typeProperty = this.getPropertyName(dbStructure.properties, 'select') || 'タイプ';
             const dateProperty = this.getPropertyName(dbStructure.properties, 'date') || '日時';
             const memoProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || 'メモ';
             const titleProperty = this.getPropertyName(dbStructure.properties, 'title') || '商品名';
             const properties = {
                 [relationProperty]: {
                     relation: [{ id: customerId }]
-                },
-                [typeProperty]: {
-                    select: { name: '来店' }
                 },
                 [dateProperty]: {
                     date: { start: timestamp || new Date().toISOString() }
@@ -267,42 +263,21 @@ export class NotionAPI {
                 throw new Error('Failed to get database structure');
             }
             const relationProperty = this.getPropertyName(dbStructure.properties, 'relation') || '関連顧客ID';
-            const typeProperty = this.getPropertyName(dbStructure.properties, 'select') || 'タイプ';
             const dateProperty = this.getPropertyName(dbStructure.properties, 'date') || '日時';
             const titleProperty = this.getPropertyName(dbStructure.properties, 'title') || '商品名';
-            const detailProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || '商品詳細';
-            const quantityProperty = this.getPropertyName(dbStructure.properties, 'number') || '数量';
-            const totalProperty = this.getPropertyName(dbStructure.properties, 'number') || '合計金額';
             const memoProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || 'メモ';
             const itemNames = items.map(item => item.name).join(', ');
-            const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
             const properties = {
                 [relationProperty]: {
                     relation: [{ id: customerId }]
-                },
-                [typeProperty]: {
-                    select: { name: '購入' }
                 },
                 [dateProperty]: {
                     date: { start: timestamp || new Date().toISOString() }
                 },
                 [titleProperty]: {
                     title: [{ text: { content: itemNames } }]
-                },
-                [quantityProperty]: {
-                    number: totalQuantity
-                },
-                [totalProperty]: {
-                    number: total
                 }
             };
-            // 商品詳細がある場合のみ追加
-            if (items.length > 0) {
-                const detailText = items.map(item => `${item.name} x${item.quantity}${item.price ? ` (¥${item.price})` : ''}`).join(', ');
-                properties[detailProperty] = {
-                    rich_text: [{ text: { content: detailText } }]
-                };
-            }
             // メモがある場合のみ追加
             if (memo && memo.trim()) {
                 properties[memoProperty] = {
@@ -338,11 +313,8 @@ export class NotionAPI {
                 return [];
             }
             const relationProperty = this.getPropertyName(dbStructure.properties, 'relation') || '関連顧客ID';
-            const typeProperty = this.getPropertyName(dbStructure.properties, 'select') || 'タイプ';
             const dateProperty = this.getPropertyName(dbStructure.properties, 'date') || '日時';
             const titleProperty = this.getPropertyName(dbStructure.properties, 'title') || '商品名';
-            const detailProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || '商品詳細';
-            const totalProperty = this.getPropertyName(dbStructure.properties, 'number') || '合計金額';
             const memoProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || 'メモ';
             const filter = {
                 property: relationProperty,
@@ -350,16 +322,6 @@ export class NotionAPI {
                     contains: customerId
                 }
             };
-            if (type) {
-                filter.and = [
-                    {
-                        property: typeProperty,
-                        select: {
-                            equals: type === 'checkin' ? '来店' : '購入'
-                        }
-                    }
-                ];
-            }
             const response = await this.client.databases.query({
                 database_id: this.historyDatabaseId,
                 filter,
@@ -372,16 +334,18 @@ export class NotionAPI {
                 page_size: limit
             });
             return response.results.map(page => {
-                const recordType = this.getPropertyValue(page, typeProperty, 'select') === '来店' ? 'checkin' : 'purchase';
-                const detail = this.getPropertyValue(page, detailProperty, 'rich_text');
+                const title = this.getPropertyValue(page, titleProperty, 'title');
+                const memo = this.getPropertyValue(page, memoProperty, 'rich_text');
+                // 商品名から履歴タイプを判定（「来店」の場合はcheckin、それ以外はpurchase）
+                const recordType = title === '来店' ? 'checkin' : 'purchase';
                 return {
                     id: page.id,
                     customerId,
                     type: recordType,
                     timestamp: this.getPropertyValue(page, dateProperty, 'date'),
-                    items: recordType === 'purchase' ? this.parseItems(detail) : undefined,
-                    total: this.getPropertyValue(page, totalProperty, 'number'),
-                    memo: this.getPropertyValue(page, memoProperty, 'rich_text')
+                    items: recordType === 'purchase' ? this.parseItems(title) : undefined,
+                    total: recordType === 'purchase' ? 0 : undefined, // 購入の場合は0、来店の場合はundefined
+                    memo: memo
                 };
             });
         }
@@ -461,26 +425,20 @@ export class NotionAPI {
             const page = response;
             // 履歴レコードを構築
             const relationProperty = this.getPropertyName(dbStructure.properties, 'relation') || '関連顧客ID';
-            const typeProperty = this.getPropertyName(dbStructure.properties, 'select') || 'タイプ';
             const dateProperty = this.getPropertyName(dbStructure.properties, 'date') || '日時';
             const titleProperty = this.getPropertyName(dbStructure.properties, 'title') || '商品名';
-            const detailProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || '商品詳細';
-            const quantityProperty = this.getPropertyName(dbStructure.properties, 'number') || '数量';
-            const totalProperty = this.getPropertyName(dbStructure.properties, 'number') || '合計金額';
-            const type = this.getPropertyValue(page, typeProperty, 'select');
             const timestamp = this.getPropertyValue(page, dateProperty, 'date');
             const title = this.getPropertyValue(page, titleProperty, 'title');
-            const detail = this.getPropertyValue(page, detailProperty, 'rich_text');
-            const quantity = this.getPropertyValue(page, quantityProperty, 'number');
-            const total = this.getPropertyValue(page, totalProperty, 'number');
             const memo = this.getPropertyValue(page, memoProperty, 'rich_text');
+            // 商品名から履歴タイプを判定
+            const recordType = title === '来店' ? 'checkin' : 'purchase';
             const result = {
                 id: page.id,
                 customerId: this.getPropertyValue(page, relationProperty, 'relation') || '',
-                type: type === '来店' ? 'checkin' : 'purchase',
+                type: recordType,
                 timestamp: timestamp || new Date().toISOString(),
-                items: type === '購入' ? this.parseItems(detail || '') : undefined,
-                total: type === '購入' ? total : undefined,
+                items: recordType === 'purchase' ? this.parseItems(title || '') : undefined,
+                total: recordType === 'purchase' ? 0 : undefined, // 購入の場合は0、来店の場合はundefined
                 memo: memo || undefined
             };
             return result;

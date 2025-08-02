@@ -11,6 +11,11 @@
         "RAILWAY_TOKEN": "${5d793270-6d45-4235-a685-a14ba8dd9902}",
         "RAILWAY_PROJECT_ID": "093e4f04-ebb8-44d8-b87c-8e9e06743e54"
       }
+    },
+    "Serena": {
+      "command": "npx",
+      "args": ["@serena-ai/cursor-mcp"],
+      "env": {}
     }
   }
 } 
