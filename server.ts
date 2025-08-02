@@ -383,6 +383,54 @@ app.get('/api/products/search', async (req, res): Promise<void> => {
   }
 });
 
+// データベース構造確認API（デバッグ用）
+app.get('/api/debug/database-structure', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
+  try {
+    log('database_structure_request', {}, 'Database structure check requested');
+    
+    const customerStructure = await notionAPI.getDatabaseStructure(notionAPI.customerDatabaseId);
+    const historyStructure = await notionAPI.getDatabaseStructure(notionAPI.historyDatabaseId);
+    const productStructure = await notionAPI.getDatabaseStructure(notionAPI.productDatabaseId);
+    
+    log('database_structure_success', {
+      hasCustomerStructure: !!customerStructure,
+      hasHistoryStructure: !!historyStructure,
+      hasProductStructure: !!productStructure
+    }, 'Database structure retrieved successfully');
+    
+    return res.json({
+      success: true,
+      customer: customerStructure ? {
+        id: customerStructure.id,
+        title: customerStructure.title,
+        properties: Object.keys(customerStructure.properties)
+      } : null,
+      history: historyStructure ? {
+        id: historyStructure.id,
+        title: historyStructure.title,
+        properties: Object.keys(historyStructure.properties)
+      } : null,
+      product: productStructure ? {
+        id: productStructure.id,
+        title: productStructure.title,
+        properties: Object.keys(productStructure.properties)
+      } : null
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    log('database_structure_error', { error: errorMessage }, 'Database structure check failed');
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to get database structure',
+      details: errorMessage
+    });
+  }
+});
+
 // データベース整合性チェックAPI
 app.get('/api/debug/integrity-check', async (req, res) => {
   if (!notionAPI) {

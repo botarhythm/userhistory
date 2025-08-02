@@ -70,12 +70,24 @@ export class NotionAPI {
 
   // プロパティ名を動的に取得
   private getPropertyName(properties: any, type: string): string | null {
+    const candidates: string[] = [];
+    
     for (const [name, prop] of Object.entries(properties)) {
       if ((prop as any).type === type) {
-        return name;
+        candidates.push(name);
       }
     }
-    return null;
+    
+    // デバッグ用にログ出力
+    if (candidates.length === 0) {
+      console.warn(`No properties found for type: ${type}`);
+      console.warn('Available properties:', Object.keys(properties));
+      console.warn('Property types:', Object.entries(properties).map(([name, prop]) => ({ name, type: (prop as any).type })));
+    } else if (candidates.length > 1) {
+      console.warn(`Multiple properties found for type ${type}:`, candidates);
+    }
+    
+    return candidates[0] || null;
   }
 
   // 商品一覧を取得
@@ -568,3 +580,4 @@ export class NotionAPI {
     }
   }
 }
+
