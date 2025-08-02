@@ -198,9 +198,24 @@ app.post('/api/purchase', async (req, res) => {
         });
     }
     catch (error) {
-        log('purchase_error', { lineUid: req.body.lineUid, error: error instanceof Error ? error.message : String(error) }, 'Purchase recording failed');
-        console.error('Purchase error:', error);
-        return res.status(500).json({ error: 'Internal server error' });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        log('purchase_error', {
+            lineUid: req.body.lineUid,
+            error: errorMessage,
+            stack: errorStack,
+            body: req.body
+        }, 'Purchase recording failed');
+        console.error('Purchase error details:', {
+            message: errorMessage,
+            stack: errorStack,
+            requestBody: req.body
+        });
+        return res.status(500).json({
+            error: 'Internal server error',
+            details: errorMessage,
+            timestamp: new Date().toISOString()
+        });
     }
 });
 // 履歴取得API

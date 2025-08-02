@@ -180,8 +180,14 @@ export class NotionAPI {
 
       return response.id;
     } catch (error) {
-      console.error('Failed to create customer:', error);
-      throw new Error('Failed to create customer');
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('Failed to create customer details:', {
+        error: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined,
+        lineUid,
+        displayName
+      });
+      throw new Error(`Failed to create customer: ${errorMessage}`);
     }
   }
 
@@ -371,8 +377,17 @@ export class NotionAPI {
 
       return response.id;
     } catch (error) {
-      console.error('Purchase recording error:', error);
-      throw new Error('Failed to record purchase');
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('Purchase recording error details:', {
+        error: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined,
+        customerId,
+        items,
+        total,
+        memo,
+        timestamp
+      });
+      throw new Error(`Failed to record purchase: ${errorMessage}`);
     }
   }
 
