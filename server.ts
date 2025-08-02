@@ -35,12 +35,6 @@ const log = (operation: string, context: any, message: string) => {
 app.use(cors());
 app.use(express.json());
 
-// 静的ファイル配信（Railwayデプロイ用）
-app.use(express.static(path.join(__dirname, 'dist', 'public'), {
-  index: false, // index.htmlの自動配信を無効化
-  maxAge: '1h' // キャッシュ設定
-}));
-
 // ログ設定
 app.use((req, _res, next) => {
   log('http_request', {
@@ -51,6 +45,14 @@ app.use((req, _res, next) => {
   }, `${req.method} ${req.path}`);
   next();
 });
+
+// 静的ファイル配信（Railwayデプロイ用）
+app.use(express.static(path.join(__dirname, 'dist', 'public'), {
+  index: false, // index.htmlの自動配信を無効化
+  maxAge: '1h', // キャッシュ設定
+  etag: true,
+  lastModified: true
+}));
 
 // ヘルスチェック
 app.get('/health', (_req, res) => {
@@ -455,6 +457,9 @@ const server = app.listen(Number(port), '0.0.0.0', () => {
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;
 server.maxConnections = 1000;
+
+// Railway用の追加設定
+server.setTimeout(120000);
 
 // グレースフルシャットダウン
 process.on('SIGTERM', () => {
