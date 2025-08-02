@@ -188,14 +188,14 @@ const PurchasePage: React.FC = () => {
           {/* メモ */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              メモ（任意）
+              メモ
             </label>
             <textarea
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
               rows={4}
               className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-              placeholder="特記事項があれば入力してください"
+              placeholder="豆/粉の種類、風味の印象、次回への記録など、自由に記入してください"
             />
           </div>
 

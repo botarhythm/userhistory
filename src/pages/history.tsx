@@ -216,13 +216,13 @@ const HistoryPage: React.FC = () => {
 
                 {editingId === record.id ? (
                   <div className="mt-2 space-y-2">
-                    <textarea
-                      value={editMemo}
-                      onChange={(e) => setEditMemo(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      rows={3}
-                      placeholder="メモを入力してください"
-                    />
+                                         <textarea
+                       value={editMemo}
+                       onChange={(e) => setEditMemo(e.target.value)}
+                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       rows={3}
+                       placeholder="豆/粉の種類、風味の印象、次回への記録など、自由に記入してください"
+                     />
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleSave(record.id)}
