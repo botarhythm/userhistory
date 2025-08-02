@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import PurchasePage from './pages/purchase';
 import HistoryPage from './pages/history';
 import CheckinPage from './pages/checkin';
-import { DatabaseIntegrityPanel } from './components/DatabaseIntegrityPanel';
 import { LiffProvider, useLiff } from './contexts/LiffContext';
 
 const App: React.FC = () => {
@@ -17,7 +16,6 @@ const App: React.FC = () => {
             <Route path="/checkin" element={<CheckinPage />} />
             <Route path="/purchase" element={<PurchasePage />} />
             <Route path="/history" element={<HistoryPage />} />
-            <Route path="/admin/integrity" element={<DatabaseIntegrityPanel />} />
           </Routes>
         </div>
       </Router>
@@ -132,18 +130,6 @@ const Header: React.FC = () => {
           >
             履歴一覧
           </Link>
-          {user?.userId === 'Ue62b450adbd58fca10963f1c243322dd' && (
-            <Link
-              to="/admin/integrity"
-              className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${
-                location.pathname === '/admin/integrity'
-                  ? 'bg-red-600 text-white'
-                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              管理
-            </Link>
-          )}
         </nav>
       </div>
     </header>
