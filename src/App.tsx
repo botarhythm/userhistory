@@ -27,44 +27,9 @@ const Header: React.FC = () => {
   const location = useLocation();
   const { user, isInitialized, isLoggedIn, logout, error, retryLogin } = useLiff();
 
-  // LINEブラウザでのタイトル制御
+  // ページタイトルを設定
   useEffect(() => {
-    // LINEブラウザでのURL表示を制御
-    if (typeof window !== 'undefined' && window.navigator.userAgent.includes('Line')) {
-      // LINEブラウザの場合、より短いタイトルを使用
-      document.title = 'Botarhythm';
-      
-      // 動的にメタタグを追加してURL表示を抑制
-      const addMetaTag = (name: string, content: string) => {
-        let meta = document.querySelector(`meta[name="${name}"]`);
-        if (!meta) {
-          meta = document.createElement('meta');
-          meta.setAttribute('name', name);
-          document.head.appendChild(meta);
-        }
-        meta.setAttribute('content', content);
-      };
-      
-      // 追加のメタタグを設定
-      addMetaTag('apple-mobile-web-app-capable', 'yes');
-      addMetaTag('apple-mobile-web-app-status-bar-style', 'black-translucent');
-      addMetaTag('format-detection', 'telephone=no');
-      addMetaTag('format-detection', 'address=no');
-      addMetaTag('format-detection', 'email=no');
-      
-      // 数秒後に少し長いタイトルに変更
-      const timer = setTimeout(() => {
-        document.title = 'Botarhythm Coffee';
-      }, 1500);
-      
-      return () => {
-        clearTimeout(timer);
-        document.title = 'Botarhythm Coffee Roaster';
-      };
-    } else {
-      // 通常のブラウザでは元のタイトルを使用
-      document.title = 'Botarhythm Coffee Roaster';
-    }
+    document.title = 'Botarhythm Coffee Roaster';
   }, []);
 
   if (!isInitialized) {
