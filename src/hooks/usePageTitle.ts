@@ -2,26 +2,40 @@ import { useEffect } from 'react';
 
 export const usePageTitle = (title: string) => {
   useEffect(() => {
-    // ページタイトルを設定
-    document.title = title;
-    
     // LINEブラウザでのURL表示を制御
     if (typeof window !== 'undefined' && window.navigator.userAgent.includes('Line')) {
-      // LINEブラウザの場合、URL表示を最小限に抑える
-      const originalTitle = document.title;
+      // LINEブラウザの場合、より短いタイトルを使用
+      const shortTitle = 'Botarhythm';
+      document.title = shortTitle;
       
-      // タイトルを短くしてURL表示を抑制
-      document.title = title.length > 20 ? title.substring(0, 20) + '...' : title;
+      // 動的にメタタグを追加してURL表示を抑制
+      const addMetaTag = (name: string, content: string) => {
+        let meta = document.querySelector(`meta[name="${name}"]`);
+        if (!meta) {
+          meta = document.createElement('meta');
+          meta.setAttribute('name', name);
+          document.head.appendChild(meta);
+        }
+        meta.setAttribute('content', content);
+      };
       
-      // 数秒後に元のタイトルに戻す（URL表示が消えた後）
+      // 追加のメタタグを設定
+      addMetaTag('apple-mobile-web-app-capable', 'yes');
+      addMetaTag('apple-mobile-web-app-status-bar-style', 'black-translucent');
+      addMetaTag('format-detection', 'telephone=no');
+      
+      // 数秒後に少し長いタイトルに変更（URL表示が抑制された後）
       const timer = setTimeout(() => {
-        document.title = originalTitle;
-      }, 2000);
+        document.title = title.length > 15 ? title.substring(0, 15) + '...' : title;
+      }, 1000);
       
       return () => {
         clearTimeout(timer);
-        document.title = originalTitle;
+        document.title = title;
       };
+    } else {
+      // 通常のブラウザでは元のタイトルを使用
+      document.title = title;
     }
   }, [title]);
 }; 

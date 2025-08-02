@@ -26,4 +26,41 @@
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
+}
+
+/* LINEブラウザでのURL表示を視覚的に隠す */
+@media screen and (max-width: 768px) {
+  /* アドレスバー領域を最小限に */
+  html {
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+  
+  body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overflow-x: hidden;
+  }
+  
+  /* LINEブラウザ特有のスタイル */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
+}
+
+/* LINEブラウザでのURL表示抑制のための追加スタイル */
+@media screen and (max-width: 768px) {
+  /* スクロール時のURL表示を抑制 */
+  body {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* タッチ操作の最適化 */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
 } 
