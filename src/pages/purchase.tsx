@@ -159,15 +159,13 @@ const PurchasePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-4 sm:p-6 mx-4 sm:mx-auto">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">
           購入履歴を記録
         </h1>
 
-
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {/* 商品選択 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -176,7 +174,7 @@ const PurchasePage: React.FC = () => {
             <select
               value={selectedProduct}
               onChange={(e) => handleProductChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
             >
               <option value="">商品を選択してください</option>
               {products.map((product) => (
@@ -195,8 +193,8 @@ const PurchasePage: React.FC = () => {
             <textarea
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={4}
+              className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
               placeholder="特記事項があれば入力してください"
             />
           </div>
@@ -205,7 +203,7 @@ const PurchasePage: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 text-white py-4 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-base font-medium"
           >
             {isSubmitting ? '送信中...' : '購入履歴を記録'}
           </button>

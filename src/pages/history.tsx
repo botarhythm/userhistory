@@ -159,13 +159,13 @@ const HistoryPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">履歴一覧</h1>
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-4 sm:p-6 mx-4 sm:mx-auto">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">履歴一覧</h1>
           <button
             onClick={fetchHistory}
-            className="text-blue-600 hover:text-blue-800"
+            className="text-blue-600 hover:text-blue-800 p-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -176,7 +176,7 @@ const HistoryPage: React.FC = () => {
 
 
         {/* 履歴リスト */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {history.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               履歴がありません
@@ -185,7 +185,7 @@ const HistoryPage: React.FC = () => {
             history.map((record) => (
               <div
                 key={record.id}
-                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">

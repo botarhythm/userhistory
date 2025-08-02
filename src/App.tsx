@@ -77,73 +77,74 @@ const Header: React.FC = () => {
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* ヘッダー上部: ロゴ、アプリ名、ユーザー情報 */}
         <div className="flex justify-between items-center h-16">
           {/* ロゴとアプリ名 */}
           <div className="flex items-center">
-            <div className="flex items-center space-x-3">
-              <img src="/assets/symbolmark.gif" alt="Botarhythm Coffee Roaster Symbol" className="h-8 w-8" />
-              <h1 className="text-xl font-bold text-gray-900">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <img src="/assets/symbolmark.gif" alt="Botarhythm Coffee Roaster Symbol" className="h-6 w-6 sm:h-8 sm:w-8" />
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate max-w-[200px] sm:max-w-none">
                 Botarhythm Coffee Roaster
               </h1>
             </div>
           </div>
 
-          {/* ナビゲーション */}
-          <nav className="flex space-x-4">
-            <Link
-              to="/purchase"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                location.pathname === '/' || location.pathname === '/purchase'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              購入履歴
-            </Link>
-            <Link
-              to="/history"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                location.pathname === '/history'
-                  ? 'bg-gray-900 text-white'
-                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              履歴一覧
-            </Link>
-            {user?.userId === 'Ue62b450adbd58fca10963f1c243322dd' && (
-              <Link
-                to="/admin/integrity"
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  location.pathname === '/admin/integrity'
-                    ? 'bg-red-600 text-white'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                管理
-              </Link>
-            )}
-          </nav>
-
           {/* ユーザー情報 */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <div className="flex items-center space-x-2">
               <img
-                className="h-8 w-8 rounded-full"
+                className="h-6 w-6 sm:h-8 sm:w-8 rounded-full"
                 src={user?.pictureUrl || 'https://via.placeholder.com/32x32'}
                 alt={user?.displayName || 'ユーザー'}
               />
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-xs sm:text-sm font-medium text-gray-700 truncate max-w-[100px] sm:max-w-none">
                 {user?.displayName || 'ユーザー'}
               </span>
             </div>
             <button 
               onClick={logout}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 px-2 py-1 rounded"
             >
               ログアウト
             </button>
           </div>
         </div>
+
+        {/* ナビゲーション: モバイルではタブ形式 */}
+        <nav className="flex space-x-1 sm:space-x-4 pb-2 sm:pb-0">
+          <Link
+            to="/purchase"
+            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${
+              location.pathname === '/' || location.pathname === '/purchase'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            購入履歴を記録
+          </Link>
+          <Link
+            to="/history"
+            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${
+              location.pathname === '/history'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            履歴一覧
+          </Link>
+          {user?.userId === 'Ue62b450adbd58fca10963f1c243322dd' && (
+            <Link
+              to="/admin/integrity"
+              className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${
+                location.pathname === '/admin/integrity'
+                  ? 'bg-red-600 text-white'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              管理
+            </Link>
+          )}
+        </nav>
       </div>
     </header>
   );
