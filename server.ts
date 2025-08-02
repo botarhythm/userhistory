@@ -314,6 +314,38 @@ app.patch('/api/history/:historyId', async (req, res) => {
   }
 });
 
+// 履歴削除API
+app.delete('/api/history/:historyId', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
+  try {
+    const { historyId } = req.params;
+    
+    log('history_delete_request', { historyId }, 'History delete request received');
+    
+    // 履歴を削除
+    const success = await notionAPI.deleteHistory(historyId);
+    
+    if (!success) {
+      log('history_delete_not_found', { historyId }, 'History record not found for deletion');
+      return res.status(404).json({ error: 'History record not found' });
+    }
+    
+    log('history_delete_success', { historyId }, 'History deleted successfully');
+    
+    return res.json({ 
+      success: true,
+      message: 'History deleted successfully'
+    });
+  } catch (error) {
+    log('history_delete_error', { historyId: req.params.historyId, error: error instanceof Error ? error.message : String(error) }, 'History deletion failed');
+    console.error('History delete error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // 商品一覧取得API
 app.get('/api/products', async (req, res) => {
   if (!notionAPI) {

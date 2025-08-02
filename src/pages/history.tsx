@@ -124,6 +124,39 @@ const HistoryPage: React.FC = () => {
     setEditProductName('');
   };
 
+  const handleDelete = async (recordId: string) => {
+    if (!user || !user.userId) {
+      alert('ユーザー情報が取得できません');
+      return;
+    }
+
+    // 削除確認
+    if (!confirm('この履歴を削除しますか？この操作は取り消せません。')) {
+      return;
+    }
+
+    try {
+      console.log('Deleting history record:', recordId, 'for user:', user.userId);
+      const response = await fetch(`/api/history/${recordId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        // 履歴を再取得
+        await fetchHistory();
+      } else {
+        const errorData = await response.json();
+        alert(`削除に失敗しました: ${errorData.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('削除に失敗しました');
+    }
+  };
+
      if (!isLoggedIn) {
      return (
        <div className="min-h-screen bg-gray-100 py-8">
@@ -284,21 +317,31 @@ const HistoryPage: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                ) : (
-                  <div className="mt-2 flex items-center justify-between">
-                                         {record.memo && (
+                                 ) : (
+                   <div className="mt-2 flex items-center justify-between">
+                     {record.memo && (
                        <div className="text-sm text-gray-600 bg-gray-100 p-2 rounded flex-1">
                          {record.memo}
                        </div>
                      )}
-                    <button
-                      onClick={() => handleEdit(record)}
-                      className="ml-2 px-2 py-1 text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      編集
-                    </button>
-                  </div>
-                )}
+                     <div className="flex gap-2 ml-2">
+                       <button
+                         onClick={() => handleEdit(record)}
+                         className="px-2 py-1 text-blue-600 hover:text-blue-800 text-sm"
+                         title="編集"
+                       >
+                         編集
+                       </button>
+                       <button
+                         onClick={() => handleDelete(record.id)}
+                         className="px-2 py-1 text-red-600 hover:text-red-800 text-sm"
+                         title="削除"
+                       >
+                         削除
+                       </button>
+                     </div>
+                   </div>
+                 )}
               </div>
             ))
           )}

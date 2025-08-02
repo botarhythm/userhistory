@@ -599,5 +599,24 @@ export class NotionAPI {
       return null;
     }
   }
+
+  // 履歴を削除
+  async deleteHistory(historyId: string): Promise<boolean> {
+    try {
+      console.log('Deleting history record:', historyId);
+      
+      // ページを削除
+      await this.client.pages.update({
+        page_id: historyId,
+        archived: true // Notionではarchived=trueで削除扱い
+      });
+
+      console.log('History record deleted successfully:', historyId);
+      return true;
+    } catch (error) {
+      console.error('Failed to delete history:', error);
+      return false;
+    }
+  }
 }
 
