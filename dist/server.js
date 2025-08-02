@@ -47,6 +47,13 @@ app.use(express.static(path.join(__dirname, 'dist', 'public'), {
     etag: true,
     lastModified: true
 }));
+// Railway用のヘッダー設定
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    next();
+});
 // ヘルスチェック
 app.get('/health', (_req, res) => {
     log('health_check', {}, 'Health check requested');
@@ -390,6 +397,14 @@ server.headersTimeout = 66000;
 server.maxConnections = 1000;
 // Railway用の追加設定
 server.setTimeout(120000);
+// Railway用のエラーハンドリング
+server.on('error', (error) => {
+    console.error('Server error:', error);
+    log('server_error', { error: error.message }, 'Server error occurred');
+});
+server.on('connection', (socket) => {
+    socket.setTimeout(30000);
+});
 // グレースフルシャットダウン
 process.on('SIGTERM', () => {
     log('server_shutdown', { signal: 'SIGTERM' }, 'Server shutdown initiated');
