@@ -12,6 +12,7 @@
     "numReplicas": 1,
     "healthcheckInterval": 30,
     "restartPolicyDelay": 5,
-    "healthcheckMethod": "GET"
+    "healthcheckMethod": "GET",
+    "healthcheckPort": 3000
   }
 } 

@@ -400,6 +400,8 @@ const server = app.listen(Number(port), '0.0.0.0', () => {
     console.log(`🔗 API status: http://localhost:${port}/api/status`);
     console.log(`📝 Notion API: ${notionAPI ? '✅ Connected' : '⚠️ Not configured'}`);
     console.log(`🌐 External URL: https://userhistory-production.up.railway.app`);
+    console.log(`🔧 Railway Environment: ${process.env['RAILWAY_ENVIRONMENT'] || 'unknown'}`);
+    console.log(`🏗️ Railway Project: ${process.env['RAILWAY_PROJECT_ID'] || 'unknown'}`);
 });
 // Railway用の最適化設定（Railway Station推奨）
 server.keepAliveTimeout = 65000;

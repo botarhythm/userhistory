@@ -11,7 +11,7 @@
     "build": "npm run build:server && npm run build:client",
     "build:server": "tsc -p tsconfig.server.json",
     "build:client": "vite build",
-    "start": "node test-server.js",
+    "start": "node dist/server.js",
     "test:server": "node test-server.js",
     "test": "jest",
     "lint": "eslint . --ext .ts,.tsx",
