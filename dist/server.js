@@ -31,7 +31,9 @@ const log = (operation, context, message) => {
 app.use(cors());
 app.use(express.json());
 // 静的ファイル配信（Railwayデプロイ用）
-app.use(express.static(path.join(__dirname, 'dist', 'public')));
+app.use(express.static(path.join(__dirname, 'dist', 'public'), {
+    index: false // index.htmlの自動配信を無効化
+}));
 // ログ設定
 app.use((req, _res, next) => {
     log('http_request', {
@@ -53,23 +55,10 @@ app.get('/health', (_req, res) => {
         notion: notionAPI ? 'connected' : 'not_configured'
     });
 });
-// ルートパス
+// ルートパス - フロントエンドを配信
 app.get('/', (_req, res) => {
-    log('root_access', {}, 'Root path accessed');
-    res.json({
-        message: 'Botarhythm Coffee Roaster LINE Mini App API',
-        status: 'running',
-        version: '1.0.0',
-        notion: notionAPI ? 'connected' : 'not_configured',
-        endpoints: {
-            health: '/health',
-            status: '/api/status',
-            user: '/api/user/:lineUid',
-            checkin: '/api/checkin',
-            purchase: '/api/purchase',
-            history: '/api/history/:lineUid'
-        }
-    });
+    log('root_access', {}, 'Root path accessed - serving frontend');
+    res.sendFile(path.join(__dirname, 'dist', 'public', 'index.html'));
 });
 // APIルート
 app.get('/api/status', (_req, res) => {
