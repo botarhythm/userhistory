@@ -77,36 +77,36 @@ const Header: React.FC = () => {
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ヘッダー上部: ロゴ、アプリ名、ユーザー情報 */}
-        <div className="flex justify-between items-center h-16">
-          {/* ロゴとアプリ名 */}
-          <div className="flex items-center">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <img src="/assets/symbolmark.gif" alt="Botarhythm Coffee Roaster Symbol" className="h-6 w-6 sm:h-8 sm:w-8" />
-              <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate max-w-[200px] sm:max-w-none">
-                Botarhythm Coffee Roaster
-              </h1>
-            </div>
+        {/* 最上部: LINEユーザー情報 */}
+        <div className="flex justify-between items-center py-3">
+          {/* 左側: LINEアイコンと表示名 */}
+          <div className="flex items-center space-x-3">
+            <img
+              className="h-8 w-8 rounded-full"
+              src={user?.pictureUrl || 'https://via.placeholder.com/32x32'}
+              alt={user?.displayName || 'ユーザー'}
+            />
+            <span className="text-sm font-medium text-gray-700 truncate max-w-[150px] sm:max-w-[200px]">
+              {user?.displayName || 'ユーザー'}
+            </span>
           </div>
 
-          {/* ユーザー情報 */}
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <div className="flex items-center space-x-2">
-              <img
-                className="h-6 w-6 sm:h-8 sm:w-8 rounded-full"
-                src={user?.pictureUrl || 'https://via.placeholder.com/32x32'}
-                alt={user?.displayName || 'ユーザー'}
-              />
-              <span className="text-xs sm:text-sm font-medium text-gray-700 truncate max-w-[100px] sm:max-w-none">
-                {user?.displayName || 'ユーザー'}
-              </span>
-            </div>
-            <button 
-              onClick={logout}
-              className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 px-2 py-1 rounded"
-            >
-              ログアウト
-            </button>
+          {/* 右側: ログアウトボタン */}
+          <button 
+            onClick={logout}
+            className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1 rounded-md hover:bg-gray-100"
+          >
+            ログアウト
+          </button>
+        </div>
+
+        {/* 中央: ロゴとブランド名 */}
+        <div className="flex justify-center items-center py-3 border-t border-gray-100">
+          <div className="flex items-center space-x-3">
+            <img src="/assets/symbolmark.gif" alt="Botarhythm Coffee Roaster Symbol" className="h-8 w-8" />
+            <h1 className="text-lg font-bold text-gray-900">
+              Botarhythm Coffee Roaster
+            </h1>
           </div>
         </div>
 
