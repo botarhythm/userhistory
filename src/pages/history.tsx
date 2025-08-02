@@ -22,6 +22,7 @@ const HistoryPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editMemo, setEditMemo] = useState<string>('');
+  const [editProductName, setEditProductName] = useState<string>('');
 
   useEffect(() => {
     if (isLoggedIn && user) {
@@ -72,6 +73,7 @@ const HistoryPage: React.FC = () => {
   const handleEdit = (record: HistoryRecord) => {
     setEditingId(record.id);
     setEditMemo(record.memo || '');
+    setEditProductName(formatItems(record.items) || '');
   };
 
   const handleSave = async (recordId: string) => {
@@ -82,7 +84,8 @@ const HistoryPage: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          memo: editMemo
+          memo: editMemo,
+          productName: editProductName
         }),
       });
 
@@ -91,18 +94,20 @@ const HistoryPage: React.FC = () => {
         await fetchHistory();
         setEditingId(null);
         setEditMemo('');
+        setEditProductName('');
       } else {
-        alert('メモの更新に失敗しました');
+        alert('更新に失敗しました');
       }
     } catch (error) {
       console.error('Update error:', error);
-      alert('メモの更新に失敗しました');
+      alert('更新に失敗しました');
     }
   };
 
   const handleCancel = () => {
     setEditingId(null);
     setEditMemo('');
+    setEditProductName('');
   };
 
   if (!isLoggedIn) {
@@ -165,7 +170,7 @@ const HistoryPage: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">履歴一覧</h1>
           <button
             onClick={fetchHistory}
-            className="text-blue-600 hover:text-blue-800 p-2"
+            className="text-green-600 hover:text-green-800 p-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -196,7 +201,7 @@ const HistoryPage: React.FC = () => {
                           : 'bg-blue-100 text-blue-800'
                       }`}
                     >
-                      {record.type === 'checkin' ? '来店' : '購入'}
+                      {record.type === 'checkin' ? '来店' : '記入日'}
                     </span>
                     <span className="text-sm text-gray-600">
                       {formatDate(record.timestamp)}
@@ -216,17 +221,36 @@ const HistoryPage: React.FC = () => {
 
                 {editingId === record.id ? (
                   <div className="mt-2 space-y-2">
-                                         <textarea
-                       value={editMemo}
-                       onChange={(e) => setEditMemo(e.target.value)}
-                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       rows={3}
-                       placeholder="豆/粉の種類、風味の印象、次回への記録など、自由に記入してください"
-                     />
+                    {record.type === 'purchase' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          商品名
+                        </label>
+                        <input
+                          type="text"
+                          value={editProductName}
+                          onChange={(e) => setEditProductName(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                          placeholder="商品名を入力してください"
+                        />
+                      </div>
+                    )}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        メモ
+                      </label>
+                      <textarea
+                        value={editMemo}
+                        onChange={(e) => setEditMemo(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        rows={3}
+                        placeholder="豆/粉の種類、風味の印象、次回への記録など、自由に記入してください"
+                      />
+                    </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleSave(record.id)}
-                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                        className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
                       >
                         保存
                       </button>

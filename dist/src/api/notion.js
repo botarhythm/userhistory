@@ -458,11 +458,18 @@ export class NotionAPI {
                 throw new Error('Failed to get database structure');
             }
             const memoProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || 'メモ';
+            const titleProperty = this.getPropertyName(dbStructure.properties, 'title') || '商品名';
             const properties = {};
             // メモの更新
             if (updates.memo !== undefined) {
                 properties[memoProperty] = {
                     rich_text: updates.memo ? [{ text: { content: updates.memo } }] : []
+                };
+            }
+            // 商品名の更新（購入履歴の場合のみ）
+            if (updates.productName !== undefined) {
+                properties[titleProperty] = {
+                    title: [{ text: { content: updates.productName } }]
                 };
             }
             // ページを更新
@@ -476,7 +483,6 @@ export class NotionAPI {
             // 履歴レコードを構築
             const relationProperty = this.getPropertyName(dbStructure.properties, 'relation') || '関連顧客ID';
             const dateProperty = this.getPropertyName(dbStructure.properties, 'date') || '日時';
-            const titleProperty = this.getPropertyName(dbStructure.properties, 'title') || '商品名';
             const timestamp = this.getPropertyValue(page, dateProperty, 'date');
             const title = this.getPropertyValue(page, titleProperty, 'title');
             const memo = this.getPropertyValue(page, memoProperty, 'rich_text');

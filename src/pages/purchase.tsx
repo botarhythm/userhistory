@@ -120,7 +120,7 @@ const PurchasePage: React.FC = () => {
       });
 
       if (response.ok) {
-        alert('購入履歴を記録しました');
+        alert('購入メモを記録しました');
         setSelectedProduct('');
         setMemo('');
         navigate('/history');
@@ -150,7 +150,7 @@ const PurchasePage: React.FC = () => {
               LINEログインが必要です
             </h1>
             <p className="text-gray-600 mb-4">
-              購入履歴を記録するにはLINEアカウントでログインしてください
+              購入メモを記録するにはLINEアカウントでログインしてください
             </p>
           </div>
         </div>
@@ -162,7 +162,7 @@ const PurchasePage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-4 sm:p-6 mx-4 sm:mx-auto">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">
-          購入履歴を記録
+          購入メモ
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -174,7 +174,7 @@ const PurchasePage: React.FC = () => {
             <select
               value={selectedProduct}
               onChange={(e) => handleProductChange(e.target.value)}
-              className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+              className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
             >
               <option value="">商品を選択してください</option>
               {products.map((product) => (
@@ -194,7 +194,7 @@ const PurchasePage: React.FC = () => {
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
               rows={4}
-              className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                              className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
               placeholder="豆/粉の種類、風味の印象、次回への記録など、自由に記入してください"
             />
           </div>
@@ -203,9 +203,9 @@ const PurchasePage: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-blue-600 text-white py-4 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-base font-medium"
+            className="w-full bg-green-500 text-white py-4 px-4 rounded-md hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-base font-medium"
           >
-            {isSubmitting ? '送信中...' : '購入履歴を記録'}
+            {isSubmitting ? '送信中...' : '購入メモを記録'}
           </button>
         </form>
       </div>

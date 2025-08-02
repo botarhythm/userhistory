@@ -114,17 +114,17 @@ const Header: React.FC = () => {
             to="/purchase"
             className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${
               location.pathname === '/' || location.pathname === '/purchase'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-green-500 text-white'
                 : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
             }`}
           >
-            購入履歴を記録
+            購入メモ
           </Link>
           <Link
             to="/history"
             className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${
               location.pathname === '/history'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-blue-500 text-white'
                 : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
             }`}
           >

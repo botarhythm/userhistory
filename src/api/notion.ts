@@ -535,7 +535,7 @@ export class NotionAPI {
   }
 
   // 履歴を更新
-  async updateHistory(historyId: string, updates: { memo?: string }): Promise<HistoryRecord | null> {
+  async updateHistory(historyId: string, updates: { memo?: string; productName?: string }): Promise<HistoryRecord | null> {
     try {
       // データベース構造を取得してプロパティ名を動的に決定
       const dbStructure = await this.getDatabaseStructure(this.historyDatabaseId);
@@ -544,6 +544,7 @@ export class NotionAPI {
       }
 
       const memoProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || 'メモ';
+      const titleProperty = this.getPropertyName(dbStructure.properties, 'title') || '商品名';
 
       const properties: any = {};
 
@@ -551,6 +552,13 @@ export class NotionAPI {
       if (updates.memo !== undefined) {
         properties[memoProperty] = {
           rich_text: updates.memo ? [{ text: { content: updates.memo } }] : []
+        };
+      }
+
+      // 商品名の更新（購入履歴の場合のみ）
+      if (updates.productName !== undefined) {
+        properties[titleProperty] = {
+          title: [{ text: { content: updates.productName } }]
         };
       }
 
@@ -567,7 +575,6 @@ export class NotionAPI {
       // 履歴レコードを構築
       const relationProperty = this.getPropertyName(dbStructure.properties, 'relation') || '関連顧客ID';
       const dateProperty = this.getPropertyName(dbStructure.properties, 'date') || '日時';
-      const titleProperty = this.getPropertyName(dbStructure.properties, 'title') || '商品名';
 
       const timestamp = this.getPropertyValue(page, dateProperty, 'date');
       const title = this.getPropertyValue(page, titleProperty, 'title');

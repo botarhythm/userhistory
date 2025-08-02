@@ -297,12 +297,12 @@ app.patch('/api/history/:historyId', async (req, res) => {
 
   try {
     const { historyId } = req.params;
-    const { memo } = req.body;
+    const { memo, productName } = req.body;
     
-    log('history_update_request', { historyId, memo }, 'History update request received');
+    log('history_update_request', { historyId, memo, productName }, 'History update request received');
     
     // 履歴を更新
-    const updatedHistory = await notionAPI.updateHistory(historyId, { memo });
+    const updatedHistory = await notionAPI.updateHistory(historyId, { memo, productName });
     
     if (!updatedHistory) {
       log('history_update_not_found', { historyId }, 'History record not found for update');
