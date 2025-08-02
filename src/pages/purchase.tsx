@@ -58,7 +58,10 @@ const PurchasePage: React.FC = () => {
             { id: '13', name: 'Blend ディープルーツ', order: 13, available: true },
             { id: '14', name: 'Blend タッチザアース', order: 14, available: true }
           ];
-          setProducts(mockProducts);
+          setProducts([...mockProducts, { id: 'other', name: 'その他', order: 999, available: true }]);
+        } else {
+          // Notionから取得した商品に「その他」を追加
+          setProducts([...data.products, { id: 'other', name: 'その他', order: 999, available: true }]);
         }
       } else {
         console.error('Failed to fetch products:', response.status);

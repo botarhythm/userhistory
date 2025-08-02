@@ -36,7 +36,7 @@ const Header: React.FC = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex items-center space-x-3">
-                <img src="/assets/logo.jpg" alt="Botarhythm Coffee Roaster" className="h-8 w-8" />
+                <img src="/assets/symbolmark.gif" alt="Botarhythm Coffee Roaster Symbol" className="h-8 w-8" />
                 <h1 className="text-xl font-bold text-gray-900">
                   Botarhythm Coffee Roaster
                 </h1>
@@ -59,7 +59,7 @@ const Header: React.FC = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex items-center space-x-3">
-                <img src="/assets/logo.jpg" alt="Botarhythm Coffee Roaster" className="h-8 w-8" />
+                <img src="/assets/symbolmark.gif" alt="Botarhythm Coffee Roaster Symbol" className="h-8 w-8" />
                 <h1 className="text-xl font-bold text-gray-900">
                   Botarhythm Coffee Roaster
                 </h1>
@@ -81,7 +81,7 @@ const Header: React.FC = () => {
           {/* ロゴとアプリ名 */}
           <div className="flex items-center">
             <div className="flex items-center space-x-3">
-              <img src="/assets/logo.jpg" alt="Botarhythm Coffee Roaster" className="h-8 w-8" />
+              <img src="/assets/symbolmark.gif" alt="Botarhythm Coffee Roaster Symbol" className="h-8 w-8" />
               <h1 className="text-xl font-bold text-gray-900">
                 Botarhythm Coffee Roaster
               </h1>
@@ -91,19 +91,9 @@ const Header: React.FC = () => {
           {/* ナビゲーション */}
           <nav className="flex space-x-4">
             <Link
-              to="/checkin"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                location.pathname === '/' || location.pathname === '/checkin'
-                  ? 'bg-green-600 text-white'
-                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              チェックイン
-            </Link>
-            <Link
               to="/purchase"
               className={`px-3 py-2 rounded-md text-sm font-medium ${
-                location.pathname === '/purchase'
+                location.pathname === '/' || location.pathname === '/purchase'
                   ? 'bg-blue-600 text-white'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
               }`}
@@ -120,16 +110,18 @@ const Header: React.FC = () => {
             >
               履歴一覧
             </Link>
-            <Link
-              to="/admin/integrity"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                location.pathname === '/admin/integrity'
-                  ? 'bg-red-600 text-white'
-                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              管理
-            </Link>
+            {user?.userId === 'Ue62b450adbd58fca10963f1c243322dd' && (
+              <Link
+                to="/admin/integrity"
+                className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  location.pathname === '/admin/integrity'
+                    ? 'bg-red-600 text-white'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                管理
+              </Link>
+            )}
           </nav>
 
           {/* ユーザー情報 */}

@@ -20,13 +20,14 @@ const HistoryPage: React.FC = () => {
   const [history, setHistory] = useState<HistoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'checkin' | 'purchase'>('all');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editMemo, setEditMemo] = useState<string>('');
 
   useEffect(() => {
     if (isLoggedIn && user) {
       fetchHistory();
     }
-  }, [filter, isLoggedIn, user]);
+  }, [isLoggedIn, user]);
 
   const fetchHistory = async () => {
     if (!user) return;
@@ -35,7 +36,7 @@ const HistoryPage: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch(`/api/history/${user.userId}?type=${filter === 'all' ? '' : filter}`);
+      const response = await fetch(`/api/history/${user.userId}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -66,6 +67,42 @@ const HistoryPage: React.FC = () => {
   const formatItems = (items?: Array<{ name: string; quantity: number }>) => {
     if (!items || items.length === 0) return '';
     return items.map(item => `${item.name} x${item.quantity}`).join(', ');
+  };
+
+  const handleEdit = (record: HistoryRecord) => {
+    setEditingId(record.id);
+    setEditMemo(record.memo || '');
+  };
+
+  const handleSave = async (recordId: string) => {
+    try {
+      const response = await fetch(`/api/history/${recordId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          memo: editMemo
+        }),
+      });
+
+      if (response.ok) {
+        // 履歴を再取得
+        await fetchHistory();
+        setEditingId(null);
+        setEditMemo('');
+      } else {
+        alert('メモの更新に失敗しました');
+      }
+    } catch (error) {
+      console.error('Update error:', error);
+      alert('メモの更新に失敗しました');
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditMemo('');
   };
 
   if (!isLoggedIn) {
@@ -136,55 +173,7 @@ const HistoryPage: React.FC = () => {
           </button>
         </div>
 
-        {/* ユーザー情報表示 */}
-        <div className="bg-blue-50 p-4 rounded-lg mb-6">
-          <div className="text-sm text-blue-600 mb-1">ログイン中</div>
-          <div className="flex items-center space-x-3">
-            <img
-              className="h-8 w-8 rounded-full"
-              src={user.pictureUrl || 'https://via.placeholder.com/32x32'}
-              alt={user.displayName}
-            />
-            <div>
-              <div className="font-medium text-gray-900">{user.displayName}</div>
-              <div className="text-sm text-gray-600">ID: {user.userId}</div>
-            </div>
-          </div>
-        </div>
 
-        {/* フィルターボタン */}
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-md text-sm font-medium ${
-              filter === 'all'
-                ? 'bg-gray-800 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            すべて
-          </button>
-          <button
-            onClick={() => setFilter('checkin')}
-            className={`px-4 py-2 rounded-md text-sm font-medium ${
-              filter === 'checkin'
-                ? 'bg-gray-800 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            来店
-          </button>
-          <button
-            onClick={() => setFilter('purchase')}
-            className={`px-4 py-2 rounded-md text-sm font-medium ${
-              filter === 'purchase'
-                ? 'bg-gray-800 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            購入
-          </button>
-        </div>
 
         {/* 履歴リスト */}
         <div className="space-y-4">
@@ -230,9 +219,43 @@ const HistoryPage: React.FC = () => {
                   </div>
                 )}
 
-                {record.memo && (
-                  <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                    {record.memo}
+                {editingId === record.id ? (
+                  <div className="mt-2 space-y-2">
+                    <textarea
+                      value={editMemo}
+                      onChange={(e) => setEditMemo(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows={3}
+                      placeholder="メモを入力してください"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleSave(record.id)}
+                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                      >
+                        保存
+                      </button>
+                      <button
+                        onClick={handleCancel}
+                        className="px-3 py-1 bg-gray-500 text-white text-sm rounded hover:bg-gray-600"
+                      >
+                        キャンセル
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 flex items-center justify-between">
+                    {record.memo && (
+                      <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded flex-1">
+                        {record.memo}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => handleEdit(record)}
+                      className="ml-2 px-2 py-1 text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      編集
+                    </button>
                   </div>
                 )}
               </div>

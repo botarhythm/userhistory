@@ -217,6 +217,34 @@ app.get('/api/history/:lineUid', async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
+// 履歴編集API
+app.patch('/api/history/:historyId', async (req, res) => {
+    if (!notionAPI) {
+        return res.status(503).json({ error: 'Notion API not configured' });
+    }
+    try {
+        const { historyId } = req.params;
+        const { memo } = req.body;
+        log('history_update_request', { historyId, memo }, 'History update request received');
+        // 履歴を更新
+        const updatedHistory = await notionAPI.updateHistory(historyId, { memo });
+        if (!updatedHistory) {
+            log('history_update_not_found', { historyId }, 'History record not found for update');
+            return res.status(404).json({ error: 'History record not found' });
+        }
+        log('history_update_success', { historyId }, 'History updated successfully');
+        return res.json({
+            success: true,
+            message: 'History updated successfully',
+            history: updatedHistory
+        });
+    }
+    catch (error) {
+        log('history_update_error', { historyId: req.params.historyId, error: error instanceof Error ? error.message : String(error) }, 'History update failed');
+        console.error('History update error:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
 // 商品一覧取得API
 app.get('/api/products', async (req, res) => {
     if (!notionAPI) {

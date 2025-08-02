@@ -107,6 +107,8 @@ export class NotionAPI {
             // 既存顧客を検索
             const existingCustomer = await this.findCustomerByLineUid(lineUid);
             if (existingCustomer) {
+                // 既存顧客の表示名を更新
+                await this.updateCustomerDisplayName(existingCustomer.id, displayName);
                 return existingCustomer.id;
             }
             // データベース構造を取得してプロパティ名を動的に決定
@@ -133,6 +135,30 @@ export class NotionAPI {
         catch (error) {
             console.error('Failed to create customer:', error);
             throw new Error('Failed to create customer');
+        }
+    }
+    // 顧客の表示名を更新
+    async updateCustomerDisplayName(customerId, displayName) {
+        try {
+            // データベース構造を取得してプロパティ名を動的に決定
+            const dbStructure = await this.getDatabaseStructure(this.customerDatabaseId);
+            if (!dbStructure) {
+                throw new Error('Failed to get database structure');
+            }
+            const displayNameProperty = this.getPropertyName(dbStructure.properties, 'title') || '表示名';
+            // 顧客の表示名を更新
+            await this.client.pages.update({
+                page_id: customerId,
+                properties: {
+                    [displayNameProperty]: {
+                        title: [{ text: { content: displayName } }]
+                    }
+                }
+            });
+        }
+        catch (error) {
+            console.error('Failed to update customer display name:', error);
+            // エラーが発生しても処理を継続（表示名の更新は重要ではないため）
         }
     }
     // LINE UIDで顧客を検索
@@ -320,15 +346,19 @@ export class NotionAPI {
                 ],
                 page_size: limit
             });
-            return response.results.map(page => ({
-                id: page.id,
-                customerId,
-                type: this.getPropertyValue(page, typeProperty, 'select') === '来店' ? 'checkin' : 'purchase',
-                timestamp: this.getPropertyValue(page, dateProperty, 'date'),
-                items: this.parseItems(this.getPropertyValue(page, detailProperty, 'rich_text')),
-                total: this.getPropertyValue(page, totalProperty, 'number'),
-                memo: this.getPropertyValue(page, memoProperty, 'rich_text')
-            }));
+            return response.results.map(page => {
+                const recordType = this.getPropertyValue(page, typeProperty, 'select') === '来店' ? 'checkin' : 'purchase';
+                const detail = this.getPropertyValue(page, detailProperty, 'rich_text');
+                return {
+                    id: page.id,
+                    customerId,
+                    type: recordType,
+                    timestamp: this.getPropertyValue(page, dateProperty, 'date'),
+                    items: recordType === 'purchase' ? this.parseItems(detail) : undefined,
+                    total: this.getPropertyValue(page, totalProperty, 'number'),
+                    memo: this.getPropertyValue(page, memoProperty, 'rich_text')
+                };
+            });
         }
         catch (error) {
             console.error('History fetch error:', error);
@@ -379,6 +409,61 @@ export class NotionAPI {
             }
             return { name: item, quantity: 1 };
         });
+    }
+    // 履歴を更新
+    async updateHistory(historyId, updates) {
+        try {
+            // データベース構造を取得してプロパティ名を動的に決定
+            const dbStructure = await this.getDatabaseStructure(this.historyDatabaseId);
+            if (!dbStructure) {
+                throw new Error('Failed to get database structure');
+            }
+            const memoProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || 'メモ';
+            const properties = {};
+            // メモの更新
+            if (updates.memo !== undefined) {
+                properties[memoProperty] = {
+                    rich_text: updates.memo ? [{ text: { content: updates.memo } }] : []
+                };
+            }
+            // ページを更新
+            await this.client.pages.update({
+                page_id: historyId,
+                properties
+            });
+            // 更新された履歴を取得
+            const response = await this.client.pages.retrieve({ page_id: historyId });
+            const page = response;
+            // 履歴レコードを構築
+            const relationProperty = this.getPropertyName(dbStructure.properties, 'relation') || '関連顧客ID';
+            const typeProperty = this.getPropertyName(dbStructure.properties, 'select') || 'タイプ';
+            const dateProperty = this.getPropertyName(dbStructure.properties, 'date') || '日時';
+            const titleProperty = this.getPropertyName(dbStructure.properties, 'title') || '商品名';
+            const detailProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || '商品詳細';
+            const quantityProperty = this.getPropertyName(dbStructure.properties, 'number') || '数量';
+            const totalProperty = this.getPropertyName(dbStructure.properties, 'number') || '合計金額';
+            const type = this.getPropertyValue(page, typeProperty, 'select');
+            const timestamp = this.getPropertyValue(page, dateProperty, 'date');
+            const title = this.getPropertyValue(page, titleProperty, 'title');
+            const detail = this.getPropertyValue(page, detailProperty, 'rich_text');
+            const quantity = this.getPropertyValue(page, quantityProperty, 'number');
+            const total = this.getPropertyValue(page, totalProperty, 'number');
+            const memo = this.getPropertyValue(page, memoProperty, 'rich_text');
+            const result = {
+                id: page.id,
+                customerId: this.getPropertyValue(page, relationProperty, 'relation') || '',
+                type: type === '来店' ? 'checkin' : 'purchase',
+                timestamp: timestamp || new Date().toISOString(),
+                items: type === '購入' ? this.parseItems(detail || '') : undefined,
+                total: type === '購入' ? total : undefined,
+                memo: memo || undefined
+            };
+            return result;
+        }
+        catch (error) {
+            console.error('Failed to update history:', error);
+            return null;
+        }
     }
 }
 //# sourceMappingURL=notion.js.map
