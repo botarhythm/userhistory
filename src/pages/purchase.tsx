@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiff } from '../contexts/LiffContext';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 interface Product {
   id: string;
@@ -20,6 +21,9 @@ interface PurchaseItem {
 const PurchasePage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isLoggedIn } = useLiff();
+  
+  // ページタイトルを設定
+  usePageTitle('購入メモ - Botarhythm Coffee Roaster');
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [memo, setMemo] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);

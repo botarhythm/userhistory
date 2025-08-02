@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import PurchasePage from './pages/purchase';
 import HistoryPage from './pages/history';
@@ -26,6 +26,27 @@ const App: React.FC = () => {
 const Header: React.FC = () => {
   const location = useLocation();
   const { user, isInitialized, isLoggedIn, logout, error, retryLogin } = useLiff();
+
+  // LINEブラウザでのタイトル制御
+  useEffect(() => {
+    // ページタイトルを設定
+    document.title = 'Botarhythm Coffee Roaster';
+    
+    // LINEブラウザでのURL表示を制御
+    if (typeof window !== 'undefined' && window.navigator.userAgent.includes('Line')) {
+      // LINEブラウザの場合、追加のメタタグを動的に設定
+      const meta = document.createElement('meta');
+      meta.name = 'apple-mobile-web-app-capable';
+      meta.content = 'yes';
+      document.head.appendChild(meta);
+      
+      // ステータスバーのスタイルを設定
+      const statusBarMeta = document.createElement('meta');
+      statusBarMeta.name = 'apple-mobile-web-app-status-bar-style';
+      statusBarMeta.content = 'black-translucent';
+      document.head.appendChild(statusBarMeta);
+    }
+  }, []);
 
   if (!isInitialized) {
     return (

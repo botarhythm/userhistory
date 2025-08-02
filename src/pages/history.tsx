@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiff } from '../contexts/LiffContext';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 interface HistoryRecord {
   id: string;
@@ -17,6 +18,9 @@ interface HistoryRecord {
 const HistoryPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isLoggedIn } = useLiff();
+  
+  // ページタイトルを設定
+  usePageTitle('履歴一覧 - Botarhythm Coffee Roaster');
   const [history, setHistory] = useState<HistoryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
