@@ -399,6 +399,7 @@ const server = app.listen(Number(port), '0.0.0.0', () => {
     console.log(`📊 Health check: http://localhost:${port}/health`);
     console.log(`🔗 API status: http://localhost:${port}/api/status`);
     console.log(`📝 Notion API: ${notionAPI ? '✅ Connected' : '⚠️ Not configured'}`);
+    console.log(`🌐 External URL: https://userhistory-production.up.railway.app`);
 });
 // Railway用の最適化設定（Railway Station推奨）
 server.keepAliveTimeout = 65000;
