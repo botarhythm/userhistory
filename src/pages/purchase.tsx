@@ -24,6 +24,7 @@ const PurchasePage: React.FC = () => {
   const [memo, setMemo] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   // 商品一覧を取得
   useEffect(() => {
@@ -122,10 +123,18 @@ const PurchasePage: React.FC = () => {
       if (response.ok) {
         const result = await response.json();
         console.log('Purchase success response:', result);
-        alert('購入メモを記録しました');
+        
+        // フォームをリセット
         setSelectedProduct('');
         setMemo('');
-        navigate('/history');
+        
+        // 成功メッセージを表示
+        setShowSuccessMessage(true);
+        
+        // 3秒後に履歴ページに遷移
+        setTimeout(() => {
+          navigate('/history');
+        }, 2000);
       } else {
         const error = await response.json();
         console.error('Purchase error response:', error);
@@ -155,6 +164,31 @@ const PurchasePage: React.FC = () => {
             <p className="text-gray-600 mb-4">
               購入メモを記録するにはLINEアカウントでログインしてください
             </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 成功メッセージ表示
+  if (showSuccessMessage) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-lg p-8 border border-gray-200 text-center max-w-md mx-4">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
+            記録完了
+          </h2>
+          <p className="text-gray-600 mb-6">
+            購入メモを記録しました
+          </p>
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
+            <span className="ml-2 text-sm text-gray-500">履歴ページに移動中...</span>
           </div>
         </div>
       </div>

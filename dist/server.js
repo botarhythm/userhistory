@@ -177,8 +177,7 @@ app.post('/api/purchase', async (req, res) => {
                 validationErrors
             }, 'Purchase request validation failed');
             return res.status(400).json({
-                error: `Validation failed: ${validationErrors.join(', ')}`,
-                details: validationErrors
+                error: 'Validation failed'
             });
         }
         log('purchase_request', { lineUid, displayName, itemsCount: items.length, total }, 'Purchase request received');
@@ -187,9 +186,8 @@ app.post('/api/purchase', async (req, res) => {
         // 購入履歴を記録
         const historyId = await notionAPI.recordPurchase(customerId, items, total, memo, timestamp);
         log('purchase_success', { lineUid, customerId, historyId, total }, 'Purchase recorded successfully');
-        return res.json({
-            success: true,
-            message: 'Purchase recorded successfully'
+        return res.status(200).json({
+            success: true
         });
     }
     catch (error) {
