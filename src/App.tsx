@@ -98,14 +98,14 @@ const Header: React.FC = () => {
           </button>
         </div>
 
-        {/* 中央: ロゴとブランド名 */}
+        {/* 中央: ロゴとブランド名（クリック可能） */}
         <div className="flex justify-center items-center py-3 border-t border-gray-100">
-          <div className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
             <img src="/assets/symbolmark.gif" alt="Botarhythm Coffee Roaster Symbol" className="h-8 w-8" />
             <h1 className="text-lg font-bold text-gray-900">
               Botarhythm Coffee Roaster
             </h1>
-          </div>
+          </Link>
         </div>
 
         {/* ナビゲーション: モバイルではタブ形式 */}

@@ -128,6 +128,8 @@ export class NotionAPI {
             }
             const displayNameProperty = this.getPropertyName(dbStructure.properties, 'title') || '表示名';
             const lineUidProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || 'LINE UID';
+            const updatedAtProperty = this.getPropertyName(dbStructure.properties, 'date') || '最終更新日';
+            const now = new Date().toISOString();
             // 新規顧客を作成
             const response = await this.client.pages.create({
                 parent: { database_id: this.customerDatabaseId },
@@ -137,6 +139,9 @@ export class NotionAPI {
                     },
                     [lineUidProperty]: {
                         rich_text: [{ text: { content: lineUid } }]
+                    },
+                    [updatedAtProperty]: {
+                        date: { start: now }
                     }
                 }
             });
@@ -162,12 +167,17 @@ export class NotionAPI {
                 throw new Error('Failed to get database structure');
             }
             const displayNameProperty = this.getPropertyName(dbStructure.properties, 'title') || '表示名';
-            // 顧客の表示名を更新
+            const updatedAtProperty = this.getPropertyName(dbStructure.properties, 'date') || '最終更新日';
+            const now = new Date().toISOString();
+            // 顧客の表示名と最終更新日を更新
             await this.client.pages.update({
                 page_id: customerId,
                 properties: {
                     [displayNameProperty]: {
                         title: [{ text: { content: displayName } }]
+                    },
+                    [updatedAtProperty]: {
+                        date: { start: now }
                     }
                 }
             });
@@ -188,6 +198,7 @@ export class NotionAPI {
             const displayNameProperty = this.getPropertyName(dbStructure.properties, 'title') || '表示名';
             const lineUidProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || 'LINE UID';
             const dateProperty = this.getPropertyName(dbStructure.properties, 'created_time') || '登録日';
+            const updatedAtProperty = this.getPropertyName(dbStructure.properties, 'date') || '最終更新日';
             // LINE UIDで検索
             const response = await this.client.databases.query({
                 database_id: this.customerDatabaseId,
@@ -206,7 +217,8 @@ export class NotionAPI {
                 id: page.id || '',
                 lineUid: this.getPropertyValue(page, lineUidProperty, 'rich_text') || '',
                 displayName: this.getPropertyValue(page, displayNameProperty, 'title') || '',
-                createdAt: this.getPropertyValue(page, dateProperty, 'created_time') || new Date().toISOString()
+                createdAt: this.getPropertyValue(page, dateProperty, 'created_time') || new Date().toISOString(),
+                updatedAt: this.getPropertyValue(page, updatedAtProperty, 'date') || new Date().toISOString()
             };
         }
         catch (error) {
@@ -247,6 +259,26 @@ export class NotionAPI {
                 parent: { database_id: this.historyDatabaseId },
                 properties
             });
+            // 顧客の最終更新日も更新
+            try {
+                const customerDbStructure = await this.getDatabaseStructure(this.customerDatabaseId);
+                if (customerDbStructure) {
+                    const updatedAtProperty = this.getPropertyName(customerDbStructure.properties, 'date') || '最終更新日';
+                    const now = new Date().toISOString();
+                    await this.client.pages.update({
+                        page_id: customerId,
+                        properties: {
+                            [updatedAtProperty]: {
+                                date: { start: now }
+                            }
+                        }
+                    });
+                }
+            }
+            catch (error) {
+                console.warn('Failed to update customer last updated date:', error);
+                // 最終更新日の更新に失敗しても履歴記録は継続
+            }
             return response.id;
         }
         catch (error) {
@@ -288,6 +320,26 @@ export class NotionAPI {
                 parent: { database_id: this.historyDatabaseId },
                 properties
             });
+            // 顧客の最終更新日も更新
+            try {
+                const customerDbStructure = await this.getDatabaseStructure(this.customerDatabaseId);
+                if (customerDbStructure) {
+                    const updatedAtProperty = this.getPropertyName(customerDbStructure.properties, 'date') || '最終更新日';
+                    const now = new Date().toISOString();
+                    await this.client.pages.update({
+                        page_id: customerId,
+                        properties: {
+                            [updatedAtProperty]: {
+                                date: { start: now }
+                            }
+                        }
+                    });
+                }
+            }
+            catch (error) {
+                console.warn('Failed to update customer last updated date:', error);
+                // 最終更新日の更新に失敗しても履歴記録は継続
+            }
             return response.id;
         }
         catch (error) {
