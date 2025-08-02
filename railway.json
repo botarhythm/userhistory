@@ -13,6 +13,6 @@
     "healthcheckInterval": 30,
     "restartPolicyDelay": 5,
     "healthcheckMethod": "GET",
-    "healthcheckPort": 3000
+    "healthcheckPort": 8080
   }
 } 
