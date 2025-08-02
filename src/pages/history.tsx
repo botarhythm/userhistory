@@ -31,21 +31,28 @@ const HistoryPage: React.FC = () => {
   }, [isLoggedIn, user]);
 
   const fetchHistory = async () => {
-    if (!user) return;
+    if (!user || !user.userId) {
+      setError('ユーザー情報が取得できません');
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     setError(null);
 
     try {
+      console.log('Fetching history for user:', user.userId);
       const response = await fetch(`/api/history/${user.userId}`);
       
       if (response.ok) {
         const data = await response.json();
+        console.log('History data received:', data);
         setHistory(data.history || []);
       } else if (response.status === 404) {
-        setError('Customer not found');
+        setError('ユーザーの履歴が見つかりません');
       } else {
-        setError('履歴の取得に失敗しました');
+        const errorData = await response.json();
+        setError(`履歴の取得に失敗しました: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('History fetch error:', error);
@@ -77,7 +84,13 @@ const HistoryPage: React.FC = () => {
   };
 
   const handleSave = async (recordId: string) => {
+    if (!user || !user.userId) {
+      alert('ユーザー情報が取得できません');
+      return;
+    }
+
     try {
+      console.log('Updating history record:', recordId, 'for user:', user.userId);
       const response = await fetch(`/api/history/${recordId}`, {
         method: 'PATCH',
         headers: {
@@ -96,7 +109,8 @@ const HistoryPage: React.FC = () => {
         setEditMemo('');
         setEditProductName('');
       } else {
-        alert('更新に失敗しました');
+        const errorData = await response.json();
+        alert(`更新に失敗しました: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Update error:', error);
@@ -167,10 +181,18 @@ const HistoryPage: React.FC = () => {
      <div className="min-h-screen bg-gray-100 py-4 sm:py-8">
        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 mx-4 sm:mx-auto border border-gray-200">
         <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">履歴一覧</h1>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">履歴一覧</h1>
+            {user && (
+              <p className="text-sm text-gray-600 mt-1">
+                {user.displayName}さんの履歴
+              </p>
+            )}
+          </div>
           <button
             onClick={fetchHistory}
             className="text-green-600 hover:text-green-800 p-2"
+            title="履歴を更新"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -184,7 +206,7 @@ const HistoryPage: React.FC = () => {
         <div className="space-y-3 sm:space-y-4">
           {history.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              履歴がありません
+              {user ? `${user.displayName}さんの履歴がありません` : '履歴がありません'}
             </div>
           ) : (
             history.map((record) => (
