@@ -47,7 +47,7 @@ app.use((req, _res, next) => {
 });
 
 // 静的ファイル配信（Railwayデプロイ用）
-app.use(express.static(path.join(__dirname, 'dist', 'public'), {
+app.use(express.static(path.join(__dirname, 'public'), {
   index: false, // index.htmlの自動配信を無効化
   maxAge: '1h', // キャッシュ設定
   etag: true,
@@ -77,7 +77,7 @@ app.get('/health', (_req, res) => {
 // ルートパス - フロントエンドを配信
 app.get('/', (_req, res) => {
   log('root_access', {}, 'Root path accessed - serving frontend');
-  res.sendFile(path.join(__dirname, 'dist', 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // APIルート
@@ -430,8 +430,8 @@ app.get('*', (req, res) => {
   }
   
   // 静的ファイルの存在確認
-  const staticPath = path.join(__dirname, 'dist', 'public', req.path);
-  const indexPath = path.join(__dirname, 'dist', 'public', 'index.html');
+  const staticPath = path.join(__dirname, 'public', req.path);
+  const indexPath = path.join(__dirname, 'public', 'index.html');
   
   // ファイルが存在する場合は静的ファイルを配信
   if (require('fs').existsSync(staticPath) && !req.path.endsWith('/')) {
