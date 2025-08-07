@@ -61,30 +61,41 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
         return;
       }
 
-      // LIFFの初期化
+      // LIFFの初期化（タイムアウト付き）
       console.log('LIFF初期化実行中...');
-      await liff.init({ liffId });
+      const initPromise = liff.init({ liffId });
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('LIFF初期化タイムアウト')), 10000)
+      );
+      
+      await Promise.race([initPromise, timeoutPromise]);
       console.log('LIFF初期化完了');
       
       // ログイン状態の確認
       const isLoggedIn = liff.isLoggedIn();
-      console.log('LIFFログイン状態:', { isLoggedIn, isInClient: liff.isInClient() });
+      const isInClient = liff.isInClient();
+      console.log('LIFFログイン状態:', { isLoggedIn, isInClient });
 
       if (isLoggedIn) {
         console.log('LIFFログイン済み - プロフィール取得中');
-        const profile = await liff.getProfile();
-        setUser({
-          userId: profile.userId,
-          displayName: profile.displayName,
-          pictureUrl: profile.pictureUrl,
-          statusMessage: profile.statusMessage
-        });
-        setIsLoggedIn(true);
-        console.log('ユーザープロフィール取得完了:', profile.displayName);
+        try {
+          const profile = await liff.getProfile();
+          setUser({
+            userId: profile.userId,
+            displayName: profile.displayName,
+            pictureUrl: profile.pictureUrl,
+            statusMessage: profile.statusMessage
+          });
+          setIsLoggedIn(true);
+          console.log('ユーザープロフィール取得完了:', profile.displayName);
+        } catch (profileError) {
+          console.error('プロフィール取得エラー:', profileError);
+          setError('ユーザー情報の取得に失敗しました');
+        }
       } else {
         console.log('LIFF未ログイン - ログイン処理開始');
         // LINEミニアプリ内でログインしていない場合は自動ログイン
-        if (liff.isInClient()) {
+        if (isInClient) {
           console.log('LINEミニアプリ内 - 自動ログイン実行');
           liff.login();
         } else {
@@ -94,6 +105,7 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
           // ここでは何もしない（ログイン画面を表示するだけ）
           // ユーザーが「再読み込み」ボタンを押したときにretryLoginが呼ばれる
           // 外部ブラウザでは、ユーザーが明示的にログインを選択する必要がある
+          // 外部ブラウザでは、isLoggedInがfalseのままなので、ログイン画面が表示される
         }
       }
       

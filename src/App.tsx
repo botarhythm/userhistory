@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import PurchasePage from './pages/purchase';
 import HistoryPage from './pages/history';
@@ -26,11 +26,26 @@ const App: React.FC = () => {
 const Header: React.FC = () => {
   const location = useLocation();
   const { user, isInitialized, isLoggedIn, logout, error, retryLogin } = useLiff();
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   // ページタイトルを設定
   useEffect(() => {
     document.title = 'Botarhythm Coffee Roaster';
   }, []);
+
+  // ローディングタイムアウト処理
+  useEffect(() => {
+    if (!isInitialized) {
+      const timeout = setTimeout(() => {
+        console.warn('LIFF初期化がタイムアウトしました');
+        setLoadingTimeout(true);
+      }, 15000); // 15秒でタイムアウト
+
+      return () => clearTimeout(timeout);
+    } else {
+      setLoadingTimeout(false);
+    }
+  }, [isInitialized]);
 
   if (!isInitialized) {
     return (
@@ -44,11 +59,24 @@ const Header: React.FC = () => {
           </div>
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-            <span className="ml-3 text-lg text-gray-600">LINEログイン中...</span>
+            <span className="ml-3 text-lg text-gray-600">
+              {loadingTimeout ? '初期化に時間がかかっています...' : 'LINEログイン中...'}
+            </span>
           </div>
           <p className="text-sm text-gray-500 mt-4">
-            LINEアカウントでの認証を完了してください
+            {loadingTimeout 
+              ? 'LINEアカウントでの認証に時間がかかっています。しばらくお待ちください。'
+              : 'LINEアカウントでの認証を完了してください'
+            }
           </p>
+          {loadingTimeout && (
+            <button
+              onClick={retryLogin}
+              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+            >
+              再試行
+            </button>
+          )}
         </div>
       </div>
     );
