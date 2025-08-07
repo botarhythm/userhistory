@@ -37,55 +37,76 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const initializeLiff = async () => {
-      try {
-        // 開発環境でのテスト用設定
-        const liffId = import.meta.env.VITE_LIFF_ID;
-        if (!liffId) {
-          console.warn('LIFF IDが設定されていません。開発環境ではモックユーザーを使用します。');
-          setUser({
-            userId: 'dev-user-123',
-            displayName: '開発用ユーザー',
-            pictureUrl: undefined,
-            statusMessage: '開発環境'
-          });
-          setIsLoggedIn(true);
-          setIsInitialized(true);
-          return;
-        }
+  const initializeLiff = async () => {
+    try {
+      // 開発環境でのテスト用設定
+      const liffId = import.meta.env.VITE_LIFF_ID;
+      console.log('LIFF初期化開始:', { 
+        liffId: liffId ? '設定済み' : '未設定',
+        isInClient: liff.isInClient(),
+        userAgent: navigator.userAgent,
+        location: window.location.href
+      });
 
-        // LIFFの初期化
-        await liff.init({ liffId });
-        
-        // ログイン状態の確認
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          setUser({
-            userId: profile.userId,
-            displayName: profile.displayName,
-            pictureUrl: profile.pictureUrl,
-            statusMessage: profile.statusMessage
-          });
-          setIsLoggedIn(true);
-        } else {
-          // LINEミニアプリ内でログインしていない場合は自動ログイン
-          if (liff.isInClient()) {
-            liff.login();
-          } else {
-            // 外部ブラウザの場合はログイン画面を表示
-            console.log('外部ブラウザでアクセスされています');
-          }
-        }
-        
+      if (!liffId) {
+        console.warn('LIFF IDが設定されていません。開発環境ではモックユーザーを使用します。');
+        setUser({
+          userId: 'dev-user-123',
+          displayName: '開発用ユーザー',
+          pictureUrl: undefined,
+          statusMessage: '開発環境'
+        });
+        setIsLoggedIn(true);
         setIsInitialized(true);
-      } catch (err) {
-        console.error('LIFF初期化エラー:', err);
-        setError(err instanceof Error ? err.message : 'LIFF初期化に失敗しました');
-        setIsInitialized(true);
+        return;
       }
-    };
 
+      // LIFFの初期化
+      console.log('LIFF初期化実行中...');
+      await liff.init({ liffId });
+      console.log('LIFF初期化完了');
+      
+      // ログイン状態の確認
+      const isLoggedIn = liff.isLoggedIn();
+      console.log('LIFFログイン状態:', { isLoggedIn, isInClient: liff.isInClient() });
+
+      if (isLoggedIn) {
+        console.log('LIFFログイン済み - プロフィール取得中');
+        const profile = await liff.getProfile();
+        setUser({
+          userId: profile.userId,
+          displayName: profile.displayName,
+          pictureUrl: profile.pictureUrl,
+          statusMessage: profile.statusMessage
+        });
+        setIsLoggedIn(true);
+        console.log('ユーザープロフィール取得完了:', profile.displayName);
+      } else {
+        console.log('LIFF未ログイン - ログイン処理開始');
+        // LINEミニアプリ内でログインしていない場合は自動ログイン
+        if (liff.isInClient()) {
+          console.log('LINEミニアプリ内 - 自動ログイン実行');
+          liff.login();
+        } else {
+          // 外部ブラウザの場合はログイン画面を表示
+          console.log('外部ブラウザでアクセスされています - ログイン画面表示');
+          // 外部ブラウザでは自動ログインは行わず、ユーザーに手動ログインを促す
+          // ここでは何もしない（ログイン画面を表示するだけ）
+          // ユーザーが「再読み込み」ボタンを押したときにretryLoginが呼ばれる
+          // 外部ブラウザでは、ユーザーが明示的にログインを選択する必要がある
+        }
+      }
+      
+      setIsInitialized(true);
+    } catch (err) {
+      console.error('LIFF初期化エラー:', err);
+      const errorMessage = err instanceof Error ? err.message : 'LIFF初期化に失敗しました';
+      setError(errorMessage);
+      setIsInitialized(true);
+    }
+  };
+
+  useEffect(() => {
     initializeLiff();
   }, []);
 
@@ -97,13 +118,73 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
     setIsLoggedIn(false);
   };
 
-  const retryLogin = () => {
+  const retryLogin = async () => {
+    console.log('再ログイン処理開始:', {
+      isInClient: liff.isInClient(),
+      userAgent: navigator.userAgent,
+      location: window.location.href
+    });
     setError(null);
     setIsInitialized(false);
-    if (liff.isInClient() && !liff.isLoggedIn()) {
-      liff.login();
-    } else {
-      window.location.reload();
+    
+    try {
+      const liffId = import.meta.env.VITE_LIFF_ID;
+      if (!liffId) {
+        console.log('LIFF ID未設定 - ページリロード');
+        window.location.reload();
+        return;
+      }
+
+      // LIFFが初期化されているかチェック
+      if (liff.isInClient()) {
+        console.log('LINEミニアプリ内 - 再ログイン処理');
+        // LINEミニアプリ内の場合
+        if (!liff.isLoggedIn()) {
+          console.log('未ログイン - ログイン実行');
+          liff.login();
+        } else {
+          console.log('既にログイン済み - 再初期化実行');
+          // 既にログイン済みの場合は再初期化
+          await initializeLiff();
+        }
+      } else {
+        console.log('外部ブラウザ - 再ログイン処理');
+        // 外部ブラウザの場合
+        try {
+          // LIFFを再初期化
+          console.log('外部ブラウザ - LIFF再初期化開始');
+          await liff.init({ liffId });
+          console.log('外部ブラウザ - LIFF再初期化完了');
+          
+          const isLoggedIn = liff.isLoggedIn();
+          console.log('外部ブラウザ - ログイン状態:', { isLoggedIn });
+          
+          if (isLoggedIn) {
+            console.log('外部ブラウザ - 既にログイン済み - プロフィール取得');
+            const profile = await liff.getProfile();
+            setUser({
+              userId: profile.userId,
+              displayName: profile.displayName,
+              pictureUrl: profile.pictureUrl,
+              statusMessage: profile.statusMessage
+            });
+            setIsLoggedIn(true);
+            setIsInitialized(true);
+          } else {
+            console.log('外部ブラウザ - 未ログイン - ログイン実行');
+            liff.login();
+          }
+        } catch (initError) {
+          console.error('外部ブラウザ - LIFF再初期化エラー:', initError);
+          // 初期化に失敗した場合はページをリロード
+          window.location.reload();
+        }
+      }
+    } catch (err) {
+      console.error('再ログインエラー:', err);
+      const errorMessage = err instanceof Error ? err.message : '再ログインに失敗しました';
+      setError(errorMessage);
+      setIsInitialized(true);
     }
   };
 
