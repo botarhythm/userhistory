@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -28,7 +29,25 @@ jobs:
     - name: Build application
       run: npm run build
     
-    - name: Deploy to Railway (CLI Method)
+    - name: Check Railway secrets
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "🔍 Checking Railway secrets..."
+        if [ -z "${{ secrets.RAILWAY_TOKEN }}" ]; then
+          echo "❌ RAILWAY_TOKEN is not set"
+          exit 1
+        else
+          echo "✅ RAILWAY_TOKEN is set"
+        fi
+        
+        if [ -z "${{ secrets.RAILWAY_PROJECT_ID }}" ]; then
+          echo "❌ RAILWAY_PROJECT_ID is not set"
+          exit 1
+        else
+          echo "✅ RAILWAY_PROJECT_ID is set: ${{ secrets.RAILWAY_PROJECT_ID }}"
+        fi
+    
+    - name: Deploy to Railway
       if: github.ref == 'refs/heads/main'
       run: |
         echo "🚀 Starting Railway deployment..."
@@ -45,6 +64,9 @@ jobs:
         railway up --project ${{ secrets.RAILWAY_PROJECT_ID }} --detach
         
         echo "✅ Deployment completed successfully!"
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
     
     - name: AI Troubleshooting (on failure)
       if: failure() && github.ref == 'refs/heads/main'
@@ -59,12 +81,4 @@ jobs:
         echo "🤖 Running AI troubleshooting..."
         node ai-troubleshooter.js
         
-        echo "📊 Troubleshooting report generated"
-    
-    # Alternative deployment method using Railway GitHub Action
-    # - name: Deploy to Railway (GitHub Action Method)
-    #   if: github.ref == 'refs/heads/main'
-    #   uses: railway/deploy@v1
-    #   with:
-    #     service: ${{ secrets.RAILWAY_PROJECT_ID }}
-    #     token: ${{ secrets.RAILWAY_TOKEN }} 
+        echo "📊 Troubleshooting report generated" 

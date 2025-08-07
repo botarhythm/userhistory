@@ -64,6 +64,38 @@ RAILWAY_TOKEN=your_railway_token_here
 RAILWAY_PROJECT_ID=093e4f04-ebb8-44d8-b87c-8e9e06743e54
 ```
 
+3. **GitHubシークレットの設定（重要）**
+
+GitHubのリポジトリで以下のシークレットを設定する必要があります：
+
+1. GitHubリポジトリの「Settings」タブを開く
+2. 左サイドバーの「Secrets and variables」→「Actions」をクリック
+3. 「New repository secret」をクリックして以下のシークレットを追加：
+
+#### 必要なシークレット
+
+| シークレット名 | 説明 | 取得方法 |
+|---------------|------|----------|
+| `RAILWAY_TOKEN` | Railway API トークン | [Railway Dashboard](https://railway.app/dashboard) → Account Settings → API → Generate Token |
+| `RAILWAY_PROJECT_ID` | Railway プロジェクトID | `093e4f04-ebb8-44d8-b87c-8e9e06743e54`（固定値） |
+
+#### Railway API トークンの取得手順
+
+1. [Railway Dashboard](https://railway.app/dashboard)にアクセス
+2. 右上のプロフィールアイコンをクリック
+3. "Account Settings"を選択
+4. "API"タブをクリック
+5. "Generate Token"をクリックしてトークンを生成
+6. トークンをコピーしてGitHubシークレットに設定
+
+#### シークレット設定後の確認
+
+シークレットが正しく設定されているか確認するには：
+
+1. GitHubリポジトリの「Actions」タブを開く
+2. 最新のワークフロー実行を確認
+3. 「Check Railway secrets」ステップで「✅ RAILWAY_TOKEN is set」「✅ RAILWAY_PROJECT_ID is set」が表示されることを確認
+
 ### 使用方法
 
 #### AIからの使用（推奨）
