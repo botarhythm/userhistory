@@ -147,7 +147,10 @@ router.post('/earn', async (req, res): Promise<void> => {
 
     } catch (error) {
         console.error('Error earning points:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : String(error)
+        });
     }
 });
 
