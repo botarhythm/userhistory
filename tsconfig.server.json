@@ -4,7 +4,9 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "node",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "outDir": "./dist",
     "rootDir": "./",
     "strict": true,
@@ -29,23 +31,9 @@
     "allowUnreachableCode": false,
     "isolatedModules": true,
     "noEmit": false,
-    "baseUrl": "./",
-    "paths": {
-      "*": ["*"]
-    }
-  },
-  "include": [
-    "server.ts",
-    "src/api/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "src/**/*.test.ts",
-    "src/**/*.test.tsx",
     "src/**/*.spec.ts",
     "src/**/*.spec.tsx",
     "src/**/*.tsx",
     "src/**/*.jsx"
   ]
-} 
+}
