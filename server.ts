@@ -548,6 +548,17 @@ server.on('connection', (socket) => {
   socket.setTimeout(30000);
 });
 
+// 環境変数デバッグ用エンドポイント
+app.get('/api/debug/env', (req, res) => {
+  const envKeys = Object.keys(process.env).filter(key => key.startsWith('NOTION_') || key === 'NODE_ENV' || key === 'PORT');
+  res.json({
+    keys: envKeys,
+    hasPointHistory: !!process.env['NOTION_POINT_HISTORY_DB_ID'],
+    hasStore: !!process.env['NOTION_STORE_DB_ID'],
+    hasReward: !!process.env['NOTION_REWARD_DB_ID']
+  });
+});
+
 // グレースフルシャットダウン
 process.on('SIGTERM', () => {
   log('server_shutdown', { signal: 'SIGTERM' }, 'Server shutdown initiated');

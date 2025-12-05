@@ -95,7 +95,7 @@ class RailwayMCPManager {
 
     try {
       for (const [key, value] of Object.entries(variables)) {
-        await this.executeRailwayCommand(['variables', 'set', key, value]);
+        await this.executeRailwayCommand(['variables', '--set', `${key}=${value}`]);
         console.log(`✅ Set ${key}=${value}`);
       }
     } catch (error) {
@@ -110,6 +110,7 @@ class RailwayMCPManager {
   private executeRailwayCommand(args: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
       const child = spawn('railway', args, {
+        shell: true,
         stdio: ['pipe', 'pipe', 'pipe'],
         env: {
           ...process.env,

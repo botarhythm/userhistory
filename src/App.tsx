@@ -1,3 +1,10 @@
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { LiffProvider, useLiff } from './contexts/LiffContext';
+import Purchase from './pages/purchase';
+import History from './pages/history';
+import Checkin from './pages/checkin';
+import Debug from './pages/debug';
 
 const Header: React.FC = () => {
   const location = useLocation();
@@ -177,11 +184,55 @@ const Header: React.FC = () => {
           >
             🔍 デバッグ
           </Link>
-
+          <Link
+            to="/history"
+            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/history'
+              ? 'bg-red-500 text-white'
+              : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+          >
+            📜 履歴
+          </Link>
+          <Link
+            to="/checkin"
+            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/checkin'
+              ? 'bg-red-500 text-white'
+              : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+          >
+            📍 チェックイン
+          </Link>
         </nav>
       </div>
     </header>
   );
 };
 
-export default App; 
+const AppContent: React.FC = () => {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <Routes>
+          <Route path="/" element={<Purchase />} />
+          <Route path="/purchase" element={<Purchase />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/checkin" element={<Checkin />} />
+          <Route path="/debug" element={<Debug />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
+
+const App: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <LiffProvider>
+        <AppContent />
+      </LiffProvider>
+    </BrowserRouter>
+  );
+};
+
+export default App;
