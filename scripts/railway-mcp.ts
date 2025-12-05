@@ -3,6 +3,7 @@
 import { spawn } from 'child_process';
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { fileURLToPath } from 'url';
 
 interface RailwayDeployment {
   id: string;
@@ -23,9 +24,9 @@ class RailwayMCPManager {
   private projectId: string;
 
   constructor() {
-    this.railwayToken = process.env.RAILWAY_TOKEN || '';
-    this.projectId = process.env.RAILWAY_PROJECT_ID || '';
-    
+    this.railwayToken = process.env['RAILWAY_TOKEN'] || '';
+    this.projectId = process.env['RAILWAY_PROJECT_ID'] || '';
+
     if (!this.railwayToken) {
       console.error('❌ RAILWAY_TOKEN environment variable is required');
       process.exit(1);
@@ -37,7 +38,7 @@ class RailwayMCPManager {
    */
   async monitorDeployment(): Promise<void> {
     console.log('🚂 Railway deployment monitoring started...');
-    
+
     try {
       const result = await this.executeRailwayCommand(['status']);
       console.log('📊 Current deployment status:');
@@ -70,7 +71,7 @@ class RailwayMCPManager {
    */
   async deploy(environment: string = 'production'): Promise<void> {
     console.log(`🚀 Starting deployment to ${environment}...`);
-    
+
     try {
       const args = ['up'];
       if (environment !== 'production') {
@@ -91,7 +92,7 @@ class RailwayMCPManager {
    */
   async updateEnvironmentVariables(variables: Record<string, string>): Promise<void> {
     console.log('🔧 Updating environment variables...');
-    
+
     try {
       for (const [key, value] of Object.entries(variables)) {
         await this.executeRailwayCommand(['variables', 'set', key, value]);
@@ -148,13 +149,13 @@ class RailwayMCPManager {
     try {
       const result = await this.executeRailwayCommand(['status']);
       const isHealthy = result.includes('DEPLOYED') && !result.includes('FAILED');
-      
+
       if (isHealthy) {
         console.log('✅ Railway deployment is healthy');
       } else {
         console.log('⚠️ Railway deployment has issues');
       }
-      
+
       return isHealthy;
     } catch (error) {
       console.error('❌ Health check failed:', error);
@@ -167,17 +168,17 @@ class RailwayMCPManager {
    */
   async autoFix(): Promise<void> {
     console.log('🔧 Attempting auto-fix...');
-    
+
     try {
       // 1. 環境変数の整合性チェック
       await this.checkEnvironmentVariables();
-      
+
       // 2. デプロイメントの再試行
       await this.deploy();
-      
+
       // 3. 健全性チェック
       const isHealthy = await this.healthCheck();
-      
+
       if (isHealthy) {
         console.log('✅ Auto-fix completed successfully');
       } else {
@@ -201,7 +202,7 @@ class RailwayMCPManager {
     ];
 
     console.log('🔍 Checking environment variables...');
-    
+
     for (const varName of requiredVars) {
       try {
         await this.executeRailwayCommand(['variables', 'get', varName]);
@@ -217,7 +218,7 @@ class RailwayMCPManager {
 async function main() {
   const args = process.argv.slice(2);
   const command = args[0];
-  
+
   const manager = new RailwayMCPManager();
 
   try {
@@ -226,39 +227,39 @@ async function main() {
         const environment = args[1] || 'production';
         await manager.deploy(environment);
         break;
-        
+
       case 'logs':
         const follow = args.includes('--follow');
         await manager.getLogs(follow);
         break;
-        
+
       case 'status':
         await manager.monitorDeployment();
         break;
-        
+
       case 'health':
         await manager.healthCheck();
         break;
-        
+
       case 'autofix':
         await manager.autoFix();
         break;
-        
+
       case 'update-env':
         const envFile = args[1] || '.env';
         const envContent = readFileSync(envFile, 'utf-8');
         const envVars: Record<string, string> = {};
-        
+
         envContent.split('\n').forEach(line => {
           const [key, ...valueParts] = line.split('=');
           if (key && valueParts.length > 0) {
             envVars[key.trim()] = valueParts.join('=').trim();
           }
         });
-        
+
         await manager.updateEnvironmentVariables(envVars);
         break;
-        
+
       default:
         console.log(`
 🚂 Railway MCP Manager
@@ -278,8 +279,8 @@ Usage:
   }
 }
 
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   main();
 }
 
-export { RailwayMCPManager }; 
+export { RailwayMCPManager };

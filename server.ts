@@ -436,7 +436,22 @@ app.get('/api/debug/database-structure', async (req, res) => {
         id: productStructure.id,
         title: productStructure.title,
         properties: Object.keys(productStructure.properties)
-      } : null
+      } : null,
+      store: notionAPI.storeDbId ? await notionAPI.getDatabaseStructure(notionAPI.storeDbId).then((s: any) => s ? {
+        id: s.id,
+        title: s.title,
+        properties: Object.keys(s.properties)
+      } : null) : null,
+      reward: notionAPI.rewardDbId ? await notionAPI.getDatabaseStructure(notionAPI.rewardDbId).then((s: any) => s ? {
+        id: s.id,
+        title: s.title,
+        properties: Object.keys(s.properties)
+      } : null) : null,
+      pointHistory: notionAPI.pointHistoryDbId ? await notionAPI.getDatabaseStructure(notionAPI.pointHistoryDbId).then((s: any) => s ? {
+        id: s.id,
+        title: s.title,
+        properties: Object.keys(s.properties)
+      } : null) : null
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

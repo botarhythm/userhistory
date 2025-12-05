@@ -17,8 +17,8 @@ if (fs.existsSync('.env')) {
 
 dotenv.config();
 
-const apiKey = process.env.NOTION_API_KEY;
-const customerDbId = process.env.NOTION_CUSTOMER_DB_ID;
+const apiKey = process.env['NOTION_API_KEY'];
+const customerDbId = process.env['NOTION_CUSTOMER_DB_ID'];
 
 if (!apiKey) {
     console.error('Error: NOTION_API_KEY must be set in .env');
