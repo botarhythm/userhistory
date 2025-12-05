@@ -158,9 +158,32 @@ NOTION_CUSTOMER_DB_ID=your_customer_database_id_here
 NOTION_HISTORY_DB_ID=your_history_database_id_here
 NOTION_PRODUCT_DB_ID=your_product_database_id_here
 
-# LINE LIFF Configuration (for frontend)
+# LINE LIFF Configuration (for frontend) - 重要：LINE認証に必須
 VITE_LIFF_ID=your_line_liff_id_here
 ```
+
+## 🔍 LINE認証のトラブルシューティング
+
+LINE認証で問題が発生した場合：
+
+### 1. 開発環境での診断
+- 開発環境でアプリを起動
+- `/debug` ページにアクセス
+- 「診断実行」ボタンをクリック
+- 診断結果を確認
+
+### 2. よくある問題と解決方法
+- **`VITE_LIFF_ID`が未設定** → Railwayで設定後、再デプロイ
+- **LINEアプリ外でアクセス** → LINEアプリからミニアプリを開く
+- **ブラウザキャッシュ問題** → ブラウザのキャッシュをクリア
+- **LIFF初期化エラー** → LIFF IDの形式を確認
+
+### 3. LIFF IDの取得方法
+1. LINE Developers Console にアクセス
+2. チャンネルを選択
+3. 「LIFF」タブで新しいLIFFアプリを作成
+4. エンドポイントURLを設定（例：`https://your-app.railway.app`）
+5. LIFF IDをコピーしてRailwayの環境変数に設定
 
 ### 開発サーバーの起動
 

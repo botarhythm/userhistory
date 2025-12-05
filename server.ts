@@ -1,7 +1,10 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import pointsRouter from './src/api/points.js';
+import adminRouter from './src/api/admin.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -74,8 +77,8 @@ app.get('/health', (_req, res) => {
       version: '1.0.0'
     });
   }
-  return res.status(200).json({ 
-    status: 'ok', 
+  return res.status(200).json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     environment: process.env['NODE_ENV'] || 'development',
     version: '1.0.0',
@@ -83,24 +86,7 @@ app.get('/health', (_req, res) => {
   });
 });
 
-// ルートパス - フロントエンドを配信
-app.get('/', (_req, res) => {
-  log('root_access', {}, 'Root path accessed - serving frontend');
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// APIルート
-app.get('/api/status', (_req, res) => {
-  log('api_status', {}, 'API status requested');
-  res.json({ 
-    message: 'Botarhythm Coffee Roaster API', 
-    status: 'running',
-    version: '1.0.0',
-    notion: notionAPI ? 'connected' : 'not_configured'
-  });
-});
-
-// LINEミニアプリ用API
+// LINEミニアプリ用API - ユーザー検索
 app.get('/api/user/:lineUid', async (req, res) => {
   if (!notionAPI) {
     return res.status(503).json({ error: 'Notion API not configured' });
@@ -109,21 +95,21 @@ app.get('/api/user/:lineUid', async (req, res) => {
   try {
     const { lineUid } = req.params;
     log('user_lookup', { lineUid }, 'User lookup requested');
-    
+
     const customer = await notionAPI.findCustomerByLineUid(lineUid);
-    
+
     if (customer) {
       log('user_found', { lineUid, customerId: customer.id }, 'User found in database');
-      return res.json({ 
-        lineUid, 
+      return res.json({
+        lineUid,
         status: 'user_found',
-        customer 
+        customer
       });
     } else {
       log('user_not_found', { lineUid }, 'User not found in database');
-      return res.json({ 
-        lineUid, 
-        status: 'user_not_found' 
+      return res.json({
+        lineUid,
+        status: 'user_not_found'
       });
     }
   } catch (error) {
@@ -141,7 +127,7 @@ app.post('/api/checkin', async (req, res) => {
 
   try {
     const { lineUid, displayName, timestamp, memo } = req.body;
-    
+
     if (!lineUid) {
       log('checkin_validation_error', { lineUid, displayName }, 'Check-in request missing lineUid');
       return res.status(400).json({ error: 'lineUid is required' });
@@ -151,14 +137,14 @@ app.post('/api/checkin', async (req, res) => {
 
     // 顧客を検索または作成
     const customerId = await notionAPI.findOrCreateCustomer(lineUid, displayName || 'Unknown User');
-    
+
     // 来店履歴を記録
     const historyId = await notionAPI.recordCheckin(customerId, timestamp, memo);
-    
+
     log('checkin_success', { lineUid, customerId, historyId }, 'Check-in recorded successfully');
-    
-    return res.json({ 
-      success: true, 
+
+    return res.json({
+      success: true,
       message: 'Check-in recorded',
       customerId,
       historyId,
@@ -180,58 +166,58 @@ app.post('/api/purchase', async (req, res) => {
 
   try {
     const { lineUid, displayName, items, total, memo, timestamp } = req.body;
-    
+
     // 詳細なバリデーション
     const validationErrors: string[] = [];
     if (!lineUid) validationErrors.push('lineUid is missing');
     if (!items || !Array.isArray(items) || items.length === 0) validationErrors.push('items is missing or empty');
     if (total === undefined || total === null) validationErrors.push('total is missing');
-    
+
     if (validationErrors.length > 0) {
-      log('purchase_validation_error', { 
-        lineUid: !!lineUid, 
-        hasItems: !!items, 
-        itemsLength: items?.length, 
+      log('purchase_validation_error', {
+        lineUid: !!lineUid,
+        hasItems: !!items,
+        itemsLength: items?.length,
         hasTotal: total !== undefined && total !== null,
         total,
-        validationErrors 
+        validationErrors
       }, 'Purchase request validation failed');
-             return res.status(400).json({ 
-         error: 'Validation failed'
-       });
+      return res.status(400).json({
+        error: 'Validation failed'
+      });
     }
 
     log('purchase_request', { lineUid, displayName, itemsCount: items.length, total }, 'Purchase request received');
 
     // 顧客を検索または作成
     const customerId = await notionAPI.findOrCreateCustomer(lineUid, displayName || 'Unknown User');
-    
+
     // 購入履歴を記録
     const historyId = await notionAPI.recordPurchase(customerId, items, total, memo, timestamp);
-    
+
     log('purchase_success', { lineUid, customerId, historyId, total }, 'Purchase recorded successfully');
-    
-    return res.status(200).json({ 
+
+    return res.status(200).json({
       success: true
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
-    
-    log('purchase_error', { 
-      lineUid: req.body.lineUid, 
+
+    log('purchase_error', {
+      lineUid: req.body.lineUid,
       error: errorMessage,
       stack: errorStack,
       body: req.body
     }, 'Purchase recording failed');
-    
+
     console.error('Purchase error details:', {
       message: errorMessage,
       stack: errorStack,
       requestBody: req.body
     });
-    
-    return res.status(500).json({ 
+
+    return res.status(500).json({
       error: 'Internal server error'
     });
   }
@@ -246,12 +232,12 @@ app.get('/api/history/:lineUid', async (req, res) => {
   try {
     const { lineUid } = req.params;
     const { type, limit = 10 } = req.query;
-    
+
     log('history_request', { lineUid, type, limit }, 'History request received');
-    
+
     // 顧客を検索
     const customer = await notionAPI.findCustomerByLineUid(lineUid);
-    
+
     if (!customer) {
       log('history_user_not_found', { lineUid }, 'User not found for history request');
       return res.status(404).json({ error: 'Customer not found' });
@@ -259,17 +245,17 @@ app.get('/api/history/:lineUid', async (req, res) => {
 
     // 履歴を取得
     const history = await notionAPI.getHistory(
-      customer.id, 
-      type as 'checkin' | 'purchase', 
+      customer.id,
+      type as 'checkin' | 'purchase',
       parseInt(limit as string)
     );
-    
+
     log('history_success', { lineUid, customerId: customer.id, historyCount: history.length }, 'History retrieved successfully');
-    
-    return res.json({ 
-      lineUid, 
+
+    return res.json({
+      lineUid,
       customer,
-      type, 
+      type,
       limit,
       history
     });
@@ -289,20 +275,20 @@ app.patch('/api/history/:historyId', async (req, res) => {
   try {
     const { historyId } = req.params;
     const { memo, productName } = req.body;
-    
+
     log('history_update_request', { historyId, memo, productName }, 'History update request received');
-    
+
     // 履歴を更新
     const updatedHistory = await notionAPI.updateHistory(historyId, { memo, productName });
-    
+
     if (!updatedHistory) {
       log('history_update_not_found', { historyId }, 'History record not found for update');
       return res.status(404).json({ error: 'History record not found' });
     }
-    
+
     log('history_update_success', { historyId }, 'History updated successfully');
-    
-    return res.json({ 
+
+    return res.json({
       success: true,
       message: 'History updated successfully',
       history: updatedHistory
@@ -322,20 +308,20 @@ app.delete('/api/history/:historyId', async (req, res) => {
 
   try {
     const { historyId } = req.params;
-    
+
     log('history_delete_request', { historyId }, 'History delete request received');
-    
+
     // 履歴を削除
     const success = await notionAPI.deleteHistory(historyId);
-    
+
     if (!success) {
       log('history_delete_not_found', { historyId }, 'History record not found for deletion');
       return res.status(404).json({ error: 'History record not found' });
     }
-    
+
     log('history_delete_success', { historyId }, 'History deleted successfully');
-    
-    return res.json({ 
+
+    return res.json({
       success: true,
       message: 'History deleted successfully'
     });
@@ -354,9 +340,9 @@ app.get('/api/products', async (req, res) => {
 
   try {
     log('get_products', { query: req.query }, 'Products requested');
-    
+
     const products = await notionAPI.getProducts();
-    
+
     return res.json({
       success: true,
       products: products
@@ -389,9 +375,9 @@ app.get('/api/products/search', async (req, res): Promise<void> => {
     }
 
     log('search_products', { query: q }, 'Product search requested');
-    
+
     const products = await notionAPI.searchProducts(q);
-    
+
     res.json({
       success: true,
       products: products
@@ -406,6 +392,12 @@ app.get('/api/products/search', async (req, res): Promise<void> => {
   }
 });
 
+// ポイントシステムAPI
+app.use('/api/points', pointsRouter);
+
+// 管理者用API
+app.use('/api/admin', adminRouter);
+
 // データベース構造確認API（デバッグ用）
 app.get('/api/debug/database-structure', async (req, res) => {
   if (!notionAPI) {
@@ -414,17 +406,17 @@ app.get('/api/debug/database-structure', async (req, res) => {
 
   try {
     log('database_structure_request', {}, 'Database structure check requested');
-    
+
     const customerStructure = await notionAPI.getDatabaseStructure(notionAPI.customerDatabaseId);
     const historyStructure = await notionAPI.getDatabaseStructure(notionAPI.historyDatabaseId);
     const productStructure = await notionAPI.getDatabaseStructure(notionAPI.productDatabaseId);
-    
+
     log('database_structure_success', {
       hasCustomerStructure: !!customerStructure,
       hasHistoryStructure: !!historyStructure,
       hasProductStructure: !!productStructure
     }, 'Database structure retrieved successfully');
-    
+
     return res.json({
       success: true,
       customer: customerStructure ? {
@@ -454,8 +446,6 @@ app.get('/api/debug/database-structure', async (req, res) => {
   }
 });
 
-
-
 // SPA用のフォールバックルート（Railway Station推奨設定）
 app.get('*', (req, res) => {
   // APIルートの場合は404を返す
@@ -463,17 +453,17 @@ app.get('*', (req, res) => {
     log('api_not_found', { path: req.path }, 'API endpoint not found');
     return res.status(404).json({ error: 'API endpoint not found' });
   }
-  
+
   // 静的ファイルの存在確認
   const staticPath = path.join(__dirname, 'public', req.path);
   const indexPath = path.join(__dirname, 'public', 'index.html');
-  
+
   // ファイルが存在する場合は静的ファイルを配信
   if (require('fs').existsSync(staticPath) && !req.path.endsWith('/')) {
     log('static_file_served', { path: req.path }, 'Serving static file');
     return res.sendFile(staticPath);
   }
-  
+
   // それ以外はSPAのindex.htmlを配信
   log('spa_fallback', { path: req.path }, 'Serving SPA fallback');
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import liff from '@line/liff';
+import { LiffDebugger } from '../utils/debug-liff';
 
 interface LiffUser {
   userId: string;
@@ -15,6 +16,8 @@ interface LiffContextType {
   error: string | null;
   logout: () => void;
   retryLogin: () => void;
+  runDiagnosis: () => Promise<void>;
+  debugInfo: any;
 }
 
 const LiffContext = createContext<LiffContextType | undefined>(undefined);
@@ -36,6 +39,8 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const liffDebugger = LiffDebugger.getInstance();
 
   const initializeLiff = async () => {
     try {
@@ -115,6 +120,11 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
       const errorMessage = err instanceof Error ? err.message : 'LIFF初期化に失敗しました';
       setError(errorMessage);
       setIsInitialized(true);
+      
+      // エラー時に診断情報を取得
+      const diagnosis = await liffDebugger.diagnose();
+      setDebugInfo(diagnosis);
+      liffDebugger.logDiagnosis();
     }
   };
 
@@ -200,13 +210,22 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
     }
   };
 
+  const runDiagnosis = async () => {
+    const diagnosis = await liffDebugger.diagnose();
+    setDebugInfo(diagnosis);
+    liffDebugger.logDiagnosis();
+    liffDebugger.checkEnvironmentVariables();
+  };
+
   const value: LiffContextType = {
     user,
     isInitialized,
     isLoggedIn,
     error,
     logout,
-    retryLogin
+    retryLogin,
+    runDiagnosis,
+    debugInfo
   };
 
   return (

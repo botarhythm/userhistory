@@ -1,31 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import PurchasePage from './pages/purchase';
-import HistoryPage from './pages/history';
-import CheckinPage from './pages/checkin';
-import { LiffProvider, useLiff } from './contexts/LiffContext';
-
-const App: React.FC = () => {
-  return (
-    <LiffProvider>
-      <Router>
-                 <div className="min-h-screen bg-gray-100">
-          <Header />
-          <Routes>
-            <Route path="/" element={<PurchasePage />} />
-            <Route path="/checkin" element={<CheckinPage />} />
-            <Route path="/purchase" element={<PurchasePage />} />
-            <Route path="/history" element={<HistoryPage />} />
-          </Routes>
-        </div>
-      </Router>
-    </LiffProvider>
-  );
-};
 
 const Header: React.FC = () => {
   const location = useLocation();
-  const { user, isInitialized, isLoggedIn, logout, error, retryLogin } = useLiff();
+  const { user, isInitialized, isLoggedIn, logout, error, retryLogin, runDiagnosis, debugInfo } = useLiff();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   // ページタイトルを設定
@@ -64,7 +40,7 @@ const Header: React.FC = () => {
             </span>
           </div>
           <p className="text-sm text-gray-500 mt-4">
-            {loadingTimeout 
+            {loadingTimeout
               ? 'LINEアカウントでの認証に時間がかかっています。しばらくお待ちください。'
               : 'LINEアカウントでの認証を完了してください'
             }
@@ -121,12 +97,34 @@ const Header: React.FC = () => {
               </p>
             </>
           )}
-          <button
-            onClick={retryLogin}
-            className="bg-green-500 text-white px-6 py-3 rounded-md hover:bg-green-600 transition-colors"
-          >
-            {error ? '再試行' : '再読み込み'}
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={retryLogin}
+              className="bg-green-500 text-white px-6 py-3 rounded-md hover:bg-green-600 transition-colors w-full"
+            >
+              {error ? '再試行' : '再読み込み'}
+            </button>
+
+            {/* 開発環境での診断ボタン */}
+            {import.meta.env.DEV && (
+              <button
+                onClick={runDiagnosis}
+                className="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 transition-colors w-full"
+              >
+                診断実行
+              </button>
+            )}
+
+            {/* 診断結果の表示 */}
+            {debugInfo && (
+              <div className="mt-4 p-4 bg-gray-100 rounded-md text-left">
+                <h3 className="font-bold text-sm mb-2">診断結果:</h3>
+                <pre className="text-xs text-gray-600 whitespace-pre-wrap">
+                  {JSON.stringify(debugInfo, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -150,7 +148,7 @@ const Header: React.FC = () => {
           </div>
 
           {/* 右側: ログアウトボタン */}
-          <button 
+          <button
             onClick={logout}
             className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1 rounded-md hover:bg-gray-100"
           >
@@ -172,24 +170,14 @@ const Header: React.FC = () => {
         <nav className="flex space-x-1 sm:space-x-4 pb-2 sm:pb-0">
           <Link
             to="/purchase"
-            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${
-              location.pathname === '/' || location.pathname === '/purchase'
-                ? 'bg-green-500 text-white'
-                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-            }`}
+            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/' || location.pathname === '/purchase'
+              ? 'bg-red-500 text-white'
+              : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+              }`}
           >
-            購入メモ
+            🔍 デバッグ
           </Link>
-          <Link
-            to="/history"
-            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${
-              location.pathname === '/history'
-                ? 'bg-blue-500 text-white'
-                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-          >
-            履歴一覧
-          </Link>
+
         </nav>
       </div>
     </header>

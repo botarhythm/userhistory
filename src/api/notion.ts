@@ -70,15 +70,15 @@ export class NotionAPI {
   }
 
   // プロパティ名を動的に取得
-  private getPropertyName(properties: any, type: string): string | null {
+  protected getPropertyName(properties: any, type: string): string | null {
     const candidates: string[] = [];
-    
+
     for (const [name, prop] of Object.entries(properties)) {
       if ((prop as any).type === type) {
         candidates.push(name);
       }
     }
-    
+
     // デバッグ用にログ出力
     if (candidates.length === 0) {
       console.warn(`No properties found for type: ${type}`);
@@ -87,7 +87,7 @@ export class NotionAPI {
     } else if (candidates.length > 1) {
       console.warn(`Multiple properties found for type ${type}:`, candidates);
     }
-    
+
     return candidates[0] || null;
   }
 
@@ -148,8 +148,8 @@ export class NotionAPI {
 
       const allProducts = await this.getProducts();
       const lowerQuery = query.toLowerCase();
-      
-      return allProducts.filter(product => 
+
+      return allProducts.filter(product =>
         product.name.toLowerCase().includes(lowerQuery)
       );
     } catch (error) {
@@ -329,7 +329,7 @@ export class NotionAPI {
         if (customerDbStructure) {
           const updatedAtProperty = this.getPropertyName(customerDbStructure.properties, 'date') || '最終更新日';
           const now = new Date().toISOString();
-          
+
           await this.client.pages.update({
             page_id: customerId,
             properties: {
@@ -353,7 +353,7 @@ export class NotionAPI {
 
   // 購入履歴を記録
   async recordPurchase(
-    customerId: string, 
+    customerId: string,
     items: Array<{ name: string; quantity: number; price?: number }>,
     total: number,
     memo?: string,
@@ -403,7 +403,7 @@ export class NotionAPI {
         if (customerDbStructure) {
           const updatedAtProperty = this.getPropertyName(customerDbStructure.properties, 'date') || '最終更新日';
           const now = new Date().toISOString();
-          
+
           await this.client.pages.update({
             page_id: customerId,
             properties: {
@@ -470,10 +470,10 @@ export class NotionAPI {
       return response.results.map(page => {
         const title = this.getPropertyValue(page, titleProperty, 'title');
         const memo = this.getPropertyValue(page, memoProperty, 'rich_text');
-        
+
         // 商品名から履歴タイプを判定（「来店」の場合はcheckin、それ以外はpurchase）
         const recordType = title === '来店' ? 'checkin' : 'purchase';
-        
+
         return {
           id: page.id,
           customerId,
@@ -523,7 +523,7 @@ export class NotionAPI {
   // 商品リストの解析（ヘルパー関数）
   private parseItems(itemsString: string): Array<{ name: string; quantity: number; price?: number }> {
     if (!itemsString) return [];
-    
+
     return itemsString.split(', ').map(item => {
       // 数量情報（x1, x2など）を除去して商品名のみを取得
       const cleanName = item.replace(/\s*x\d+$/, '');
@@ -604,7 +604,7 @@ export class NotionAPI {
   async deleteHistory(historyId: string): Promise<boolean> {
     try {
       console.log('Deleting history record:', historyId);
-      
+
       // ページを削除
       await this.client.pages.update({
         page_id: historyId,

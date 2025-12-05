@@ -1,21 +1,15 @@
 {
   "mcpServers": {
-    "Notion": {
+    "notion": {
       "url": "https://mcp.notion.com/mcp",
-      "headers": {}
+      "headers": {},
+      "description": "Notion API連携 - 顧客DB・履歴DB管理（ユーザーレベル）"
     },
-    "Railway": {
-      "command": "node",
-      "args": ["scripts/railway-mcp-server.js"],
-      "env": {
-        "RAILWAY_TOKEN": "${5d793270-6d45-4235-a685-a14ba8dd9902}",
-        "RAILWAY_PROJECT_ID": "093e4f04-ebb8-44d8-b87c-8e9e06743e54"
-      }
-    },
-    "Serena": {
+    "serena": {
       "command": "npx",
       "args": ["@serena-ai/cursor-mcp"],
-      "env": {}
+      "env": {},
+      "description": "Serena AI連携 - コード分析・最適化（ユーザーレベル）"
     }
   }
 } 

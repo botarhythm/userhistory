@@ -1,7 +1,10 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import pointsRouter from './src/api/points.js';
+import adminRouter from './src/api/admin.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -74,22 +77,7 @@ app.get('/health', (_req, res) => {
         notion: 'connected'
     });
 });
-// ルートパス - フロントエンドを配信
-app.get('/', (_req, res) => {
-    log('root_access', {}, 'Root path accessed - serving frontend');
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-// APIルート
-app.get('/api/status', (_req, res) => {
-    log('api_status', {}, 'API status requested');
-    res.json({
-        message: 'Botarhythm Coffee Roaster API',
-        status: 'running',
-        version: '1.0.0',
-        notion: notionAPI ? 'connected' : 'not_configured'
-    });
-});
-// LINEミニアプリ用API
+// LINEミニアプリ用API - ユーザー検索
 app.get('/api/user/:lineUid', async (req, res) => {
     if (!notionAPI) {
         return res.status(503).json({ error: 'Notion API not configured' });
@@ -348,6 +336,10 @@ app.get('/api/products/search', async (req, res) => {
         });
     }
 });
+// ポイントシステムAPI
+app.use('/api/points', pointsRouter);
+// 管理者用API
+app.use('/api/admin', adminRouter);
 // データベース構造確認API（デバッグ用）
 app.get('/api/debug/database-structure', async (req, res) => {
     if (!notionAPI) {
