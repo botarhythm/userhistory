@@ -421,6 +421,202 @@ app.get('/api/debug/database-structure', async (req, res) => {
         properties: Object.keys(historyStructure.properties)
       } : null,
       product: productStructure ? {
+        // 顧客を検索
+        const customer = await notionAPI.findCustomerByLineUid(lineUid);
+
+        if(!customer) {
+          log('history_user_not_found', { lineUid }, 'User not found for history request');
+          return res.status(404).json({ error: 'Customer not found' });
+        }
+
+    // 履歴を取得
+    const history = await notionAPI.getHistory(
+          customer.id,
+          type as 'checkin' | 'purchase',
+          parseInt(limit as string)
+        );
+
+        log('history_success', { lineUid, customerId: customer.id, historyCount: history.length
+      }, 'History retrieved successfully');
+
+    return res.json({
+      lineUid,
+      customer,
+      type,
+      limit,
+      history
+    });
+  } catch (error) {
+    log('history_error', { lineUid: req.params.lineUid, error: error instanceof Error ? error.message : String(error) }, 'History fetch failed');
+    console.error('History fetch error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// 履歴編集API
+app.patch('/api/history/:historyId', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
+  try {
+    const { historyId } = req.params;
+    const { memo, productName } = req.body;
+
+    log('history_update_request', { historyId, memo, productName }, 'History update request received');
+
+    // 履歴を更新
+    const updatedHistory = await notionAPI.updateHistory(historyId, { memo, productName });
+
+    if (!updatedHistory) {
+      log('history_update_not_found', { historyId }, 'History record not found for update');
+      return res.status(404).json({ error: 'History record not found' });
+    }
+
+    log('history_update_success', { historyId }, 'History updated successfully');
+
+    return res.json({
+      success: true,
+      message: 'History updated successfully',
+      history: updatedHistory
+    });
+  } catch (error) {
+    log('history_update_error', { historyId: req.params.historyId, error: error instanceof Error ? error.message : String(error) }, 'History update failed');
+    console.error('History update error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// 履歴削除API
+app.delete('/api/history/:historyId', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
+  try {
+    const { historyId } = req.params;
+
+    log('history_delete_request', { historyId }, 'History delete request received');
+
+    // 履歴を削除
+    const success = await notionAPI.deleteHistory(historyId);
+
+    if (!success) {
+      log('history_delete_not_found', { historyId }, 'History record not found for deletion');
+      return res.status(404).json({ error: 'History record not found' });
+    }
+
+    log('history_delete_success', { historyId }, 'History deleted successfully');
+
+    return res.json({
+      success: true,
+      message: 'History deleted successfully'
+    });
+  } catch (error) {
+    log('history_delete_error', { historyId: req.params.historyId, error: error instanceof Error ? error.message : String(error) }, 'History deletion failed');
+    console.error('History delete error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// 商品一覧取得API
+app.get('/api/products', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
+  try {
+    log('get_products', { query: req.query }, 'Products requested');
+
+    const products = await notionAPI.getProducts();
+
+    return res.json({
+      success: true,
+      products: products
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    log('get_products_error', { error: errorMessage }, 'Failed to get products');
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch products'
+    });
+  }
+});
+
+// 商品検索API
+app.get('/api/products/search', async (req, res): Promise<void> => {
+  if (!notionAPI) {
+    res.status(503).json({ error: 'Notion API not configured' });
+    return;
+  }
+
+  try {
+    const { q } = req.query;
+    if (!q || typeof q !== 'string') {
+      res.status(400).json({
+        success: false,
+        error: 'Search query is required'
+      });
+      return;
+    }
+
+    log('search_products', { query: q }, 'Product search requested');
+
+    const products = await notionAPI.searchProducts(q);
+
+    res.json({
+      success: true,
+      products: products
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    log('search_products_error', { error: errorMessage }, 'Failed to search products');
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search products'
+    });
+  }
+});
+
+// ポイントシステムAPI
+app.use('/api/points', pointsRouter);
+
+// 管理者用API
+app.use('/api/admin', adminRouter);
+
+// データベース構造確認API（デバッグ用）
+app.get('/api/debug/database-structure', async (req, res) => {
+  if (!notionAPI) {
+    return res.status(503).json({ error: 'Notion API not configured' });
+  }
+
+  try {
+    log('database_structure_request', {}, 'Database structure check requested');
+
+    const customerStructure = await notionAPI.getDatabaseStructure(notionAPI.customerDatabaseId);
+    const historyStructure = await notionAPI.getDatabaseStructure(notionAPI.historyDatabaseId);
+    const productStructure = await notionAPI.getDatabaseStructure(notionAPI.productDatabaseId);
+
+    log('database_structure_success', {
+      hasCustomerStructure: !!customerStructure,
+      hasHistoryStructure: !!historyStructure,
+      hasProductStructure: !!productStructure
+    }, 'Database structure retrieved successfully');
+
+    return res.json({
+      success: true,
+      customer: customerStructure ? {
+        id: customerStructure.id,
+        title: customerStructure.title,
+        properties: Object.keys(customerStructure.properties)
+      } : null,
+      history: historyStructure ? {
+        id: historyStructure.id,
+        title: historyStructure.title,
+        properties: Object.keys(historyStructure.properties)
+      } : null,
+      product: productStructure ? {
         id: productStructure.id,
         title: productStructure.title,
         properties: Object.keys(productStructure.properties)
@@ -432,48 +628,104 @@ app.get('/api/debug/database-structure', async (req, res) => {
     return res.status(500).json({
       success: false,
       error: 'Failed to get database structure',
-      res.status(500).json({ error: 'Internal server error' });
+      details: errorMessage
     });
+  }
+});
 
-    // サーバー起動（Railway Station推奨設定）
-    const server = app.listen(Number(port), '0.0.0.0', () => {
-      log('server_start', { port, environment: process.env['NODE_ENV'] || 'development' }, 'Server started successfully');
-      console.log(`🚀 Botarhythm Coffee Roaster API running on port ${port}`);
-      console.log(`📊 Health check: http://localhost:${port}/health`);
-      console.log(`🔗 API status: http://localhost:${port}/api/status`);
-      console.log(`📝 Notion API: ${notionAPI ? '✅ Connected' : '⚠️ Not configured'}`);
-      console.log(`🌐 External URL: https://userhistory-production.up.railway.app`);
-      console.log(`🔧 Railway Environment: ${process.env['RAILWAY_ENVIRONMENT'] || 'unknown'}`);
-      console.log(`🏗️ Railway Project: ${process.env['RAILWAY_PROJECT_ID'] || 'unknown'}`);
+// デバッグ用：ファイル一覧確認API
+app.get('/api/debug/files', (req, res) => {
+  try {
+    const rootFiles = fs.readdirSync(__dirname);
+    const publicPath = path.join(__dirname, 'public');
+    const publicFiles = fs.existsSync(publicPath) ? fs.readdirSync(publicPath) : 'public dir not found';
+
+    res.json({
+      dirname: __dirname,
+      rootFiles,
+      publicPath,
+      publicFiles
     });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+  }
+});
 
-    // Railway用の最適化設定（Railway Station推奨）
-    server.keepAliveTimeout = 65000;
-    server.headersTimeout = 66000;
-    server.maxConnections = 1000;
+// SPA用のフォールバックルート（Railway Station推奨設定）
+app.get('*', (req, res) => {
+  // APIルートの場合は404を返す
+  if (req.path.startsWith('/api/')) {
+    log('api_not_found', { path: req.path }, 'API endpoint not found');
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
 
-    // Railway用の追加設定
-    server.setTimeout(120000);
+  // 静的ファイルの存在確認
+  const staticPath = path.join(__dirname, 'public', req.path);
+  const indexPath = path.join(__dirname, 'public', 'index.html');
 
-    // Railway用のエラーハンドリング
-    server.on('error', (error) => {
-      console.error('Server error:', error);
-      log('server_error', { error: error.message }, 'Server error occurred');
-    });
+  // ファイルが存在する場合は静的ファイルを配信
+  if (fs.existsSync(staticPath) && !req.path.endsWith('/')) {
+    log('static_file_served', { path: req.path }, 'Serving static file');
+    return res.sendFile(staticPath);
+  }
 
-    server.on('connection', (socket) => {
-      socket.setTimeout(30000);
-    });
+  // それ以外はSPAのindex.htmlを配信
+  if (fs.existsSync(indexPath)) {
+    log('spa_fallback', { path: req.path }, 'Serving SPA fallback');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    return res.sendFile(indexPath);
+  } else {
+    log('spa_error', { path: req.path }, 'Index file not found');
+    return res.status(500).send('Application Error: Frontend not found');
+  }
+});
 
-    // グレースフルシャットダウン
-    process.on('SIGTERM', () => {
-      log('server_shutdown', { signal: 'SIGTERM' }, 'Server shutdown initiated');
-      console.log('SIGTERM received, shutting down gracefully');
-      process.exit(0);
-    });
+// エラーハンドリング
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  log('server_error', { error: err.message, stack: err.stack }, 'Unhandled server error');
+  console.error('Server error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
-    process.on('SIGINT', () => {
-      log('server_shutdown', { signal: 'SIGINT' }, 'Server shutdown initiated');
-      console.log('SIGINT received, shutting down gracefully');
-      process.exit(0);
-    });
+// サーバー起動（Railway Station推奨設定）
+const server = app.listen(Number(port), '0.0.0.0', () => {
+  log('server_start', { port, environment: process.env['NODE_ENV'] || 'development' }, 'Server started successfully');
+  console.log(`🚀 Botarhythm Coffee Roaster API running on port ${port}`);
+  console.log(`📊 Health check: http://localhost:${port}/health`);
+  console.log(`🔗 API status: http://localhost:${port}/api/status`);
+  console.log(`📝 Notion API: ${notionAPI ? '✅ Connected' : '⚠️ Not configured'}`);
+  console.log(`🌐 External URL: https://userhistory-production.up.railway.app`);
+  console.log(`🔧 Railway Environment: ${process.env['RAILWAY_ENVIRONMENT'] || 'unknown'}`);
+  console.log(`🏗️ Railway Project: ${process.env['RAILWAY_PROJECT_ID'] || 'unknown'}`);
+});
+
+// Railway用の最適化設定（Railway Station推奨）
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
+server.maxConnections = 1000;
+
+// Railway用の追加設定
+server.setTimeout(120000);
+
+// Railway用のエラーハンドリング
+server.on('error', (error) => {
+  console.error('Server error:', error);
+  log('server_error', { error: error.message }, 'Server error occurred');
+});
+
+server.on('connection', (socket) => {
+  socket.setTimeout(30000);
+});
+
+// グレースフルシャットダウン
+process.on('SIGTERM', () => {
+  log('server_shutdown', { signal: 'SIGTERM' }, 'Server shutdown initiated');
+  console.log('SIGTERM received, shutting down gracefully');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  log('server_shutdown', { signal: 'SIGINT' }, 'Server shutdown initiated');
+  console.log('SIGINT received, shutting down gracefully');
+  process.exit(0);
+});
