@@ -90,7 +90,7 @@ const QRScanner: React.FC = () => {
                 },
                 body: JSON.stringify({
                     lineUserId: user.userId,
-                    storeId: 'store_001', // TODO: In a real app, storeId might be encoded in QR or selected. For now assuming single store or derived from QR.
+                    storeId: 'test-store-001', // Using test store for verification
                     // Actually, the QR token should probably contain the store ID or be unique enough.
                     // Our API expects storeId AND qrToken.
                     // Let's assume the QR code contains JSON: { "storeId": "...", "token": "..." }
