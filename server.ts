@@ -1,12 +1,3 @@
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import pointsRouter from './src/api/points.js';
-import adminRouter from './src/api/admin.js';
-
-const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
@@ -441,100 +432,48 @@ app.get('/api/debug/database-structure', async (req, res) => {
     return res.status(500).json({
       success: false,
       error: 'Failed to get database structure',
-      details: errorMessage
+      res.status(500).json({ error: 'Internal server error' });
     });
-  }
-});
 
-// デバッグ用：ファイル一覧確認API
-app.get('/api/debug/files', (req, res) => {
-  try {
-    const fs = require('fs');
-    const rootFiles = fs.readdirSync(__dirname);
-    const publicPath = path.join(__dirname, 'public');
-    const publicFiles = fs.existsSync(publicPath) ? fs.readdirSync(publicPath) : 'public dir not found';
-
-    res.json({
-      dirname: __dirname,
-      rootFiles,
-      publicPath,
-      publicFiles
+    // サーバー起動（Railway Station推奨設定）
+    const server = app.listen(Number(port), '0.0.0.0', () => {
+      log('server_start', { port, environment: process.env['NODE_ENV'] || 'development' }, 'Server started successfully');
+      console.log(`🚀 Botarhythm Coffee Roaster API running on port ${port}`);
+      console.log(`📊 Health check: http://localhost:${port}/health`);
+      console.log(`🔗 API status: http://localhost:${port}/api/status`);
+      console.log(`📝 Notion API: ${notionAPI ? '✅ Connected' : '⚠️ Not configured'}`);
+      console.log(`🌐 External URL: https://userhistory-production.up.railway.app`);
+      console.log(`🔧 Railway Environment: ${process.env['RAILWAY_ENVIRONMENT'] || 'unknown'}`);
+      console.log(`🏗️ Railway Project: ${process.env['RAILWAY_PROJECT_ID'] || 'unknown'}`);
     });
-  } catch (error) {
-    res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
-  }
-});
 
-// SPA用のフォールバックルート（Railway Station推奨設定）
-app.get('*', (req, res) => {
-  // APIルートの場合は404を返す
-  if (req.path.startsWith('/api/')) {
-    log('api_not_found', { path: req.path }, 'API endpoint not found');
-    return res.status(404).json({ error: 'API endpoint not found' });
-  }
+    // Railway用の最適化設定（Railway Station推奨）
+    server.keepAliveTimeout = 65000;
+    server.headersTimeout = 66000;
+    server.maxConnections = 1000;
 
-  // 静的ファイルの存在確認
-  const staticPath = path.join(__dirname, 'public', req.path);
-  const indexPath = path.join(__dirname, 'public', 'index.html');
+    // Railway用の追加設定
+    server.setTimeout(120000);
 
-  // ファイルが存在する場合は静的ファイルを配信
-  if (require('fs').existsSync(staticPath) && !req.path.endsWith('/')) {
-    log('static_file_served', { path: req.path }, 'Serving static file');
-    return res.sendFile(staticPath);
-  }
+    // Railway用のエラーハンドリング
+    server.on('error', (error) => {
+      console.error('Server error:', error);
+      log('server_error', { error: error.message }, 'Server error occurred');
+    });
 
-  // それ以外はSPAのindex.htmlを配信
-  log('spa_fallback', { path: req.path }, 'Serving SPA fallback');
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  return res.sendFile(indexPath);
-});
+    server.on('connection', (socket) => {
+      socket.setTimeout(30000);
+    });
 
-// エラーハンドリング
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  log('server_error', { error: err.message, stack: err.stack }, 'Unhandled server error');
-  console.error('Server error:', err);
-  res.status(500).json({ error: 'Internal server error' });
-});
+    // グレースフルシャットダウン
+    process.on('SIGTERM', () => {
+      log('server_shutdown', { signal: 'SIGTERM' }, 'Server shutdown initiated');
+      console.log('SIGTERM received, shutting down gracefully');
+      process.exit(0);
+    });
 
-// サーバー起動（Railway Station推奨設定）
-const server = app.listen(Number(port), '0.0.0.0', () => {
-  log('server_start', { port, environment: process.env['NODE_ENV'] || 'development' }, 'Server started successfully');
-  console.log(`🚀 Botarhythm Coffee Roaster API running on port ${port}`);
-  console.log(`📊 Health check: http://localhost:${port}/health`);
-  console.log(`🔗 API status: http://localhost:${port}/api/status`);
-  console.log(`📝 Notion API: ${notionAPI ? '✅ Connected' : '⚠️ Not configured'}`);
-  console.log(`🌐 External URL: https://userhistory-production.up.railway.app`);
-  console.log(`🔧 Railway Environment: ${process.env['RAILWAY_ENVIRONMENT'] || 'unknown'}`);
-  console.log(`🏗️ Railway Project: ${process.env['RAILWAY_PROJECT_ID'] || 'unknown'}`);
-});
-
-// Railway用の最適化設定（Railway Station推奨）
-server.keepAliveTimeout = 65000;
-server.headersTimeout = 66000;
-server.maxConnections = 1000;
-
-// Railway用の追加設定
-server.setTimeout(120000);
-
-// Railway用のエラーハンドリング
-server.on('error', (error) => {
-  console.error('Server error:', error);
-  log('server_error', { error: error.message }, 'Server error occurred');
-});
-
-server.on('connection', (socket) => {
-  socket.setTimeout(30000);
-});
-
-// グレースフルシャットダウン
-process.on('SIGTERM', () => {
-  log('server_shutdown', { signal: 'SIGTERM' }, 'Server shutdown initiated');
-  console.log('SIGTERM received, shutting down gracefully');
-  process.exit(0);
-});
-
-process.on('SIGINT', () => {
-  log('server_shutdown', { signal: 'SIGINT' }, 'Server shutdown initiated');
-  console.log('SIGINT received, shutting down gracefully');
-  process.exit(0);
-});
+    process.on('SIGINT', () => {
+      log('server_shutdown', { signal: 'SIGINT' }, 'Server shutdown initiated');
+      console.log('SIGINT received, shutting down gracefully');
+      process.exit(0);
+    });
