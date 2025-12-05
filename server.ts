@@ -446,6 +446,25 @@ app.get('/api/debug/database-structure', async (req, res) => {
   }
 });
 
+// デバッグ用：ファイル一覧確認API
+app.get('/api/debug/files', (req, res) => {
+  try {
+    const fs = require('fs');
+    const rootFiles = fs.readdirSync(__dirname);
+    const publicPath = path.join(__dirname, 'public');
+    const publicFiles = fs.existsSync(publicPath) ? fs.readdirSync(publicPath) : 'public dir not found';
+
+    res.json({
+      dirname: __dirname,
+      rootFiles,
+      publicPath,
+      publicFiles
+    });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+  }
+});
+
 // SPA用のフォールバックルート（Railway Station推奨設定）
 app.get('*', (req, res) => {
   // APIルートの場合は404を返す
