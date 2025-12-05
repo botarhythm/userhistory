@@ -50,34 +50,29 @@ export class NotionPointsAPI extends NotionAPI {
     }
 
     private mapPageToStore(page: any, properties: any): Store {
-        const storeIdProp = this.getPropertyName(properties, 'title') || 'store_id';
-        const nameProp = this.getPropertyName(properties, 'rich_text') || 'name';
-        const latProp = this.getPropertyName(properties, 'number') || 'latitude';
-        const lngProp = this.getPropertyName(properties, 'number') || 'longitude';
-        const radiusProp = this.getPropertyName(properties, 'number') || 'radius';
-        const qrTokenProp = this.getPropertyName(properties, 'rich_text') || 'qr_token';
-        const nfcUrlProp = this.getPropertyName(properties, 'url') || 'nfc_url';
-        const isActiveProp = this.getPropertyName(properties, 'checkbox') || 'is_active';
-
-        // Helper to get number safely (handling potential duplicate property names if getPropertyName returns array in future, but here it returns string)
-        // We use the helper from parent class but we need to access it. 
-        // Since getPropertyValue is private in parent, we might need to duplicate or change parent to protected.
-        // For now, I'll duplicate the simple extraction logic or cast to any to access private method if I really wanted to, 
-        // but better to implement a local helper or assume I can access properties directly.
-
-        // Actually, getPropertyValue is private. I should have checked that.
-        // I will implement a local helper.
+        // Helper to find prop by name (case insensitive) or type
+        const getProp = (name: string, type: string) => {
+            // 1. Try exact match
+            if (page.properties[name]) return page.properties[name];
+            // 2. Try case insensitive match
+            const key = Object.keys(page.properties).find(k => k.toLowerCase() === name.toLowerCase());
+            if (key) return page.properties[key];
+            // 3. Fallback to type (using parent method if needed, but avoiding for now to prevent collisions)
+            // If we really want to fallback, we should use getPropertyName but it's risky.
+            // Let's assume the names are correct as per setup script.
+            return null;
+        };
 
         return {
             id: page.id,
-            storeId: this.extractValue(page.properties[storeIdProp], 'title'),
-            name: this.extractValue(page.properties[nameProp], 'rich_text'),
-            latitude: this.extractValue(page.properties[latProp], 'number'),
-            longitude: this.extractValue(page.properties[lngProp], 'number'),
-            radius: this.extractValue(page.properties[radiusProp], 'number'),
-            qrToken: this.extractValue(page.properties[qrTokenProp], 'rich_text'),
-            nfcUrl: this.extractValue(page.properties[nfcUrlProp], 'url'),
-            isActive: this.extractValue(page.properties[isActiveProp], 'checkbox')
+            storeId: this.extractValue(getProp('store_id', 'title'), 'title'),
+            name: this.extractValue(getProp('name', 'rich_text'), 'rich_text'),
+            latitude: this.extractValue(getProp('latitude', 'number'), 'number'),
+            longitude: this.extractValue(getProp('longitude', 'number'), 'number'),
+            radius: this.extractValue(getProp('radius', 'number'), 'number'),
+            qrToken: this.extractValue(getProp('qr_token', 'rich_text'), 'rich_text'),
+            nfcUrl: this.extractValue(getProp('nfc_url', 'url'), 'url'),
+            isActive: this.extractValue(getProp('is_active', 'checkbox'), 'checkbox')
         };
     }
 
