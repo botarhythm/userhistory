@@ -384,60 +384,59 @@ app.get('/api/products/search', async (req, res): Promise<void> => {
 });
 
 // ポイントシステムAPI
-app.use('/api/points', pointsRouter);
+success: true
+    });
+  } catch (error) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorStack = error instanceof Error ? error.stack : undefined;
 
-// 管理者用API
-app.use('/api/admin', adminRouter);
+  log('purchase_error', {
+    lineUid: req.body.lineUid,
+    error: errorMessage,
+    stack: errorStack,
+    body: req.body
+  }, 'Purchase recording failed');
 
-// データベース構造確認API（デバッグ用）
-app.get('/api/debug/database-structure', async (req, res) => {
+  console.error('Purchase error details:', {
+    message: errorMessage,
+    stack: errorStack,
+    requestBody: req.body
+  });
+
+  return res.status(500).json({
+    error: 'Internal server error'
+  });
+}
+});
+
+// 履歴取得API
+app.get('/api/history/:lineUid', async (req, res) => {
   if (!notionAPI) {
     return res.status(503).json({ error: 'Notion API not configured' });
   }
 
   try {
-    log('database_structure_request', {}, 'Database structure check requested');
+    const { lineUid } = req.params;
+    const { type, limit = 10 } = req.query;
 
-    const customerStructure = await notionAPI.getDatabaseStructure(notionAPI.customerDatabaseId);
-    const historyStructure = await notionAPI.getDatabaseStructure(notionAPI.historyDatabaseId);
-    const productStructure = await notionAPI.getDatabaseStructure(notionAPI.productDatabaseId);
+    log('history_request', { lineUid, type, limit }, 'History request received');
 
-    log('database_structure_success', {
-      hasCustomerStructure: !!customerStructure,
-      hasHistoryStructure: !!historyStructure,
-      hasProductStructure: !!productStructure
-    }, 'Database structure retrieved successfully');
+    // 顧客を検索
+    const customer = await notionAPI.findCustomerByLineUid(lineUid);
 
-    return res.json({
-      success: true,
-      customer: customerStructure ? {
-        id: customerStructure.id,
-        title: customerStructure.title,
-        properties: Object.keys(customerStructure.properties)
-      } : null,
-      history: historyStructure ? {
-        id: historyStructure.id,
-        title: historyStructure.title,
-        properties: Object.keys(historyStructure.properties)
-      } : null,
-      product: productStructure ? {
-        // 顧客を検索
-        const customer = await notionAPI.findCustomerByLineUid(lineUid);
-
-        if(!customer) {
-          log('history_user_not_found', { lineUid }, 'User not found for history request');
-          return res.status(404).json({ error: 'Customer not found' });
-        }
+    if (!customer) {
+      log('history_user_not_found', { lineUid }, 'User not found for history request');
+      return res.status(404).json({ error: 'Customer not found' });
+    }
 
     // 履歴を取得
     const history = await notionAPI.getHistory(
-          customer.id,
-          type as 'checkin' | 'purchase',
-          parseInt(limit as string)
-        );
+      customer.id,
+      type as 'checkin' | 'purchase',
+      parseInt(limit as string)
+    );
 
-        log('history_success', { lineUid, customerId: customer.id, historyCount: history.length
-      }, 'History retrieved successfully');
+    log('history_success', { lineUid, customerId: customer.id, historyCount: history.length }, 'History retrieved successfully');
 
     return res.json({
       lineUid,
