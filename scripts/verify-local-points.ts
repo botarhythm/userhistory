@@ -44,7 +44,7 @@ async function verifyPointsFlow() {
         body: JSON.stringify(earnPayload)
     });
 
-    const earnData = await earnRes.json();
+    const earnData = await earnRes.json() as any;
     console.log('Earn Response:', JSON.stringify(earnData, null, 2));
 
     if (!earnRes.ok) {
@@ -61,7 +61,7 @@ async function verifyPointsFlow() {
     // 3. Verify Balance Updated
     console.log(`\n3. Verifying New Balance...`);
     const statusRes = await fetch(`${BASE_URL}/api/points/status/${TEST_USER_ID}`);
-    const statusData = await statusRes.json();
+    const statusData = await statusRes.json() as any;
     console.log('Status Response:', JSON.stringify(statusData, null, 2));
 
     if (statusData.currentPoints !== undefined) {
