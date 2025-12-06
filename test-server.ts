@@ -39,9 +39,10 @@ app.get('/', (_req: Request, res: Response) => {
 });
 
 // エラーハンドリング
-const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+// エラーハンドリング
+const errorHandler: ErrorRequestHandler = (err: any, _req: Request, res: Response, _next: NextFunction) => {
     console.error('Error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message || 'Internal Server Error' });
 };
 
 app.use(errorHandler);
