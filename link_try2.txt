@@ -1,0 +1,6 @@
+error: unexpected argument '093e4f04-ebb8-44d8-b87c-8e9e06743e54' found
+
+Usage: railway.exe link [OPTIONS]
+
+For more information, try '--help'.
+

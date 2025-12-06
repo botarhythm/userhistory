@@ -1,0 +1,16 @@
+
+> botarhythm-userhistory@1.0.0 railway:logs
+> npm run build:server && node -r dotenv/config dist/scripts/railway-mcp.js logs
+
+
+> botarhythm-userhistory@1.0.0 build:server
+> tsc -p tsconfig.server.json
+
+笶・Failed to get logs: Error: Railway command failed with code 1: Unauthorized. Please login with `railway login`
+
+    at ChildProcess.<anonymous> (file:///C:/Users/seamo/Documents/cursor/userhistory/dist/scripts/railway-mcp.js:108:28)
+    at ChildProcess.emit (node:events:518:28)
+    at maybeClose (node:internal/child_process:1101:16)
+    at Socket.<anonymous> (node:internal/child_process:456:11)
+    at Socket.emit (node:events:518:28)
+    at Pipe.<anonymous> (node:net:351:12)

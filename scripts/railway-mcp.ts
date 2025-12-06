@@ -109,12 +109,13 @@ class RailwayMCPManager {
    */
   private executeRailwayCommand(args: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
-      const child = spawn('railway', args, {
+      // Use npx to ensure we use the local railway binary
+      const child = spawn('npx', ['railway', ...args], {
         shell: true,
         stdio: ['pipe', 'pipe', 'pipe'],
         env: {
           ...process.env,
-          RAILWAY_TOKEN: this.railwayToken
+          RAILWAY_TOKEN: this.railwayToken // Explicitly pass token
         }
       });
 
@@ -133,6 +134,10 @@ class RailwayMCPManager {
         if (code === 0) {
           resolve(stdout);
         } else {
+          // Keep error logging for troubleshooting
+          console.error(`❌ Railway CLI Error (Code ${code}):`);
+          console.error(`STDOUT: ${stdout}`);
+          console.error(`STDERR: ${stderr}`);
           reject(new Error(`Railway command failed with code ${code}: ${stderr}`));
         }
       });

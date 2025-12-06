@@ -1,0 +1,20 @@
+
+> botarhythm-userhistory@1.0.0 railway:status
+> npm run build:server && node -r dotenv/config dist/scripts/railway-mcp.js status
+
+
+> botarhythm-userhistory@1.0.0 build:server
+> npx tsc -p tsconfig.server.json
+
+嘯 Railway deployment monitoring started...
+伯 Executing Railway CLI with Token: ab1e...c0f7, Project ID: 093e4f04-ebb8-44d8-b87c-8e9e06743e54
+笶・Railway CLI Error (Code 1):
+STDOUT: 
+STDERR: Project Token not found
+
+笶・Failed to get deployment status: Error: Railway command failed with code 1: Project Token not found
+
+    at ChildProcess.<anonymous> (file:///C:/Users/seamo/Documents/cursor/userhistory/dist/scripts/railway-mcp.js:115:28)
+    at ChildProcess.emit (node:events:518:28)
+    at maybeClose (node:internal/child_process:1101:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:304:5)

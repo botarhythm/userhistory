@@ -32,7 +32,7 @@ export class NotionPointsAPI extends NotionAPI {
         // Fallback: return the first name in list to rely on Notion API creating it if missing? 
         // Or null? If we return a name that doesn't exist in 'properties', API might error or create it.
         // Let's return the first candidate as a fallback assumption.
-        return possibleNames[0];
+        return possibleNames[0] || '';
     }
 
     // --- Store Methods ---
@@ -447,16 +447,4 @@ export class NotionPointsAPI extends NotionAPI {
         }
     }
 }
-if (!prop) return null;
-switch (type) {
-    case 'title': return prop.title?.[0]?.text?.content || '';
-    case 'rich_text': return prop.rich_text?.[0]?.text?.content || '';
-    case 'number': return prop.number || 0;
-    case 'checkbox': return prop.checkbox || false;
-    case 'url': return prop.url || '';
-    case 'select': return prop.select?.name || '';
-    case 'date': return prop.date?.start || '';
-    default: return null;
-}
-    }
-}
+

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useLiff } from '../contexts/LiffContext';
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -217,14 +218,19 @@ const HistoryPage: React.FC = () => {
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
           <h1 className="text-xl font-bold text-gray-800">
-            {user?.displayName}さんの履歴
+            {user?.displayName}さんのメモ
           </h1>
-          <button
-            onClick={fetchHistory}
-            className="text-blue-600 hover:text-blue-800 text-sm"
-          >
-            更新
-          </button>
+          <div className="flex space-x-3">
+            <Link to="/purchase" className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-green-700 font-bold shadow-sm flex items-center">
+              <span className="mr-1">＋</span> 新規作成
+            </Link>
+            <button
+              onClick={fetchHistory}
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            >
+              更新
+            </button>
+          </div>
         </div>
 
         {history.length === 0 ? (

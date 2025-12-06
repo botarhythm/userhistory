@@ -14,7 +14,12 @@ const Header: React.FC = () => {
   const location = useLocation();
   const { user, isInitialized, isLoggedIn, logout, error, retryLogin, debugInfo } = useLiff();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
-  const showCardFeature = isAccessAllowed(user?.userId);
+  const [isDebugUserMode, setIsDebugUserMode] = useState(false); // Toggle for Admin to view as User
+  const isAdmin = isAccessAllowed(user?.userId);
+  const showAdminTab = isAdmin && !isDebugUserMode;
+  const showCardFeature = isAdmin; // Only admins/members see the card feature currently? Or is it for everyone?
+  // Note: Based on PointCard.tsx, checks isAccessAllowed. So let's keep it consistent.
+  // Actually, showCardFeature was `isAccessAllowed(user?.userId)` previously.
 
   // ページタイトルを設定
   useEffect(() => {
@@ -145,18 +150,38 @@ const Header: React.FC = () => {
               src={user?.pictureUrl || 'https://via.placeholder.com/32x32'}
               alt={user?.displayName || 'ユーザー'}
             />
-            <span className="text-sm font-medium text-gray-700 truncate max-w-[150px] sm:max-w-[200px]">
-              {user?.displayName || 'ユーザー'}
-            </span>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-gray-700 truncate max-w-[150px] sm:max-w-[200px]">
+                {user?.displayName || 'ユーザー'}
+              </span>
+              {isAdmin && (
+                <span className="text-xs text-orange-500 font-bold">Admin</span>
+              )}
+            </div>
           </div>
 
-          {/* 右側: ログアウトボタン */}
-          <button
-            onClick={logout}
-            className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1 rounded-md hover:bg-gray-100"
-          >
-            ログアウト
-          </button>
+          {/* 右側: コントロール */}
+          <div className="flex items-center space-x-2">
+            {/* Admin/User View Toggle */}
+            {isAdmin && (
+              <button
+                onClick={() => setIsDebugUserMode(!isDebugUserMode)}
+                className={`text-xs px-2 py-1 rounded border ${isDebugUserMode
+                    ? 'bg-gray-200 text-gray-700 border-gray-300'
+                    : 'bg-orange-100 text-orange-700 border-orange-300'
+                  }`}
+              >
+                {isDebugUserMode ? '👀 ユーザー表示中' : '⚙️ 管理者表示'}
+              </button>
+            )}
+
+            <button
+              onClick={logout}
+              className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1 rounded-md hover:bg-gray-100"
+            >
+              ログアウト
+            </button>
+          </div>
         </div>
 
         {/* 中央: ロゴとブランド名（クリック可能） */}
@@ -171,15 +196,17 @@ const Header: React.FC = () => {
 
         {/* ナビゲーション: モバイルではタブ形式 */}
         <nav className="flex space-x-1 sm:space-x-4 pb-2 sm:pb-0">
-          <Link
-            to="/admin"
-            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/admin'
-              ? 'bg-red-500 text-white'
-              : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-          >
-            🛠 管理
-          </Link>
+          {showAdminTab && (
+            <Link
+              to="/admin"
+              className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/admin'
+                ? 'bg-red-500 text-white'
+                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+            >
+              🛠 管理
+            </Link>
+          )}
           <Link
             to="/history"
             className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/history'
@@ -187,7 +214,7 @@ const Header: React.FC = () => {
               : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
               }`}
           >
-            📜 履歴
+            📝 メモ
           </Link>
           {showCardFeature && (
             <Link
