@@ -9,6 +9,7 @@ const QRScanner: React.FC = () => {
     const { user } = useLiff();
     const [error, setError] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [successPoints, setSuccessPoints] = useState<number | null>(null);
     const scannerRef = useRef<Html5Qrcode | null>(null);
     const isMountedRef = useRef(false);
 
@@ -96,7 +97,7 @@ const QRScanner: React.FC = () => {
 
         // Get Location
         if (!navigator.geolocation) {
-            setError("Geolocation is not supported by your browser");
+            setError("お使いのブラウザは位置情報をサポートしていません");
             setIsProcessing(false);
             return;
         }
@@ -106,12 +107,12 @@ const QRScanner: React.FC = () => {
                 try {
                     await submitPointEarn(decodedText, position.coords.latitude, position.coords.longitude);
                 } catch (err) {
-                    setError("Failed to earn points. Please try again.");
+                    setError("ポイント獲得に失敗しました。もう一度お試しください。");
                     setIsProcessing(false);
                 }
             },
             (_err) => {
-                setError("Location access denied. Please enable location services.");
+                setError("位置情報の取得に失敗しました。許可設定を確認してください。");
                 setIsProcessing(false);
             }
         );
@@ -119,7 +120,7 @@ const QRScanner: React.FC = () => {
 
     const submitPointEarn = async (qrToken: string, latitude: number, longitude: number) => {
         if (!user?.userId) {
-            setError("User not authenticated");
+            setError("ユーザー認証が必要です");
             return;
         }
 
@@ -141,15 +142,20 @@ const QRScanner: React.FC = () => {
             const data = await response.json();
 
             if (response.ok) {
-                alert(`Success! You earned ${data.gainedPoints} point(s)!`);
-                navigate('/points');
+                // Show Success UI
+                setSuccessPoints(data.gainedPoints || 1);
+
+                // Auto redirect after animation
+                setTimeout(() => {
+                    navigate('/points');
+                }, 3000);
             } else {
-                setError(data.error || 'Failed to earn points');
+                setError(data.error || 'ポイント獲得に失敗しました');
                 setIsProcessing(false);
                 // Ideally give a button to restart scanner here instead of full reload
             }
         } catch (err) {
-            setError('Network error');
+            setError('ネットワークエラーが発生しました');
             setIsProcessing(false);
         }
     };
@@ -186,7 +192,7 @@ const QRScanner: React.FC = () => {
                             onClick={() => window.location.reload()}
                             className="block mt-2 mx-auto bg-white/20 px-3 py-1 rounded text-xs hover:bg-white/30"
                         >
-                            Reload
+                            再読み込み
                         </button>
                     </div>
                 )}
@@ -196,7 +202,7 @@ const QRScanner: React.FC = () => {
                     <div id="reader" className="w-full h-full"></div>
 
                     {/* Custom Overlay Guide (Visual only) */}
-                    {!isProcessing && !error && (
+                    {!isProcessing && !error && !successPoints && (
                         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                             <div className="w-64 h-64 border-2 border-white/30 rounded-3xl relative">
                                 <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-green-500 rounded-tl-xl"></div>
@@ -209,10 +215,24 @@ const QRScanner: React.FC = () => {
                 </div>
 
                 {/* Loading / Processing State */}
-                {isProcessing && (
+                {isProcessing && !successPoints && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm z-40">
                         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 mb-4"></div>
                         <p className="text-xl font-bold animate-pulse">確認中...</p>
+                    </div>
+                )}
+
+                {/* Success State */}
+                {successPoints && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md z-50 animate-in fade-in duration-300">
+                        <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mb-6 animate-bounce">
+                            <svg className="w-12 h-12 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-bold text-white mb-2">獲得成功！</h2>
+                        <p className="text-4xl font-bold text-green-400 mb-4">+{successPoints} pt</p>
+                        <p className="text-sm text-gray-400">ポイントカードへ移動します...</p>
                     </div>
                 )}
             </div>
