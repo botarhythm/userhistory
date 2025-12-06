@@ -386,66 +386,7 @@ router.post('/earn', async (req, res): Promise<void> => {
     }
 });
 
-// POST /api/points/redeem - Redeem reward
-router.post('/redeem', async (req, res): Promise<void> => {
-    try {
-        const { lineUserId, rewardId } = req.body as RedeemRewardRequest;
 
-        // 1. Validate User
-        const customer = await notionPoints.findCustomerByLineUid(lineUserId);
-        if (!customer) {
-            res.status(404).json({ error: 'Customer not registered' });
-            return;
-        }
-
-        // 2. Validate Reward
-        const reward = await notionPoints.getReward(rewardId);
-        if (!reward) {
-            res.status(404).json({ error: 'Reward not found' });
-            return;
-        }
-        if (!reward.isActive) {
-            res.status(400).json({ error: 'Reward is not active' });
-            return;
-        }
-
-        // 3. Check Balance
-        // Fetch current points
-        const customerPage = await notionPoints.client.pages.retrieve({ page_id: customer.id }) as any;
-        const props = customerPage.properties;
-        const getPropValue = (name: string) => {
-            const key = Object.keys(props).find(k => k.toLowerCase() === name.toLowerCase());
-            return key ? props[key].number || 0 : 0;
-        };
-        const currentPoints = getPropValue('current_points');
-
-        if (currentPoints < reward.pointsRequired) {
-            res.status(400).json({ error: 'Insufficient points' });
-            return;
-        }
-
-        // 4. Deduct Points & Record Transaction
-        await notionPoints.createPointTransaction(
-            customer.id,
-            -reward.pointsRequired, // Negative amount
-            'REWARD',
-            {
-                rewardId: reward.id,
-                reason: `Redeemed: ${reward.title}`
-            }
-        );
-
-        res.json({
-            success: true,
-            redeemedReward: reward,
-            animation: 'gift_open'
-        });
-
-    } catch (error) {
-        console.error('Error redeeming reward:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
 // POST /api/points/admin/adjust - Adjust points manually
 router.post('/admin/adjust', async (req: express.Request, res: express.Response): Promise<void> => {
     try {

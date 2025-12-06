@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLiff } from '../contexts/LiffContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { isAccessAllowed } from '../config/permissions';
 
 import { Reward } from '../types/points';
@@ -58,8 +58,31 @@ const PointCard: React.FC = () => {
         }
     }, [user, loading, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const handleRedeem = async (rewardType: string, rewardName: string) => {
-        if (!window.confirm(`${rewardName}を利用しますか？`)) return;
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+    }>({ isOpen: false, title: '', message: '', onConfirm: () => { } });
+
+    const [alertModal, setAlertModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'success' | 'error';
+    }>({ isOpen: false, title: '', message: '', type: 'success' });
+
+    const handleRedeemClick = (rewardType: string, rewardName: string) => {
+        setConfirmModal({
+            isOpen: true,
+            title: '特典の利用',
+            message: `${rewardName}を利用しますか？\nスタッフに画面を提示してください。`,
+            onConfirm: () => executeRedeem(rewardType, rewardName)
+        });
+    };
+
+    const executeRedeem = async (rewardType: string, rewardName: string) => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
 
         try {
             const res = await fetch('/api/points/redeem', {
@@ -69,14 +92,29 @@ const PointCard: React.FC = () => {
             });
 
             if (res.ok) {
-                alert(`${rewardName}を利用しました！`);
+                setAlertModal({
+                    isOpen: true,
+                    title: '利用完了',
+                    message: `${rewardName}を利用しました！`,
+                    type: 'success'
+                });
                 if (user?.userId) fetchPointStatus(user?.userId);
             } else {
                 const err = await res.json();
-                alert(`利用に失敗しました: ${err.error || '不明なエラー'}`);
+                setAlertModal({
+                    isOpen: true,
+                    title: 'エラー',
+                    message: `利用に失敗しました: ${err.error || '不明なエラー'}`,
+                    type: 'error'
+                });
             }
         } catch (e) {
-            alert('通信エラーが発生しました');
+            setAlertModal({
+                isOpen: true,
+                title: '通信エラー',
+                message: '通信エラーが発生しました',
+                type: 'error'
+            });
         }
     };
 
@@ -106,7 +144,83 @@ const PointCard: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20 relative">
+            {/* Confirmation Modal */}
+            <AnimatePresence>
+                {confirmModal.isOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+                        >
+                            <div className="p-6 text-center">
+                                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">{confirmModal.title}</h3>
+                                <p className="text-gray-600 whitespace-pre-wrap">{confirmModal.message}</p>
+                            </div>
+                            <div className="flex border-t border-gray-100">
+                                <button
+                                    onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                                    className="flex-1 px-6 py-4 text-gray-600 font-bold hover:bg-gray-50 transition-colors"
+                                >
+                                    キャンセル
+                                </button>
+                                <button
+                                    onClick={confirmModal.onConfirm}
+                                    className="flex-1 px-6 py-4 bg-orange-500 text-white font-bold hover:bg-orange-600 transition-colors"
+                                >
+                                    利用する
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Alert Modal */}
+            <AnimatePresence>
+                {alertModal.isOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+                        >
+                            <div className="p-6 text-center">
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${alertModal.type === 'success' ? 'bg-green-100' : 'bg-red-100'}`}>
+                                    {alertModal.type === 'success' ? (
+                                        <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    )}
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">{alertModal.title}</h3>
+                                <p className="text-gray-600">{alertModal.message}</p>
+                            </div>
+                            <div className="p-4 bg-gray-50">
+                                <button
+                                    onClick={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
+                                    className="w-full py-3 bg-white border border-gray-300 rounded-xl font-bold text-gray-700 hover:bg-gray-50 shadow-sm"
+                                >
+                                    閉じる
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
             {/* Header / Top Section */}
             <div className="bg-white pb-6 pt-4 px-4 rounded-b-3xl shadow-sm z-10 relative">
                 <div className="flex justify-between items-center mb-6">
@@ -215,7 +329,7 @@ const PointCard: React.FC = () => {
                                     <div className="text-xs font-bold text-orange-500 mt-1">保有数: {reward.count}枚</div>
                                 </div>
                                 <button
-                                    onClick={() => handleRedeem(reward.rewardId, reward.title)}
+                                    onClick={() => handleRedeemClick(reward.rewardId, reward.title)}
                                     className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold py-2 px-4 rounded-lg shadow transition-colors"
                                 >
                                     利用する

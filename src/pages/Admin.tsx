@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLiff } from '../contexts/LiffContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isAccessAllowed } from '../config/permissions';
+import { getRank } from '../utils/ranks';
 
 interface Customer {
     id: string;
