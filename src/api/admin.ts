@@ -23,7 +23,7 @@ const adminAuth = (req: express.Request, res: express.Response, next: express.Ne
 router.use(adminAuth);
 
 // POST /api/admin/grant - Manually grant/deduct points
-router.post('/grant', async (req, res): Promise<void> => {
+router.post('/grant', async (req: express.Request, res: express.Response): Promise<void> => {
     try {
         const { targetLineUserId, amount, reason } = req.body as AdminGrantPointsRequest;
 

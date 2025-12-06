@@ -215,7 +215,7 @@ router.post('/redeem', async (req, res): Promise<void> => {
     }
 });
 // POST /api/points/admin/adjust - Adjust points manually
-router.post('/admin/adjust', async (req, res): Promise<void> => {
+router.post('/admin/adjust', async (req: express.Request, res: express.Response): Promise<void> => {
     try {
         const { adminUserId, targetCustomerId, amount, reason } = req.body;
 
@@ -250,7 +250,7 @@ router.post('/admin/adjust', async (req, res): Promise<void> => {
 });
 
 // GET /api/points/admin/customers - Get all customers for admin
-router.get('/admin/customers', async (req, res): Promise<void> => {
+router.get('/admin/customers', async (req: express.Request, res: express.Response): Promise<void> => {
     try {
         // In a real app, verify admin session here too. 
         // For this MVP, we rely on the implementation assuming it's called from the authenticated Admin UI.
