@@ -45,6 +45,7 @@ export class NotionPointsAPI extends NotionAPI {
             if (!dbStructure) return null;
 
             const storeIdProp = this.getPropId(dbStructure.properties, ['store_id', '店舗ID', 'Store ID']);
+            console.log(`[Points] getStore: storeId='${storeId}', propId='${storeIdProp}' (looking in DB ${this.storeDbId})`);
 
             const response = await this.client.databases.query({
                 database_id: this.storeDbId,
@@ -55,6 +56,7 @@ export class NotionPointsAPI extends NotionAPI {
                     }
                 }
             });
+            console.log(`[Points] getStore results: ${response.results.length}`);
 
             if (response.results.length === 0) return null;
 

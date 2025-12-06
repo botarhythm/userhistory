@@ -1,0 +1,17 @@
+噫 Starting Notion Store Setup...
+Target Database ID: 2c085ee9-6e03-8141-a394-e4bb1edcb4dd
+
+[1/3] Verifying Schema...
+  name: [rich_text]
+  longitude: [number]
+  qr_token: [rich_text]
+  is_active: [checkbox]
+  nfc_url: [url]
+  radius: [number]
+  latitude: [number]
+  store_id: [title]
+
+  笨ｨ Creating Store Botarhythm Coffee Roaster...
+  Created successfully.
+
+Setup Complete.

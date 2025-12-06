@@ -1,0 +1,40 @@
+Verifying Redemption Flow on http://localhost:8087...
+UNDICI 29364: connecting to localhost:8087:8087 using http:undefined
+UNDICI 29364: connection to localhost:8087:8087 using http:undefined errored - 
+UNDICI 29364: request to POST http://localhost:8087//api/checkin errored - 
+node:internal/deps/undici/undici:13502
+      Error.captureStackTrace(err);
+            ^
+
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13502:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async verifyRedemption (C:\Users\seamo\Documents\cursor\userhistory\scripts\verify-redemption-local.ts:9:5) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:8087
+          at createConnectionError (node:net:1675:14)
+          at afterConnectMultiple (node:net:1705:16) {
+        errno: -4078,
+        code: 'ECONNREFUSED',
+        syscall: 'connect',
+        address: '::1',
+        port: 8087
+      },
+      Error: connect ECONNREFUSED 127.0.0.1:8087
+          at createConnectionError (node:net:1675:14)
+          at afterConnectMultiple (node:net:1705:16) {
+        errno: -4078,
+        code: 'ECONNREFUSED',
+        syscall: 'connect',
+        address: '127.0.0.1',
+        port: 8087
+      }
+    ]
+  }
+}
+
+Node.js v22.14.0

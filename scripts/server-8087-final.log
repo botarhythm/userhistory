@@ -1,0 +1,14 @@
+C:\Users\seamo\Documents\cursor\userhistory\src\api\notion.ts:44
+      throw new Error('NOTION_API_KEY environment variable is required');
+            ^
+
+
+Error: NOTION_API_KEY environment variable is required
+    at new NotionAPI (C:\Users\seamo\Documents\cursor\userhistory\src\api\notion.ts:44:13)
+    at new NotionPointsAPI (C:\Users\seamo\Documents\cursor\userhistory\src\api\notion-points.ts:11:9)
+    at <anonymous> (C:\Users\seamo\Documents\cursor\userhistory\src\api\points.ts:7:22)
+    at ModuleJob.run (node:internal/modules/esm/module_job:271:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:578:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:116:5)
+
+Node.js v22.14.0

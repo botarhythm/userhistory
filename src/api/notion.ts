@@ -245,26 +245,47 @@ export class NotionAPI {
   // LINE UIDで顧客を検索
   async findCustomerByLineUid(lineUid: string): Promise<Customer | null> {
     try {
-      // データベース構造を取得してプロパティ名を動的に決定
       const dbStructure = await this.getDatabaseStructure(this.customerDatabaseId);
       if (!dbStructure) {
         return null;
       }
 
-      const displayNameProperty = this.getPropertyName(dbStructure.properties, 'title') || '表示名';
-      const lineUidProperty = this.getPropertyName(dbStructure.properties, 'rich_text') || 'LINE UID';
-      const dateProperty = this.getPropertyName(dbStructure.properties, 'created_time') || '登録日';
-      const updatedAtProperty = this.getPropertyName(dbStructure.properties, 'date') || '最終更新日';
+      // 1. Identify Properties by Name/Alias
+      const findProp = (names: string[]) => {
+        return Object.values(dbStructure.properties).find((p: any) =>
+          names.some(n => p.name.toLowerCase() === n.toLowerCase())
+        );
+      };
 
-      // LINE UIDで検索
+      const nameProp = findProp(['表示名', 'Display Name', 'Name']) as any;
+      const uidProp = findProp(['LINE UID', 'LineUid', 'uid', 'Line ID']) as any;
+      const dateProp = findProp(['created_time', '登録日', 'Created']) as any;
+      const updateProp = findProp(['last_visit_date', '最終来店日', 'Updated']) as any;
+
+      if (!uidProp) {
+        console.error('[NotionAPI] LINE UID property not found in Customer DB');
+        return null;
+      }
+
+      // 2. Construct Filter based on UID Prop Type
+      let filter: any;
+      const uidType = uidProp.type;
+      if (uidType === 'title') {
+        filter = { property: uidProp.id, title: { equals: lineUid } };
+      } else if (uidType === 'rich_text') {
+        filter = { property: uidProp.id, rich_text: { equals: lineUid } };
+      } else if (uidType === 'number') {
+        // unlikely for UID but possible
+        filter = { property: uidProp.id, number: { equals: Number(lineUid) } };
+      } else {
+        console.warn(`[NotionAPI] Unsupported UID property type: ${uidType}`);
+        // Fallback to rich_text hoping it works? Or generic?
+        filter = { property: uidProp.id, rich_text: { equals: lineUid } };
+      }
+
       const response = await this.client.databases.query({
         database_id: this.customerDatabaseId,
-        filter: {
-          property: lineUidProperty,
-          rich_text: {
-            equals: lineUid
-          }
-        }
+        filter: filter
       });
 
       if (response.results.length === 0) {
@@ -272,12 +293,22 @@ export class NotionAPI {
       }
 
       const page = response.results[0] as any;
+
+      // Helper to extract
+      const getVal = (prop: any) => {
+        if (!prop) return '';
+        if (prop.type === 'title') return prop.title?.[0]?.text?.content || '';
+        if (prop.type === 'rich_text') return prop.rich_text?.[0]?.text?.content || '';
+        if (prop.type === 'date') return prop.date?.start || prop.created_time || '';
+        return '';
+      };
+
       return {
         id: page.id || '',
-        lineUid: this.getPropertyValue(page, lineUidProperty, 'rich_text') || '',
-        displayName: this.getPropertyValue(page, displayNameProperty, 'title') || '',
-        createdAt: this.getPropertyValue(page, dateProperty, 'created_time') || new Date().toISOString(),
-        updatedAt: this.getPropertyValue(page, updatedAtProperty, 'date') || new Date().toISOString()
+        lineUid: getVal(page.properties[uidProp.name]),
+        displayName: nameProp ? getVal(page.properties[nameProp.name]) : 'No Name',
+        createdAt: dateProp ? getVal(page.properties[dateProp.name]) : new Date().toISOString(),
+        updatedAt: updateProp ? getVal(page.properties[updateProp.name]) : new Date().toISOString()
       };
     } catch (error) {
       console.error('Failed to find customer:', error);

@@ -1,0 +1,31 @@
+噫 Starting Notion Reward Setup...
+Target Database ID: 2c085ee9-6e03-8181-86cc-d96b0bc2f586
+
+[1/3] Verifying Schema...
+--- Current Database Schema ---
+  is_active: [checkbox] (ID: EdTb)
+  description: [rich_text] (ID: G%3Bog)
+  is_repeatable: [checkbox] (ID: LvYY)
+  order: [number] (ID: %5EXc%3F)
+  points_required: [number] (ID: jqvF)
+  Related to Botarhythm Point History (reward): [relation] (ID: onaA)
+  title: [rich_text] (ID: %7D%5EeP)
+  reward_id: [title] (ID: title)
+-------------------------------
+  笞・・Detected property named "title". Renaming to "Display Name" to avoid potential ID collision...
+  笨・Renamed successfully.
+  笨・Property exists: reward_id
+  笨・Property exists: points_required
+  笨・Property exists: is_active
+  笨・Property exists: is_repeatable
+  笨・Property exists: order
+  笨・Property exists: description
+  Schema is up to date.
+
+[2/3] Upserting Reward Data...
+  邃ｹ・・'reward_id' type: title
+  邃ｹ・・Display Field Key: 'Display Name' (Type: rich_text)
+  笨ｨ Creating 繧ｳ繝ｼ繝偵・1譚ｯ 辟｡譁吝虻 (ID: reward_coffee) to DB 2c085ee9-6e03-8181-86cc-d96b0bc2f586...
+  笨ｨ Creating 繧ｳ繝ｼ繝偵・雎・00g 繝励Ξ繧ｼ繝ｳ繝・(ID: reward_beans) to DB 2c085ee9-6e03-8181-86cc-d96b0bc2f586...
+
+[3/3] Setup Complete! 脂

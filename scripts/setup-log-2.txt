@@ -1,0 +1,64 @@
+噫 Starting Notion Reward Setup...
+Target Database ID: 2c085ee9-6e03-8181-86cc-d96b0bc2f586
+
+[1/3] Verifying Schema...
+--- Current Database Schema ---
+  is_active: [checkbox] (ID: EdTb)
+  description: [rich_text] (ID: G%3Bog)
+  is_repeatable: [checkbox] (ID: LvYY)
+  order: [number] (ID: %5EXc%3F)
+  points_required: [number] (ID: jqvF)
+  Related to Botarhythm Point History (reward): [relation] (ID: onaA)
+  title: [rich_text] (ID: %7D%5EeP)
+  reward_id: [title] (ID: title)
+-------------------------------
+  笨・Property exists: reward_id
+  笨・Property exists: points_required
+  笨・Property exists: is_active
+  笨・Property exists: is_repeatable
+  笨・Property exists: order
+  笨・Property exists: description
+  Schema is up to date.
+
+[2/3] Upserting Reward Data...
+  邃ｹ・・'reward_id' type: title
+  邃ｹ・・'title' type: rich_text
+  笨ｨ Creating 繧ｳ繝ｼ繝偵・1譚ｯ 辟｡譁吝虻 (ID: reward_coffee) to DB 2c085ee9-6e03-8181-86cc-d96b0bc2f586...
+@notionhq/client warn: request fail {
+  code: 'validation_error',
+  message: "Type mismatch between request for property 'title'. Got type 'title' and expected type 'rich_text' from database schema."
+}
+APIResponseError: Type mismatch between request for property 'title'. Got type 'title' and expected type 'rich_text' from database schema.
+    at buildRequestError (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\src\errors.ts:240:12)
+    at Client.request (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\src\Client.ts:224:32)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async setupRewards (C:\Users\seamo\Documents\cursor\userhistory\scripts\setup-notion-rewards.ts:162:13) {
+  code: 'validation_error',
+  status: 400,
+  headers: Headers {
+    [Symbol(map)]: [Object: null prototype] {
+      date: [Array],
+      'content-type': [Array],
+      'content-length': [Array],
+      connection: [Array],
+      server: [Array],
+      'cf-ray': [Array],
+      'cf-cache-status': [Array],
+      etag: [Array],
+      'strict-transport-security': [Array],
+      vary: [Array],
+      'content-security-policy': [Array],
+      'referrer-policy': [Array],
+      'x-content-type-options': [Array],
+      'x-dns-prefetch-control': [Array],
+      'x-download-options': [Array],
+      'x-frame-options': [Array],
+      'x-notion-request-id': [Array],
+      'x-permitted-cross-domain-policies': [Array],
+      'x-xss-protection': [Array],
+      'set-cookie': [Array],
+      'alt-svc': [Array]
+    }
+  },
+  body: `{"object":"error","status":400,"code":"validation_error","message":"Type mismatch between request for property 'title'. Got type 'title' and expected type 'rich_text' from database schema.","request_id":"37aa557e-bcf3-4174-b67d-bffc842e1a59"}`
+}

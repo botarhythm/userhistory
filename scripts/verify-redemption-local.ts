@@ -1,5 +1,5 @@
 
-const BASE_URL = 'http://localhost:8082';
+const BASE_URL = 'http://localhost:8087';
 const TEST_USER_ID = 'test-verifier-user-local';
 
 async function verifyRedemption() {
@@ -11,6 +11,8 @@ async function verifyRedemption() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lineUid: TEST_USER_ID, displayName: 'Local Verifier' })
     });
+    console.log('Checkin complete. Waiting 3s for Notion consistency...');
+    await new Promise(r => setTimeout(r, 3000));
 
     // 2. Earn 10 Points (to get 1 Ticket)
     console.log('Earning 10 points...');
@@ -20,10 +22,10 @@ async function verifyRedemption() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 lineUserId: TEST_USER_ID,
-                storeId: 'test-store-001',
-                latitude: 35.681236,
-                longitude: 139.767125,
-                qrToken: 'test-qr-token-123'
+                storeId: 'store_001', // Prod Store
+                latitude: 34.96068108513542, // Exact Botarhythm location
+                longitude: 139.95781847924133,
+                qrToken: 'bota-prod-token-2024'
             })
         });
         process.stdout.write('.');

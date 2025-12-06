@@ -1,0 +1,97 @@
+Verifying Redemption Flow on http://localhost:8087...
+UNDICI 27468: connecting to localhost:8087:8087 using http:undefined
+UNDICI 27468: connected to localhost:8087:8087 using http:h1
+UNDICI 27468: sending request to POST http://localhost:8087//api/checkin
+UNDICI 27468: received response to POST http://localhost:8087//api/checkin - HTTP 200
+UNDICI 27468: trailers received from POST http://localhost:8087//api/checkin
+Checkin complete. Waiting 3s for Notion consistency...
+Earning 10 points...
+UNDICI 27468: sending request to POST http://localhost:8087//api/points/earn
+UNDICI 27468: received response to POST http://localhost:8087//api/points/earn - HTTP 200
+UNDICI 27468: trailers received from POST http://localhost:8087//api/points/earn
+UNDICI 27468: connecting to localhost:8087:8087 using http:undefined
+UNDICI 27468: connected to localhost:8087:8087 using http:h1
+UNDICI 27468: sending request to POST http://localhost:8087//api/points/earn
+UNDICI 27468: received response to POST http://localhost:8087//api/points/earn - HTTP 200
+UNDICI 27468: trailers received from POST http://localhost:8087//api/points/earn
+UNDICI 27468: sending request to POST http://localhost:8087//api/points/earn
+UNDICI 27468: received response to POST http://localhost:8087//api/points/earn - HTTP 200
+UNDICI 27468: trailers received from POST http://localhost:8087//api/points/earn
+UNDICI 27468: sending request to POST http://localhost:8087//api/points/earn
+UNDICI 27468: received response to POST http://localhost:8087//api/points/earn - HTTP 200
+UNDICI 27468: trailers received from POST http://localhost:8087//api/points/earn
+UNDICI 27468: sending request to POST http://localhost:8087//api/points/earn
+UNDICI 27468: received response to POST http://localhost:8087//api/points/earn - HTTP 200
+UNDICI 27468: trailers received from POST http://localhost:8087//api/points/earn
+UNDICI 27468: sending request to POST http://localhost:8087//api/points/earn
+UNDICI 27468: received response to POST http://localhost:8087//api/points/earn - HTTP 200
+UNDICI 27468: trailers received from POST http://localhost:8087//api/points/earn
+UNDICI 27468: sending request to POST http://localhost:8087//api/points/earn
+UNDICI 27468: received response to POST http://localhost:8087//api/points/earn - HTTP 200
+UNDICI 27468: trailers received from POST http://localhost:8087//api/points/earn
+UNDICI 27468: sending request to POST http://localhost:8087//api/points/earn
+UNDICI 27468: received response to POST http://localhost:8087//api/points/earn - HTTP 200
+UNDICI 27468: trailers received from POST http://localhost:8087//api/points/earn
+UNDICI 27468: sending request to POST http://localhost:8087//api/points/earn
+UNDICI 27468: received response to POST http://localhost:8087//api/points/earn - HTTP 200
+UNDICI 27468: trailers received from POST http://localhost:8087//api/points/earn
+UNDICI 27468: sending request to POST http://localhost:8087//api/points/earn
+UNDICI 27468: received response to POST http://localhost:8087//api/points/earn - HTTP 200
+UNDICI 27468: trailers received from POST http://localhost:8087//api/points/earn
+UNDICI 27468: sending request to POST http://localhost:8087//api/points/earn
+UNDICI 27468: received response to POST http://localhost:8087//api/points/earn - HTTP 200
+UNDICI 27468: trailers received from POST http://localhost:8087//api/points/earn
+...........
+Points earned.
+UNDICI 27468: sending request to GET http://localhost:8087//api/points/status/test-verifier-user-local
+UNDICI 27468: received response to GET http://localhost:8087//api/points/status/test-verifier-user-local - HTTP 200
+UNDICI 27468: trailers received from GET http://localhost:8087//api/points/status/test-verifier-user-local
+User Status: {
+  "currentPoints": 46,
+  "totalPoints": 46,
+  "displayName": "Local Verifier",
+  "nextReward": {
+    "id": "reward_coffee_2",
+    "rewardId": "coffee_2",
+    "title": "繧ｳ繝ｼ繝偵・1譚ｯ",
+    "pointsRequired": 20,
+    "description": "鄒主袖縺励＞繧ｳ繝ｼ繝偵・繧偵・繝ｬ繧ｼ繝ｳ繝・,
+    "isActive": true,
+    "isRepeatable": true,
+    "order": 2
+  },
+  "pointsToNextReward": 4,
+  "availableRewards": [
+    {
+      "id": "generic_coffee",
+      "rewardId": "reward_coffee",
+      "title": "繧ｳ繝ｼ繝偵・1譚ｯ",
+      "description": "鄒主袖縺励＞繧ｳ繝ｼ繝偵・繧偵・繝ｬ繧ｼ繝ｳ繝・,
+      "pointsRequired": 10,
+      "isRepeatable": true,
+      "order": 1,
+      "isActive": true,
+      "count": 1
+    },
+    {
+      "id": "generic_beans",
+      "rewardId": "reward_beans",
+      "title": "縺雁･ｽ縺阪↑繧ｳ繝ｼ繝偵・雎・00g",
+      "description": "縺雁･ｽ縺阪↑繧ｳ繝ｼ繝偵・雎・00g",
+      "pointsRequired": 30,
+      "isRepeatable": true,
+      "order": 2,
+      "isActive": true,
+      "count": 1
+    }
+  ]
+}
+
+Attempting Redeem (coffee)...
+UNDICI 27468: sending request to POST http://localhost:8087//api/points/redeem
+UNDICI 27468: received response to POST http://localhost:8087//api/points/redeem - HTTP 200
+UNDICI 27468: trailers received from POST http://localhost:8087//api/points/redeem
+Redeem Response: {
+  "success": true,
+  "message": "迚ｹ蜈ｸ繧貞茜逕ｨ縺励∪縺励◆"
+}

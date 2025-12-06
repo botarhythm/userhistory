@@ -1,0 +1,633 @@
+笨・Notion API initialized successfully
+{"timestamp":"2025-12-06T23:32:19.880Z","operation":"server_start","context":{"port":"8085","environment":"development"},"message":"Server started successfully","environment":"development"}
+噫 Botarhythm Coffee Roaster API running on port 8085
+投 Health check: http://localhost:8085/health
+迫 API status: http://localhost:8085/api/status
+統 Notion API: 笨・Connected
+倹 External URL: https://userhistory-production.up.railway.app
+肌 Railway Environment: unknown
+女・・Railway Project: 093e4f04-ebb8-44d8-b87c-8e9e06743e54
+{"timestamp":"2025-12-06T23:33:14.251Z","operation":"http_request","context":{"method":"POST","path":"/api/checkin","userAgent":"node","ip":"127.0.0.1"},"message":"POST /api/checkin","environment":"development"}
+{"timestamp":"2025-12-06T23:33:14.252Z","operation":"checkin_request","context":{"lineUid":"test-verifier-user-local","displayName":"Local Verifier","hasMemo":false},"message":"Check-in request received","environment":"development"}
+{"timestamp":"2025-12-06T23:33:17.665Z","operation":"checkin_success","context":{"lineUid":"test-verifier-user-local","customerId":"2c085ee9-6e03-819e-a0c2-faa45802fdb7","historyId":"2c185ee9-6e03-81a7-85b4-cd3c9fe7a38a"},"message":"Check-in recorded successfully","environment":"development"}
+{"timestamp":"2025-12-06T23:33:20.681Z","operation":"http_request","context":{"method":"POST","path":"/api/points/earn","userAgent":"node","ip":"127.0.0.1"},"message":"POST /api/points/earn","environment":"development"}
+@notionhq/client warn: request fail {
+  code: 'validation_error',
+  message: 'body failed validation. Fix one:\n' +
+    'body.filter.rich_text.equals should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.contains should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.starts_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.ends_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_empty should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.'
+}
+Failed to find customer: APIResponseError: body failed validation. Fix one:
+body.filter.rich_text.equals should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.
+body.filter.rich_text.contains should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.
+body.filter.rich_text.starts_with should be defined, instead was `undefined`.
+body.filter.rich_text.ends_with should be defined, instead was `undefined`.
+body.filter.rich_text.is_empty should be defined, instead was `undefined`.
+body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.
+    at buildRequestError (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\errors.js:162:16)
+    at Client.request (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\Client.js:408:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NotionPointsAPI.findCustomerByLineUid (file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/notion.js:203:30)
+    at async file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/points.js:299:26 {
+  code: 'validation_error',
+  status: 400,
+  headers: Headers {
+    [Symbol(map)]: [Object: null prototype] {
+      date: [Array],
+      'content-type': [Array],
+      'content-length': [Array],
+      connection: [Array],
+      server: [Array],
+      'cf-ray': [Array],
+      'cf-cache-status': [Array],
+      etag: [Array],
+      'strict-transport-security': [Array],
+      vary: [Array],
+      'content-security-policy': [Array],
+      'referrer-policy': [Array],
+      'x-content-type-options': [Array],
+      'x-dns-prefetch-control': [Array],
+      'x-download-options': [Array],
+      'x-frame-options': [Array],
+      'x-notion-request-id': [Array],
+      'x-permitted-cross-domain-policies': [Array],
+      'x-xss-protection': [Array],
+      'set-cookie': [Array],
+      'alt-svc': [Array]
+    }
+  },
+  body: '{"object":"error","status":400,"code":"validation_error","message":"body failed validation. Fix one:\\nbody.filter.rich_text.equals should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\\nbody.filter.rich_text.contains should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\\nbody.filter.rich_text.starts_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.ends_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_empty should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_not_empty should be defined, instead was `undefined`.","request_id":"b89b3d11-fb29-4472-81d3-11ac391a70c0"}'
+}
+{"timestamp":"2025-12-06T23:33:24.062Z","operation":"http_request","context":{"method":"POST","path":"/api/points/earn","userAgent":"node","ip":"127.0.0.1"},"message":"POST /api/points/earn","environment":"development"}
+@notionhq/client warn: request fail {
+  code: 'validation_error',
+  message: 'body failed validation. Fix one:\n' +
+    'body.filter.rich_text.equals should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.contains should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.starts_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.ends_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_empty should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.'
+}
+Failed to find customer: APIResponseError: body failed validation. Fix one:
+body.filter.rich_text.equals should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.
+body.filter.rich_text.contains should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.
+body.filter.rich_text.starts_with should be defined, instead was `undefined`.
+body.filter.rich_text.ends_with should be defined, instead was `undefined`.
+body.filter.rich_text.is_empty should be defined, instead was `undefined`.
+body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.
+    at buildRequestError (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\errors.js:162:16)
+    at Client.request (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\Client.js:408:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NotionPointsAPI.findCustomerByLineUid (file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/notion.js:203:30)
+    at async file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/points.js:299:26 {
+  code: 'validation_error',
+  status: 400,
+  headers: Headers {
+    [Symbol(map)]: [Object: null prototype] {
+      date: [Array],
+      'content-type': [Array],
+      'content-length': [Array],
+      connection: [Array],
+      server: [Array],
+      'cf-ray': [Array],
+      'cf-cache-status': [Array],
+      etag: [Array],
+      'strict-transport-security': [Array],
+      vary: [Array],
+      'content-security-policy': [Array],
+      'referrer-policy': [Array],
+      'x-content-type-options': [Array],
+      'x-dns-prefetch-control': [Array],
+      'x-download-options': [Array],
+      'x-frame-options': [Array],
+      'x-notion-request-id': [Array],
+      'x-permitted-cross-domain-policies': [Array],
+      'x-xss-protection': [Array],
+      'set-cookie': [Array],
+      'alt-svc': [Array]
+    }
+  },
+  body: '{"object":"error","status":400,"code":"validation_error","message":"body failed validation. Fix one:\\nbody.filter.rich_text.equals should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\\nbody.filter.rich_text.contains should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\\nbody.filter.rich_text.starts_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.ends_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_empty should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_not_empty should be defined, instead was `undefined`.","request_id":"77e0edcc-27fa-4f87-8d2e-108b754495f2"}'
+}
+{"timestamp":"2025-12-06T23:33:24.410Z","operation":"http_request","context":{"method":"POST","path":"/api/points/earn","userAgent":"node","ip":"127.0.0.1"},"message":"POST /api/points/earn","environment":"development"}
+@notionhq/client warn: request fail {
+  code: 'validation_error',
+  message: 'body failed validation. Fix one:\n' +
+    'body.filter.rich_text.equals should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.contains should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.starts_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.ends_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_empty should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.'
+}
+Failed to find customer: APIResponseError: body failed validation. Fix one:
+body.filter.rich_text.equals should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.
+body.filter.rich_text.contains should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.
+body.filter.rich_text.starts_with should be defined, instead was `undefined`.
+body.filter.rich_text.ends_with should be defined, instead was `undefined`.
+body.filter.rich_text.is_empty should be defined, instead was `undefined`.
+body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.
+    at buildRequestError (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\errors.js:162:16)
+    at Client.request (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\Client.js:408:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NotionPointsAPI.findCustomerByLineUid (file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/notion.js:203:30)
+    at async file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/points.js:299:26 {
+  code: 'validation_error',
+  status: 400,
+  headers: Headers {
+    [Symbol(map)]: [Object: null prototype] {
+      date: [Array],
+      'content-type': [Array],
+      'content-length': [Array],
+      connection: [Array],
+      server: [Array],
+      'cf-ray': [Array],
+      'cf-cache-status': [Array],
+      etag: [Array],
+      'strict-transport-security': [Array],
+      vary: [Array],
+      'content-security-policy': [Array],
+      'referrer-policy': [Array],
+      'x-content-type-options': [Array],
+      'x-dns-prefetch-control': [Array],
+      'x-download-options': [Array],
+      'x-frame-options': [Array],
+      'x-notion-request-id': [Array],
+      'x-permitted-cross-domain-policies': [Array],
+      'x-xss-protection': [Array],
+      'set-cookie': [Array],
+      'alt-svc': [Array]
+    }
+  },
+  body: '{"object":"error","status":400,"code":"validation_error","message":"body failed validation. Fix one:\\nbody.filter.rich_text.equals should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\\nbody.filter.rich_text.contains should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\\nbody.filter.rich_text.starts_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.ends_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_empty should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_not_empty should be defined, instead was `undefined`.","request_id":"635ddc29-d0a8-4d74-bd60-441de64f15fc"}'
+}
+{"timestamp":"2025-12-06T23:33:24.762Z","operation":"http_request","context":{"method":"POST","path":"/api/points/earn","userAgent":"node","ip":"127.0.0.1"},"message":"POST /api/points/earn","environment":"development"}
+@notionhq/client warn: request fail {
+  code: 'validation_error',
+  message: 'body failed validation. Fix one:\n' +
+    'body.filter.rich_text.equals should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.contains should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.starts_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.ends_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_empty should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.'
+}
+Failed to find customer: APIResponseError: body failed validation. Fix one:
+body.filter.rich_text.equals should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.
+body.filter.rich_text.contains should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.
+body.filter.rich_text.starts_with should be defined, instead was `undefined`.
+body.filter.rich_text.ends_with should be defined, instead was `undefined`.
+body.filter.rich_text.is_empty should be defined, instead was `undefined`.
+body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.
+    at buildRequestError (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\errors.js:162:16)
+    at Client.request (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\Client.js:408:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NotionPointsAPI.findCustomerByLineUid (file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/notion.js:203:30)
+    at async file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/points.js:299:26 {
+  code: 'validation_error',
+  status: 400,
+  headers: Headers {
+    [Symbol(map)]: [Object: null prototype] {
+      date: [Array],
+      'content-type': [Array],
+      'content-length': [Array],
+      connection: [Array],
+      server: [Array],
+      'cf-ray': [Array],
+      'cf-cache-status': [Array],
+      etag: [Array],
+      'strict-transport-security': [Array],
+      vary: [Array],
+      'content-security-policy': [Array],
+      'referrer-policy': [Array],
+      'x-content-type-options': [Array],
+      'x-dns-prefetch-control': [Array],
+      'x-download-options': [Array],
+      'x-frame-options': [Array],
+      'x-notion-request-id': [Array],
+      'x-permitted-cross-domain-policies': [Array],
+      'x-xss-protection': [Array],
+      'set-cookie': [Array],
+      'alt-svc': [Array]
+    }
+  },
+  body: '{"object":"error","status":400,"code":"validation_error","message":"body failed validation. Fix one:\\nbody.filter.rich_text.equals should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\\nbody.filter.rich_text.contains should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\\nbody.filter.rich_text.starts_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.ends_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_empty should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_not_empty should be defined, instead was `undefined`.","request_id":"a744333a-d340-4304-b357-9bcb5a31c6af"}'
+}
+{"timestamp":"2025-12-06T23:33:25.166Z","operation":"http_request","context":{"method":"POST","path":"/api/points/earn","userAgent":"node","ip":"127.0.0.1"},"message":"POST /api/points/earn","environment":"development"}
+@notionhq/client warn: request fail {
+  code: 'validation_error',
+  message: 'body failed validation. Fix one:\n' +
+    'body.filter.rich_text.equals should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.contains should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.starts_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.ends_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_empty should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.'
+}
+Failed to find customer: APIResponseError: body failed validation. Fix one:
+body.filter.rich_text.equals should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.
+body.filter.rich_text.contains should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.
+body.filter.rich_text.starts_with should be defined, instead was `undefined`.
+body.filter.rich_text.ends_with should be defined, instead was `undefined`.
+body.filter.rich_text.is_empty should be defined, instead was `undefined`.
+body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.
+    at buildRequestError (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\errors.js:162:16)
+    at Client.request (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\Client.js:408:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NotionPointsAPI.findCustomerByLineUid (file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/notion.js:203:30)
+    at async file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/points.js:299:26 {
+  code: 'validation_error',
+  status: 400,
+  headers: Headers {
+    [Symbol(map)]: [Object: null prototype] {
+      date: [Array],
+      'content-type': [Array],
+      'content-length': [Array],
+      connection: [Array],
+      server: [Array],
+      'cf-ray': [Array],
+      'cf-cache-status': [Array],
+      etag: [Array],
+      'strict-transport-security': [Array],
+      vary: [Array],
+      'content-security-policy': [Array],
+      'referrer-policy': [Array],
+      'x-content-type-options': [Array],
+      'x-dns-prefetch-control': [Array],
+      'x-download-options': [Array],
+      'x-frame-options': [Array],
+      'x-notion-request-id': [Array],
+      'x-permitted-cross-domain-policies': [Array],
+      'x-xss-protection': [Array],
+      'set-cookie': [Array],
+      'alt-svc': [Array]
+    }
+  },
+  body: '{"object":"error","status":400,"code":"validation_error","message":"body failed validation. Fix one:\\nbody.filter.rich_text.equals should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\\nbody.filter.rich_text.contains should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\\nbody.filter.rich_text.starts_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.ends_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_empty should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_not_empty should be defined, instead was `undefined`.","request_id":"193e3ce8-a6b4-480d-b135-50862916d0e4"}'
+}
+{"timestamp":"2025-12-06T23:33:25.579Z","operation":"http_request","context":{"method":"POST","path":"/api/points/earn","userAgent":"node","ip":"127.0.0.1"},"message":"POST /api/points/earn","environment":"development"}
+@notionhq/client warn: request fail {
+  code: 'validation_error',
+  message: 'body failed validation. Fix one:\n' +
+    'body.filter.rich_text.equals should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.contains should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.starts_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.ends_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_empty should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.'
+}
+Failed to find customer: APIResponseError: body failed validation. Fix one:
+body.filter.rich_text.equals should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.
+body.filter.rich_text.contains should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.
+body.filter.rich_text.starts_with should be defined, instead was `undefined`.
+body.filter.rich_text.ends_with should be defined, instead was `undefined`.
+body.filter.rich_text.is_empty should be defined, instead was `undefined`.
+body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.
+    at buildRequestError (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\errors.js:162:16)
+    at Client.request (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\Client.js:408:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NotionPointsAPI.findCustomerByLineUid (file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/notion.js:203:30)
+    at async file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/points.js:299:26 {
+  code: 'validation_error',
+  status: 400,
+  headers: Headers {
+    [Symbol(map)]: [Object: null prototype] {
+      date: [Array],
+      'content-type': [Array],
+      'content-length': [Array],
+      connection: [Array],
+      server: [Array],
+      'cf-ray': [Array],
+      'cf-cache-status': [Array],
+      etag: [Array],
+      'strict-transport-security': [Array],
+      vary: [Array],
+      'content-security-policy': [Array],
+      'referrer-policy': [Array],
+      'x-content-type-options': [Array],
+      'x-dns-prefetch-control': [Array],
+      'x-download-options': [Array],
+      'x-frame-options': [Array],
+      'x-notion-request-id': [Array],
+      'x-permitted-cross-domain-policies': [Array],
+      'x-xss-protection': [Array],
+      'set-cookie': [Array],
+      'alt-svc': [Array]
+    }
+  },
+  body: '{"object":"error","status":400,"code":"validation_error","message":"body failed validation. Fix one:\\nbody.filter.rich_text.equals should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\\nbody.filter.rich_text.contains should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\\nbody.filter.rich_text.starts_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.ends_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_empty should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_not_empty should be defined, instead was `undefined`.","request_id":"076b4c45-0a72-4d0f-9608-c5d684cadcd4"}'
+}
+{"timestamp":"2025-12-06T23:33:25.916Z","operation":"http_request","context":{"method":"POST","path":"/api/points/earn","userAgent":"node","ip":"127.0.0.1"},"message":"POST /api/points/earn","environment":"development"}
+@notionhq/client warn: request fail {
+  code: 'validation_error',
+  message: 'body failed validation. Fix one:\n' +
+    'body.filter.rich_text.equals should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.contains should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.starts_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.ends_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_empty should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.'
+}
+Failed to find customer: APIResponseError: body failed validation. Fix one:
+body.filter.rich_text.equals should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.
+body.filter.rich_text.contains should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.
+body.filter.rich_text.starts_with should be defined, instead was `undefined`.
+body.filter.rich_text.ends_with should be defined, instead was `undefined`.
+body.filter.rich_text.is_empty should be defined, instead was `undefined`.
+body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.
+    at buildRequestError (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\errors.js:162:16)
+    at Client.request (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\Client.js:408:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NotionPointsAPI.findCustomerByLineUid (file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/notion.js:203:30)
+    at async file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/points.js:299:26 {
+  code: 'validation_error',
+  status: 400,
+  headers: Headers {
+    [Symbol(map)]: [Object: null prototype] {
+      date: [Array],
+      'content-type': [Array],
+      'content-length': [Array],
+      connection: [Array],
+      server: [Array],
+      'cf-ray': [Array],
+      'cf-cache-status': [Array],
+      etag: [Array],
+      'strict-transport-security': [Array],
+      vary: [Array],
+      'content-security-policy': [Array],
+      'referrer-policy': [Array],
+      'x-content-type-options': [Array],
+      'x-dns-prefetch-control': [Array],
+      'x-download-options': [Array],
+      'x-frame-options': [Array],
+      'x-notion-request-id': [Array],
+      'x-permitted-cross-domain-policies': [Array],
+      'x-xss-protection': [Array],
+      'set-cookie': [Array],
+      'alt-svc': [Array]
+    }
+  },
+  body: '{"object":"error","status":400,"code":"validation_error","message":"body failed validation. Fix one:\\nbody.filter.rich_text.equals should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\\nbody.filter.rich_text.contains should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\\nbody.filter.rich_text.starts_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.ends_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_empty should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_not_empty should be defined, instead was `undefined`.","request_id":"e3950a21-639c-4055-b92d-afacb38c4fdf"}'
+}
+{"timestamp":"2025-12-06T23:33:28.227Z","operation":"http_request","context":{"method":"POST","path":"/api/points/earn","userAgent":"node","ip":"127.0.0.1"},"message":"POST /api/points/earn","environment":"development"}
+@notionhq/client warn: request fail {
+  code: 'validation_error',
+  message: 'body failed validation. Fix one:\n' +
+    'body.filter.rich_text.equals should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.contains should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.starts_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.ends_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_empty should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.'
+}
+Failed to find customer: APIResponseError: body failed validation. Fix one:
+body.filter.rich_text.equals should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.
+body.filter.rich_text.contains should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.
+body.filter.rich_text.starts_with should be defined, instead was `undefined`.
+body.filter.rich_text.ends_with should be defined, instead was `undefined`.
+body.filter.rich_text.is_empty should be defined, instead was `undefined`.
+body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.
+    at buildRequestError (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\errors.js:162:16)
+    at Client.request (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\Client.js:408:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NotionPointsAPI.findCustomerByLineUid (file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/notion.js:203:30)
+    at async file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/points.js:299:26 {
+  code: 'validation_error',
+  status: 400,
+  headers: Headers {
+    [Symbol(map)]: [Object: null prototype] {
+      date: [Array],
+      'content-type': [Array],
+      'content-length': [Array],
+      connection: [Array],
+      server: [Array],
+      'cf-ray': [Array],
+      'cf-cache-status': [Array],
+      etag: [Array],
+      'strict-transport-security': [Array],
+      vary: [Array],
+      'content-security-policy': [Array],
+      'referrer-policy': [Array],
+      'x-content-type-options': [Array],
+      'x-dns-prefetch-control': [Array],
+      'x-download-options': [Array],
+      'x-frame-options': [Array],
+      'x-notion-request-id': [Array],
+      'x-permitted-cross-domain-policies': [Array],
+      'x-xss-protection': [Array],
+      'set-cookie': [Array],
+      'alt-svc': [Array]
+    }
+  },
+  body: '{"object":"error","status":400,"code":"validation_error","message":"body failed validation. Fix one:\\nbody.filter.rich_text.equals should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\\nbody.filter.rich_text.contains should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\\nbody.filter.rich_text.starts_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.ends_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_empty should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_not_empty should be defined, instead was `undefined`.","request_id":"5347f287-a1b0-4b8b-aab3-1631c00fe2ca"}'
+}
+{"timestamp":"2025-12-06T23:33:28.612Z","operation":"http_request","context":{"method":"POST","path":"/api/points/earn","userAgent":"node","ip":"127.0.0.1"},"message":"POST /api/points/earn","environment":"development"}
+@notionhq/client warn: request fail {
+  code: 'validation_error',
+  message: 'body failed validation. Fix one:\n' +
+    'body.filter.rich_text.equals should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.contains should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.starts_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.ends_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_empty should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.'
+}
+Failed to find customer: APIResponseError: body failed validation. Fix one:
+body.filter.rich_text.equals should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.
+body.filter.rich_text.contains should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.
+body.filter.rich_text.starts_with should be defined, instead was `undefined`.
+body.filter.rich_text.ends_with should be defined, instead was `undefined`.
+body.filter.rich_text.is_empty should be defined, instead was `undefined`.
+body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.
+    at buildRequestError (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\errors.js:162:16)
+    at Client.request (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\Client.js:408:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NotionPointsAPI.findCustomerByLineUid (file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/notion.js:203:30)
+    at async file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/points.js:299:26 {
+  code: 'validation_error',
+  status: 400,
+  headers: Headers {
+    [Symbol(map)]: [Object: null prototype] {
+      date: [Array],
+      'content-type': [Array],
+      'content-length': [Array],
+      connection: [Array],
+      server: [Array],
+      'cf-ray': [Array],
+      'cf-cache-status': [Array],
+      etag: [Array],
+      'strict-transport-security': [Array],
+      vary: [Array],
+      'content-security-policy': [Array],
+      'referrer-policy': [Array],
+      'x-content-type-options': [Array],
+      'x-dns-prefetch-control': [Array],
+      'x-download-options': [Array],
+      'x-frame-options': [Array],
+      'x-notion-request-id': [Array],
+      'x-permitted-cross-domain-policies': [Array],
+      'x-xss-protection': [Array],
+      'set-cookie': [Array],
+      'alt-svc': [Array]
+    }
+  },
+  body: '{"object":"error","status":400,"code":"validation_error","message":"body failed validation. Fix one:\\nbody.filter.rich_text.equals should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\\nbody.filter.rich_text.contains should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\\nbody.filter.rich_text.starts_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.ends_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_empty should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_not_empty should be defined, instead was `undefined`.","request_id":"b26434b1-ecb7-40f0-8a5d-c29e2cba18cb"}'
+}
+{"timestamp":"2025-12-06T23:33:29.774Z","operation":"http_request","context":{"method":"POST","path":"/api/points/earn","userAgent":"node","ip":"127.0.0.1"},"message":"POST /api/points/earn","environment":"development"}
+@notionhq/client warn: request fail {
+  code: 'validation_error',
+  message: 'body failed validation. Fix one:\n' +
+    'body.filter.rich_text.equals should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.contains should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.starts_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.ends_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_empty should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.'
+}
+Failed to find customer: APIResponseError: body failed validation. Fix one:
+body.filter.rich_text.equals should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.
+body.filter.rich_text.contains should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.
+body.filter.rich_text.starts_with should be defined, instead was `undefined`.
+body.filter.rich_text.ends_with should be defined, instead was `undefined`.
+body.filter.rich_text.is_empty should be defined, instead was `undefined`.
+body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.
+    at buildRequestError (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\errors.js:162:16)
+    at Client.request (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\Client.js:408:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NotionPointsAPI.findCustomerByLineUid (file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/notion.js:203:30)
+    at async file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/points.js:299:26 {
+  code: 'validation_error',
+  status: 400,
+  headers: Headers {
+    [Symbol(map)]: [Object: null prototype] {
+      date: [Array],
+      'content-type': [Array],
+      'content-length': [Array],
+      connection: [Array],
+      server: [Array],
+      'cf-ray': [Array],
+      'cf-cache-status': [Array],
+      etag: [Array],
+      'strict-transport-security': [Array],
+      vary: [Array],
+      'content-security-policy': [Array],
+      'referrer-policy': [Array],
+      'x-content-type-options': [Array],
+      'x-dns-prefetch-control': [Array],
+      'x-download-options': [Array],
+      'x-frame-options': [Array],
+      'x-notion-request-id': [Array],
+      'x-permitted-cross-domain-policies': [Array],
+      'x-xss-protection': [Array],
+      'set-cookie': [Array],
+      'alt-svc': [Array]
+    }
+  },
+  body: '{"object":"error","status":400,"code":"validation_error","message":"body failed validation. Fix one:\\nbody.filter.rich_text.equals should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\\nbody.filter.rich_text.contains should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\\nbody.filter.rich_text.starts_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.ends_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_empty should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_not_empty should be defined, instead was `undefined`.","request_id":"32621098-5792-4194-8745-c584db9a06d3"}'
+}
+{"timestamp":"2025-12-06T23:33:31.777Z","operation":"http_request","context":{"method":"POST","path":"/api/points/earn","userAgent":"node","ip":"127.0.0.1"},"message":"POST /api/points/earn","environment":"development"}
+@notionhq/client warn: request fail {
+  code: 'validation_error',
+  message: 'body failed validation. Fix one:\n' +
+    'body.filter.rich_text.equals should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.contains should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.starts_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.ends_with should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_empty should be defined, instead was `undefined`.\n' +
+    'body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.'
+}
+Failed to find customer: APIResponseError: body failed validation. Fix one:
+body.filter.rich_text.equals should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_equal should be defined, instead was `undefined`.
+body.filter.rich_text.contains should be defined, instead was `undefined`.
+body.filter.rich_text.does_not_contain should be defined, instead was `undefined`.
+body.filter.rich_text.starts_with should be defined, instead was `undefined`.
+body.filter.rich_text.ends_with should be defined, instead was `undefined`.
+body.filter.rich_text.is_empty should be defined, instead was `undefined`.
+body.filter.rich_text.is_not_empty should be defined, instead was `undefined`.
+    at buildRequestError (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\errors.js:162:16)
+    at Client.request (C:\Users\seamo\Documents\cursor\userhistory\node_modules\@notionhq\client\build\src\Client.js:408:54)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async NotionPointsAPI.findCustomerByLineUid (file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/notion.js:203:30)
+    at async file:///C:/Users/seamo/Documents/cursor/userhistory/dist/src/api/points.js:299:26 {
+  code: 'validation_error',
+  status: 400,
+  headers: Headers {
+    [Symbol(map)]: [Object: null prototype] {
+      date: [Array],
+      'content-type': [Array],
+      'content-length': [Array],
+      connection: [Array],
+      server: [Array],
+      'cf-ray': [Array],
+      'cf-cache-status': [Array],
+      etag: [Array],
+      'strict-transport-security': [Array],
+      vary: [Array],
+      'content-security-policy': [Array],
+      'referrer-policy': [Array],
+      'x-content-type-options': [Array],
+      'x-dns-prefetch-control': [Array],
+      'x-download-options': [Array],
+      'x-frame-options': [Array],
+      'x-notion-request-id': [Array],
+      'x-permitted-cross-domain-policies': [Array],
+      'x-xss-protection': [Array],
+      'set-cookie': [Array],
+      'alt-svc': [Array]
+    }
+  },
+  body: '{"object":"error","status":400,"code":"validation_error","message":"body failed validation. Fix one:\\nbody.filter.rich_text.equals should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_equal should be defined, instead was `undefined`.\\nbody.filter.rich_text.contains should be defined, instead was `undefined`.\\nbody.filter.rich_text.does_not_contain should be defined, instead was `undefined`.\\nbody.filter.rich_text.starts_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.ends_with should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_empty should be defined, instead was `undefined`.\\nbody.filter.rich_text.is_not_empty should be defined, instead was `undefined`.","request_id":"4703c983-ffe9-4aa9-9556-740d42bf45b6"}'
+}
+{"timestamp":"2025-12-06T23:33:33.756Z","operation":"http_request","context":{"method":"GET","path":"/api/points/status/test-verifier-user-local","userAgent":"node","ip":"127.0.0.1"},"message":"GET /api/points/status/test-verifier-user-local","environment":"development"}
+{"timestamp":"2025-12-06T23:33:35.799Z","operation":"http_request","context":{"method":"POST","path":"/api/points/redeem","userAgent":"node","ip":"127.0.0.1"},"message":"POST /api/points/redeem","environment":"development"}
+[Redeem] Searching for reward_coffee in 2 active rewards
+ - Found: reward_coffee (繧ｳ繝ｼ繝偵・1譚ｯ 辟｡譁吝虻) ID:2c185ee9-6e03-81a9-8055-d5721730a30c
+ - Found: reward_beans (繧ｳ繝ｼ繝偵・雎・00g 繝励Ξ繧ｼ繝ｳ繝・ ID:2c185ee9-6e03-8110-9364-f195a348f93e

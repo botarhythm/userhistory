@@ -1,0 +1,125 @@
+Debugging getStore...
+DB ID: 2c085ee9-6e03-8141-a394-e4bb1edcb4dd
+DB Props: [
+  'name',     'longitude',
+  'qr_token', 'is_active',
+  'nfc_url',  'radius',
+  'latitude', 'store_id'
+]
+Store ID Prop: {
+  id: 'title',
+  name: 'store_id',
+  description: null,
+  type: 'title',
+  title: {}
+}
+Trying manual query for store_001...
+Manual Query Found: 1
+First Result Props: {
+  "name": {
+    "id": "%3E%5DoS",
+    "type": "rich_text",
+    "rich_text": [
+      {
+        "type": "text",
+        "text": {
+          "content": "Botarhythm Coffee Roaster",
+          "link": null
+        },
+        "annotations": {
+          "bold": false,
+          "italic": false,
+          "strikethrough": false,
+          "underline": false,
+          "code": false,
+          "color": "default"
+        },
+        "plain_text": "Botarhythm Coffee Roaster",
+        "href": null
+      }
+    ]
+  },
+  "longitude": {
+    "id": "%3El%5EQ",
+    "type": "number",
+    "number": 139.95781847924133
+  },
+  "qr_token": {
+    "id": "KOqg",
+    "type": "rich_text",
+    "rich_text": [
+      {
+        "type": "text",
+        "text": {
+          "content": "bota-prod-token-2024",
+          "link": null
+        },
+        "annotations": {
+          "bold": false,
+          "italic": false,
+          "strikethrough": false,
+          "underline": false,
+          "code": false,
+          "color": "default"
+        },
+        "plain_text": "bota-prod-token-2024",
+        "href": null
+      }
+    ]
+  },
+  "is_active": {
+    "id": "P%60Ak",
+    "type": "checkbox",
+    "checkbox": true
+  },
+  "nfc_url": {
+    "id": "bPf%3F",
+    "type": "url",
+    "url": null
+  },
+  "radius": {
+    "id": "fvtN",
+    "type": "number",
+    "number": 100
+  },
+  "latitude": {
+    "id": "jlz~",
+    "type": "number",
+    "number": 34.96068108513542
+  },
+  "store_id": {
+    "id": "title",
+    "type": "title",
+    "title": [
+      {
+        "type": "text",
+        "text": {
+          "content": "store_001",
+          "link": null
+        },
+        "annotations": {
+          "bold": false,
+          "italic": false,
+          "strikethrough": false,
+          "underline": false,
+          "code": false,
+          "color": "default"
+        },
+        "plain_text": "store_001",
+        "href": null
+      }
+    ]
+  }
+}
+Calling api.getStore("store_001")...
+Result: {
+  id: '2c185ee9-6e03-811d-8111-fea2a96b5f63',
+  storeId: 'store_001',
+  name: 'Botarhythm Coffee Roaster',
+  latitude: 34.96068108513542,
+  longitude: 139.95781847924133,
+  radius: 100,
+  qrToken: 'bota-prod-token-2024',
+  nfcUrl: '',
+  isActive: true
+}
