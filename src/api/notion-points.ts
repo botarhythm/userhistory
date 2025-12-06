@@ -251,22 +251,9 @@ export class NotionPointsAPI extends NotionAPI {
             const customerPage = await this.client.pages.retrieve({ page_id: customerId }) as any;
 
             // We need to find property names for total_points, current_points etc.
-            // Assuming we can get them from the customer DB structure or just guess standard names if we are confident.
-            // Better to fetch structure.
-            const dbStructure = await this.getDatabaseStructure(this.customerDatabaseId);
-            if (!dbStructure) return;
-
-            const totalPointsProp = this.getPropertyName(dbStructure.properties, 'number') || 'total_points'; // Warning: might match others
-            // To be safer, we should look for specific keys if possible, but getPropertyName finds by type.
-            // Let's rely on the keys we defined in the setup script: 'total_points', 'current_points', 'used_points'.
-            // But getPropertyName logic in parent class is fuzzy (finds first of type).
-            // We should override or improve property finding if we have multiple numbers.
-
-            // Let's try to access properties directly by key if they exist, otherwise search.
-            // The setup script created keys: 'total_points', 'current_points', 'used_points'.
-            // Notion API uses names (titles) of properties, not keys, in the properties object usually?
-            // Wait, the setup script used keys in the `properties` object of `databases.create/update`.
-            // Those keys BECOME the names (titles) of the properties in Notion UI usually.
+            // These matched what update-notion-schema.ts sets up for Customer DB?
+            // Actually checkin.tsx calls Notion directly or through API?
+            // This class is used by backend.
 
             const props = customerPage.properties;
 

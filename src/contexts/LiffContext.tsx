@@ -2,11 +2,11 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import liff from '@line/liff';
 import { LiffDebugger } from '../utils/debug-liff';
 
-interface LiffUser {
+export interface LiffUser {
   userId: string;
   displayName: string;
-  pictureUrl?: string;
-  statusMessage?: string;
+  pictureUrl?: string | undefined;
+  statusMessage?: string | undefined;
 }
 
 interface LiffContextType {
@@ -45,8 +45,8 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
   const initializeLiff = async () => {
     try {
       // 開発環境でのテスト用設定
-      const liffId = import.meta.env.VITE_LIFF_ID;
-      console.log('LIFF初期化開始:', { 
+      const liffId = import.meta.env['VITE_LIFF_ID'];
+      console.log('LIFF初期化開始:', {
         liffId: liffId ? '設定済み' : '未設定',
         isInClient: liff.isInClient(),
         userAgent: navigator.userAgent,
@@ -69,13 +69,13 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
       // LIFFの初期化（タイムアウト付き）
       console.log('LIFF初期化実行中...');
       const initPromise = liff.init({ liffId });
-      const timeoutPromise = new Promise((_, reject) => 
+      const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('LIFF初期化タイムアウト')), 10000)
       );
-      
+
       await Promise.race([initPromise, timeoutPromise]);
       console.log('LIFF初期化完了');
-      
+
       // ログイン状態の確認
       const isLoggedIn = liff.isLoggedIn();
       const isInClient = liff.isInClient();
@@ -106,21 +106,16 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
         } else {
           // 外部ブラウザの場合はログイン画面を表示
           console.log('外部ブラウザでアクセスされています - ログイン画面表示');
-          // 外部ブラウザでは自動ログインは行わず、ユーザーに手動ログインを促す
-          // ここでは何もしない（ログイン画面を表示するだけ）
-          // ユーザーが「再読み込み」ボタンを押したときにretryLoginが呼ばれる
-          // 外部ブラウザでは、ユーザーが明示的にログインを選択する必要がある
-          // 外部ブラウザでは、isLoggedInがfalseのままなので、ログイン画面が表示される
         }
       }
-      
+
       setIsInitialized(true);
     } catch (err) {
       console.error('LIFF初期化エラー:', err);
       const errorMessage = err instanceof Error ? err.message : 'LIFF初期化に失敗しました';
       setError(errorMessage);
       setIsInitialized(true);
-      
+
       // エラー時に診断情報を取得
       const diagnosis = await liffDebugger.diagnose();
       setDebugInfo(diagnosis);
@@ -148,9 +143,9 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
     });
     setError(null);
     setIsInitialized(false);
-    
+
     try {
-      const liffId = import.meta.env.VITE_LIFF_ID;
+      const liffId = import.meta.env['VITE_LIFF_ID'];
       if (!liffId) {
         console.log('LIFF ID未設定 - ページリロード');
         window.location.reload();
@@ -177,10 +172,10 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
           console.log('外部ブラウザ - LIFF再初期化開始');
           await liff.init({ liffId });
           console.log('外部ブラウザ - LIFF再初期化完了');
-          
+
           const isLoggedIn = liff.isLoggedIn();
           console.log('外部ブラウザ - ログイン状態:', { isLoggedIn });
-          
+
           if (isLoggedIn) {
             console.log('外部ブラウザ - 既にログイン済み - プロフィール取得');
             const profile = await liff.getProfile();
@@ -233,4 +228,4 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
       {children}
     </LiffContext.Provider>
   );
-}; 
+};

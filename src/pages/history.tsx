@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useLiff } from '../contexts/LiffContext';
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -16,9 +15,8 @@ interface HistoryRecord {
 }
 
 const HistoryPage: React.FC = () => {
-  const navigate = useNavigate();
   const { user, isLoggedIn } = useLiff();
-  
+
   // ページタイトルを設定
   usePageTitle('履歴一覧 - Botarhythm Coffee Roaster');
   const [history, setHistory] = useState<HistoryRecord[]>([]);
@@ -40,14 +38,14 @@ const HistoryPage: React.FC = () => {
       setLoading(false);
       return;
     }
-    
+
     setLoading(true);
     setError(null);
 
     try {
       console.log('Fetching history for user:', user.userId);
       const response = await fetch(`/api/history/${user.userId}`);
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log('History data received:', data);
@@ -161,10 +159,10 @@ const HistoryPage: React.FC = () => {
     }
   };
 
-     if (!isLoggedIn) {
-     return (
-       <div className="min-h-screen bg-gray-100 py-8">
-         <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-gray-100 py-8">
+        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <div className="text-center">
             <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,10 +181,10 @@ const HistoryPage: React.FC = () => {
     );
   }
 
-     if (loading) {
-     return (
-       <div className="min-h-screen bg-gray-100 py-8">
-         <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 py-8">
+        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             <span className="ml-3 text-gray-600">読み込み中...</span>
@@ -196,17 +194,17 @@ const HistoryPage: React.FC = () => {
     );
   }
 
-     if (error) {
-     return (
-       <div className="min-h-screen bg-gray-100 py-8">
-         <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 py-8">
+        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <div className="text-center py-8">
             <div className="text-red-600 text-lg mb-4">{error}</div>
             <button
               onClick={fetchHistory}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+              className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
             >
-              再試行
+              再読み込み
             </button>
           </div>
         </div>
@@ -214,142 +212,122 @@ const HistoryPage: React.FC = () => {
     );
   }
 
-     return (
-     <div className="min-h-screen bg-gray-100 py-4 sm:py-8">
-       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 mx-4 sm:mx-auto border border-gray-200">
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">履歴一覧</h1>
-            {user && (
-              <p className="text-sm text-gray-600 mt-1">
-                {user.displayName}さんの履歴
-              </p>
-            )}
-          </div>
+  return (
+    <div className="min-h-screen bg-gray-100 py-8">
+      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+          <h1 className="text-xl font-bold text-gray-800">
+            {user?.displayName}さんの履歴
+          </h1>
           <button
             onClick={fetchHistory}
-            className="text-green-600 hover:text-green-800 p-2"
-            title="履歴を更新"
+            className="text-blue-600 hover:text-blue-800 text-sm"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+            更新
           </button>
         </div>
 
-
-
-        {/* 履歴リスト */}
-        <div className="space-y-3 sm:space-y-4">
-          {history.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              {user ? `${user.displayName}さんの履歴がありません` : '履歴がありません'}
-            </div>
-          ) : (
-            history.map((record) => (
-                             <div
-                 key={record.id}
-                 className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-lg transition-shadow bg-white"
-               >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        record.type === 'checkin'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-blue-100 text-blue-800'
-                      }`}
-                    >
-                      {record.type === 'checkin' ? '来店' : '記入日'}
+        {history.length === 0 ? (
+          <div className="p-8 text-center text-gray-500">
+            履歴がありません
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-200">
+            {history.map((record) => (
+              <div key={record.id} className="p-6 hover:bg-gray-50 transition duration-150">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex items-center">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-3 ${record.type === 'checkin' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                      {record.type === 'checkin' ? 'チェックイン' : '購入'}
                     </span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-500">
                       {formatDate(record.timestamp)}
                     </span>
                   </div>
-                </div>
-
-                {record.type === 'purchase' && (
-                  <div className="space-y-2">
-                    {record.items && record.items.length > 0 && (
-                      <div className="text-gray-800">
-                        {formatItems(record.items)}
-                      </div>
+                  <div className="flex space-x-2">
+                    {editingId === record.id ? (
+                      <>
+                        <button
+                          onClick={() => handleSave(record.id)}
+                          className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+                        >
+                          保存
+                        </button>
+                        <button
+                          onClick={handleCancel}
+                          className="text-xs bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600"
+                        >
+                          キャンセル
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleEdit(record)}
+                          className="text-gray-400 hover:text-blue-600"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(record.id)}
+                          className="text-gray-400 hover:text-red-600"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </>
                     )}
                   </div>
-                )}
+                </div>
 
                 {editingId === record.id ? (
-                  <div className="mt-2 space-y-2">
-                    {record.type === 'purchase' && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          商品名
-                        </label>
-                        <input
-                          type="text"
-                          value={editProductName}
-                          onChange={(e) => setEditProductName(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                          placeholder="商品名を入力してください"
-                        />
-                      </div>
-                    )}
+                  <div className="mt-3 space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        メモ
-                      </label>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">商品名</label>
+                      <input
+                        type="text"
+                        value={editProductName}
+                        onChange={(e) => setEditProductName(e.target.value)}
+                        className="w-full text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">メモ</label>
                       <textarea
                         value={editMemo}
                         onChange={(e) => setEditMemo(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                        rows={3}
-                        placeholder="豆/粉の種類、風味の印象、次回への記録など、自由に記入してください"
+                        className="w-full text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        rows={2}
                       />
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleSave(record.id)}
-                        className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
-                      >
-                        保存
-                      </button>
-                      <button
-                        onClick={handleCancel}
-                        className="px-3 py-1 bg-gray-500 text-white text-sm rounded hover:bg-gray-600"
-                      >
-                        キャンセル
-                      </button>
-                    </div>
                   </div>
-                                 ) : (
-                   <div className="mt-2 flex items-center justify-between">
-                     {record.memo && (
-                       <div className="text-sm text-gray-600 bg-gray-100 p-2 rounded flex-1">
-                         {record.memo}
-                       </div>
-                     )}
-                     <div className="flex gap-2 ml-2">
-                       <button
-                         onClick={() => handleEdit(record)}
-                         className="px-2 py-1 text-blue-600 hover:text-blue-800 text-sm"
-                         title="編集"
-                       >
-                         編集
-                       </button>
-                       <button
-                         onClick={() => handleDelete(record.id)}
-                         className="px-2 py-1 text-red-600 hover:text-red-800 text-sm"
-                         title="削除"
-                       >
-                         削除
-                       </button>
-                     </div>
-                   </div>
-                 )}
+                ) : (
+                  <>
+                    {record.items && record.items.length > 0 && (
+                      <div className="mt-2 text-gray-800 font-medium">
+                        {formatItems(record.items)}
+                        {record.total && (
+                          <span className="ml-2 text-gray-500 text-sm">
+                            (計{record.total}点)
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {record.memo && (
+                      <div className="mt-2 text-gray-600 text-sm bg-gray-50 p-2 rounded">
+                        {record.memo}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

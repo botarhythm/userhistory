@@ -30,12 +30,12 @@ export class LiffDebugger {
    */
   async diagnose(): Promise<LiffDebugInfo> {
     const liff = (await import('@line/liff')).default;
-    
+
     const debugInfo: LiffDebugInfo = {
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       location: window.location.href,
-      liffId: import.meta.env.VITE_LIFF_ID || null,
+      liffId: import.meta.env['VITE_LIFF_ID'] || null,
       isInClient: false,
       isLoggedIn: false,
       error: null,
@@ -70,11 +70,11 @@ export class LiffDebugger {
     console.log('🔑 LIFF ID:', this.debugInfo.liffId ? '✅ 設定済み' : '❌ 未設定');
     console.log('📱 LINEアプリ内:', this.debugInfo.isInClient ? '✅ はい' : '❌ いいえ');
     console.log('🔐 ログイン状態:', this.debugInfo.isLoggedIn ? '✅ ログイン済み' : '❌ 未ログイン');
-    
+
     if (this.debugInfo.error) {
       console.error('❌ エラー:', this.debugInfo.error);
     }
-    
+
     // 推奨アクションを表示
     console.group('💡 推奨アクション');
     if (!this.debugInfo.liffId) {
@@ -108,7 +108,7 @@ export class LiffDebugger {
    */
   checkEnvironmentVariables(): void {
     console.group('🔧 環境変数チェック');
-    
+
     const requiredVars = [
       'VITE_LIFF_ID',
       'NODE_ENV'
@@ -140,11 +140,11 @@ export class LiffDebugger {
    */
   async attemptAutoFix(): Promise<boolean> {
     console.log('🔧 自動修復を試行中...');
-    
+
     try {
       const liff = (await import('@line/liff')).default;
-      const liffId = import.meta.env.VITE_LIFF_ID;
-      
+      const liffId = import.meta.env['VITE_LIFF_ID'];
+
       if (!liffId) {
         console.error('❌ LIFF IDが設定されていないため、自動修復できません');
         return false;
@@ -154,7 +154,7 @@ export class LiffDebugger {
       if (!liff.isLoggedIn()) {
         console.log('🔄 LIFFの再初期化を実行...');
         await liff.init({ liffId });
-        
+
         if (liff.isLoggedIn()) {
           console.log('✅ 自動修復が成功しました');
           return true;

@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { useNavigate } from 'react-router-dom';
 import { useLiff } from '../contexts/LiffContext';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const QRScanner: React.FC = () => {
     const navigate = useNavigate();
@@ -22,7 +21,7 @@ const QRScanner: React.FC = () => {
                 formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
                 supportedScanTypes: [] // Default
             },
-      /* verbose= */ false
+            /* verbose= */ false
         );
 
         scannerRef.current = scanner;
@@ -34,7 +33,7 @@ const QRScanner: React.FC = () => {
         };
     }, []);
 
-    const onScanSuccess = async (decodedText: string, decodedResult: any) => {
+    const onScanSuccess = async (decodedText: string, _decodedResult: any) => {
         if (isProcessing) return;
         setIsProcessing(true);
 
@@ -65,14 +64,14 @@ const QRScanner: React.FC = () => {
                     setIsProcessing(false);
                 }
             },
-            (err) => {
+            (_err) => {
                 setError("Location access denied. Please enable location services.");
                 setIsProcessing(false);
             }
         );
     };
 
-    const onScanFailure = (error: any) => {
+    const onScanFailure = (_error: any) => {
         // console.warn(`Code scan error = ${error}`);
     };
 

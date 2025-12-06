@@ -3,12 +3,11 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import { LiffProvider, useLiff } from './contexts/LiffContext';
 import Purchase from './pages/purchase';
 import History from './pages/history';
-import Checkin from './pages/checkin';
 import Debug from './pages/debug';
 
 const Header: React.FC = () => {
   const location = useLocation();
-  const { user, isInitialized, isLoggedIn, logout, error, retryLogin, runDiagnosis, debugInfo } = useLiff();
+  const { user, isInitialized, isLoggedIn, logout, error, retryLogin, debugInfo } = useLiff();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   // ページタイトルを設定
@@ -27,6 +26,7 @@ const Header: React.FC = () => {
       return () => clearTimeout(timeout);
     } else {
       setLoadingTimeout(false);
+      return undefined;
     }
   }, [isInitialized]);
 
@@ -112,16 +112,6 @@ const Header: React.FC = () => {
               {error ? '再試行' : '再読み込み'}
             </button>
 
-            {/* 開発環境での診断ボタン */}
-            {import.meta.env.DEV && (
-              <button
-                onClick={runDiagnosis}
-                className="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 transition-colors w-full"
-              >
-                診断実行
-              </button>
-            )}
-
             {/* 診断結果の表示 */}
             {debugInfo && (
               <div className="mt-4 p-4 bg-gray-100 rounded-md text-left">
@@ -193,15 +183,6 @@ const Header: React.FC = () => {
           >
             📜 履歴
           </Link>
-          <Link
-            to="/checkin"
-            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/checkin'
-              ? 'bg-red-500 text-white'
-              : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-          >
-            📍 チェックイン
-          </Link>
         </nav>
       </div>
     </header>
@@ -217,7 +198,6 @@ const AppContent: React.FC = () => {
           <Route path="/" element={<Purchase />} />
           <Route path="/purchase" element={<Purchase />} />
           <Route path="/history" element={<History />} />
-          <Route path="/checkin" element={<Checkin />} />
           <Route path="/debug" element={<Debug />} />
         </Routes>
       </main>

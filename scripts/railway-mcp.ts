@@ -213,6 +213,261 @@ class RailwayMCPManager {
       }
     }
   }
+
+  // ========== MCP Server 機能 ==========
+
+  /**
+   * MCPメッセージを送信
+   */
+  private sendMCPMessage(message: any): void {
+    console.log(JSON.stringify(message));
+  }
+
+  /**
+   * MCP Serverの初期化
+   */
+  async initializeMCPServer(): Promise<void> {
+    // MCPプロトコルの初期化メッセージを送信
+    this.sendMCPMessage({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2024-11-05',
+        capabilities: {
+          tools: {
+            listChanged: true
+          }
+        },
+        clientInfo: {
+          name: 'Cursor',
+          version: '1.0.0'
+        }
+      }
+    });
+
+    // 初期化完了メッセージ
+    this.sendMCPMessage({
+      jsonrpc: '2.0',
+      id: 1,
+      result: {
+        protocolVersion: '2024-11-05',
+        capabilities: {
+          tools: {
+            listChanged: true
+          }
+        },
+        serverInfo: {
+          name: 'Railway MCP Server',
+          version: '1.0.0'
+        }
+      }
+    });
+
+    // ツールの登録
+    this.registerMCPTools();
+  }
+
+  /**
+   * MCPツールを登録
+   */
+  private registerMCPTools(): void {
+    const tools = [
+      {
+        name: 'railway_deploy',
+        description: 'Deploy application to Railway',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            environment: {
+              type: 'string',
+              enum: ['production', 'staging'],
+              default: 'production'
+            }
+          }
+        }
+      },
+      {
+        name: 'railway_logs',
+        description: 'Get Railway deployment logs',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            follow: {
+              type: 'boolean',
+              default: false
+            }
+          }
+        }
+      },
+      {
+        name: 'railway_status',
+        description: 'Check Railway deployment status',
+        inputSchema: {
+          type: 'object',
+          properties: {}
+        }
+      },
+      {
+        name: 'railway_health_check',
+        description: 'Perform health check on Railway deployment',
+        inputSchema: {
+          type: 'object',
+          properties: {}
+        }
+      },
+      {
+        name: 'railway_auto_fix',
+        description: 'Automatically fix Railway deployment issues',
+        inputSchema: {
+          type: 'object',
+          properties: {}
+        }
+      },
+      {
+        name: 'railway_update_env',
+        description: 'Update Railway environment variables',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            variables: {
+              type: 'object',
+              description: 'Environment variables to update'
+            }
+          }
+        }
+      }
+    ];
+
+    this.sendMCPMessage({
+      jsonrpc: '2.0',
+      id: 2,
+      result: {
+        tools: tools
+      }
+    });
+  }
+
+  /**
+   * MCPツールを実行
+   */
+  async executeMCPTool(name: string, args: any = {}): Promise<any> {
+    try {
+      switch (name) {
+        case 'railway_deploy':
+          await this.deploy(args.environment || 'production');
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `✅ Deployment to ${args.environment || 'production'} initiated successfully`
+              }
+            ]
+          };
+
+        case 'railway_logs':
+          await this.getLogs(args.follow || false);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: '📋 Railway logs retrieved successfully'
+              }
+            ]
+          };
+
+        case 'railway_status':
+          await this.monitorDeployment();
+          return {
+            content: [
+              {
+                type: 'text',
+                text: '📊 Railway deployment status retrieved'
+              }
+            ]
+          };
+
+        case 'railway_health_check':
+          const isHealthy = await this.healthCheck();
+          return {
+            content: [
+              {
+                type: 'text',
+                text: isHealthy
+                  ? '✅ Railway deployment is healthy'
+                  : '⚠️ Railway deployment has issues'
+              }
+            ]
+          };
+
+        case 'railway_auto_fix':
+          await this.autoFix();
+          return {
+            content: [
+              {
+                type: 'text',
+                text: '✅ Auto-fix completed'
+              }
+            ]
+          };
+
+        case 'railway_update_env':
+          await this.updateEnvironmentVariables(args.variables || {});
+          return {
+            content: [
+              {
+                type: 'text',
+                text: '✅ Environment variables updated successfully'
+              }
+            ]
+          };
+
+        default:
+          throw new Error(`Unknown tool: ${name}`);
+      }
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `❌ Error executing ${name}: ${error instanceof Error ? error.message : String(error)}`
+          }
+        ]
+      };
+    }
+  }
+
+  /**
+   * MCPメッセージを処理
+   */
+  handleMCPMessage(message: string): void {
+    try {
+      const parsed = JSON.parse(message);
+
+      if (parsed.method === 'tools/call') {
+        this.executeMCPTool(parsed.params.name, parsed.params.arguments || {})
+          .then(result => {
+            this.sendMCPMessage({
+              jsonrpc: '2.0',
+              id: parsed.id,
+              result: result
+            });
+          })
+          .catch(error => {
+            this.sendMCPMessage({
+              jsonrpc: '2.0',
+              id: parsed.id,
+              error: {
+                code: -32603,
+                message: error instanceof Error ? error.message : String(error)
+              }
+            });
+          });
+      }
+    } catch (error) {
+      console.error('Error handling MCP message:', error);
+    }
+  }
 }
 
 // CLI インターフェース
@@ -222,6 +477,22 @@ async function main() {
 
   const manager = new RailwayMCPManager();
 
+  // MCP Serverモードで起動
+  if (command === 'mcp-server') {
+    await manager.initializeMCPServer();
+
+    // stdinからのメッセージ受信
+    process.stdin.on('data', (data) => {
+      const message = data.toString().trim();
+      if (message) {
+        manager.handleMCPMessage(message);
+      }
+    });
+
+    return;
+  }
+
+  // 通常のCLIモード
   try {
     switch (command) {
       case 'deploy':
@@ -272,6 +543,9 @@ Usage:
   npm run railway:health                  - Health check
   npm run railway:autofix                 - Auto-fix deployment issues
   npm run railway:update-env [env-file]   - Update environment variables
+
+MCP Server Mode:
+  node dist/scripts/railway-mcp.js mcp-server
         `);
     }
   } catch (error) {

@@ -11,17 +11,10 @@ interface Product {
   description?: string;
 }
 
-interface PurchaseItem {
-  productId?: string;
-  name: string;
-  quantity: number;
-  price?: number;
-}
-
 const PurchasePage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isLoggedIn } = useLiff();
-  
+
   // ページタイトルを設定
   usePageTitle('購入メモ - Botarhythm Coffee Roaster');
   const [selectedProduct, setSelectedProduct] = useState<string>('');
@@ -43,7 +36,7 @@ const PurchasePage: React.FC = () => {
         const data = await response.json();
         console.log('Products fetched:', data);
         setProducts(data.products || []);
-        
+
         // デバッグ用：商品が取得できない場合はモックデータを使用
         if (data.products.length === 0) {
           console.log('No products found, using mock data for testing');
@@ -83,23 +76,23 @@ const PurchasePage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!isLoggedIn || !user) {
       alert('LINEログインが必要です');
       return;
     }
-    
+
     // バリデーション
     if (!selectedProduct) {
       alert('商品を選択してください');
       return;
     }
-    
+
     setIsSubmitting(true);
 
     try {
       const selectedProductData = products.find(p => p.id === selectedProduct);
-      
+
       // 商品データの確認
       if (!selectedProductData) {
         alert('商品データが見つかりません');
@@ -119,7 +112,7 @@ const PurchasePage: React.FC = () => {
             quantity: 1,
             price: 0
           }],
-          total: 1, // 0ではなく1に変更
+          total: 1,
           memo: memo.trim() || undefined
         }),
       });
@@ -127,14 +120,14 @@ const PurchasePage: React.FC = () => {
       if (response.ok) {
         const result = await response.json();
         console.log('Purchase success response:', result);
-        
+
         // フォームをリセット
         setSelectedProduct('');
         setMemo('');
-        
+
         // 成功メッセージを表示
         setShowSuccessMessage(true);
-        
+
         // 3秒後に履歴ページに遷移
         setTimeout(() => {
           navigate('/history');
@@ -153,9 +146,9 @@ const PurchasePage: React.FC = () => {
   };
 
   if (!isLoggedIn) {
-         return (
-       <div className="min-h-screen bg-gray-100 py-8">
-         <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+    return (
+      <div className="min-h-screen bg-gray-100 py-8">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <div className="text-center">
             <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,9 +192,9 @@ const PurchasePage: React.FC = () => {
     );
   }
 
-     return (
-     <div className="min-h-screen bg-gray-100 py-4 sm:py-8">
-       <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 mx-4 sm:mx-auto border border-gray-200">
+  return (
+    <div className="min-h-screen bg-gray-100 py-4 sm:py-8">
+      <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 mx-4 sm:mx-auto border border-gray-200">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">
           購入メモ
         </h1>
@@ -226,7 +219,7 @@ const PurchasePage: React.FC = () => {
             </select>
           </div>
 
-          {/* メモ */}
+          {/* メモ入力 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               メモ
@@ -234,9 +227,9 @@ const PurchasePage: React.FC = () => {
             <textarea
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
+              placeholder="備考があれば入力してください"
               rows={4}
-                              className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
-              placeholder="豆/粉の種類、風味の印象、次回への記録など、自由に記入してください"
+              className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
             />
           </div>
 
@@ -244,9 +237,19 @@ const PurchasePage: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-green-500 text-white py-4 px-4 rounded-md hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-base font-medium"
+            className="w-full bg-green-600 text-white py-4 sm:py-3 px-6 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-lg sm:text-base font-medium transition-colors"
           >
-            {isSubmitting ? '送信中...' : '購入メモを記録'}
+            {isSubmitting ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                記録中...
+              </span>
+            ) : (
+              '記録する'
+            )}
           </button>
         </form>
       </div>
