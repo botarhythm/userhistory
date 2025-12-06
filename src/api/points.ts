@@ -272,25 +272,30 @@ router.post('/redeem', async (req: any, res: any) => {
 
         // Check Availability and determine exact Notion Reward ID to link
         let targetRewardPageId = '';
+
+        console.log(`[Redeem] Searching for ${rewardType} in ${allRewards.length} active rewards`);
+        allRewards.forEach(r => console.log(` - Found: ${r.rewardId} (${r.title}) ID:${r.id}`));
+
         if (rewardType === 'reward_coffee') {
             if (totalCoffee <= usedCoffee) {
-                return res.status(400).json({ error: 'No coffee rewards available' });
+                return res.status(400).json({ error: '利用可能なコーヒー特典がありません' });
             }
             // Link to any active coffee reward page (e.g. coffee_1)
             const r = allRewards.find(r => r.rewardId.includes('coffee'));
             if (r) targetRewardPageId = r.id;
         } else if (rewardType === 'reward_beans') {
             if (totalBeans <= usedBeans) {
-                return res.status(400).json({ error: 'No beans rewards available' });
+                return res.status(400).json({ error: '利用可能なコーヒー豆特典がありません' });
             }
             const r = allRewards.find(r => r.rewardId.includes('beans'));
             if (r) targetRewardPageId = r.id;
         } else {
-            return res.status(400).json({ error: 'Invalid reward type' });
+            return res.status(400).json({ error: '無効な特典タイプです' });
         }
 
         if (!targetRewardPageId) {
-            return res.status(500).json({ error: 'Reward configuration missing in database' });
+            console.error(`[Redeem] Failed to find reward page for type ${rewardType}. Available IDs: ${allRewards.map(r => r.rewardId).join(', ')}`);
+            return res.status(500).json({ error: '特典データがデータベースに見つかりません (Configuration Missing)' });
         }
 
         // Execute Redemption
@@ -299,16 +304,16 @@ router.post('/redeem', async (req: any, res: any) => {
             0, // No point cost, just record
             'REWARD',
             {
-                reason: `Redeemed ${rewardType}`,
+                reason: `特典利用: ${rewardType}`,
                 rewardId: targetRewardPageId
             }
         );
 
-        res.json({ success: true, message: 'Reward redeemed successfully' });
+        res.json({ success: true, message: '特典を利用しました' });
 
     } catch (error) {
         console.error('Redeem error:', error);
-        res.status(500).json({ error: 'Redemption failed' });
+        res.status(500).json({ error: '特典の利用に失敗しました (System Error)' });
     }
 });
 
