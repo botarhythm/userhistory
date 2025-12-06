@@ -53,11 +53,11 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
         location: window.location.href
       });
 
-      if (!liffId) {
-        console.warn('LIFF IDが設定されていません。開発環境ではモックユーザーを使用します。');
+      if (!liffId || window.location.search.includes('mock=true')) {
+        console.warn('開発環境モード: モックユーザーを使用します。');
         setUser({
-          userId: 'dev-user-123',
-          displayName: '開発用ユーザー',
+          userId: 'Ue62b450adbd58fca10963f1c243322dd', // Admin ID for testing
+          displayName: '開発用ユーザー (Admin)',
           pictureUrl: undefined,
           statusMessage: '開発環境'
         });

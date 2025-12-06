@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { useNavigate } from 'react-router-dom';
 import { useLiff } from '../contexts/LiffContext';
+import { isAccessAllowed } from '../config/permissions';
 
 const QRScanner: React.FC = () => {
     const navigate = useNavigate();
@@ -12,6 +13,12 @@ const QRScanner: React.FC = () => {
     const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 
     useEffect(() => {
+        // Permission Check
+        if (user?.userId && !isAccessAllowed(user.userId)) {
+            navigate('/');
+            return;
+        }
+
         // Initialize Scanner
         const scanner = new Html5QrcodeScanner(
             "reader",
@@ -127,34 +134,66 @@ const QRScanner: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
-            <h1 className="text-2xl font-bold mb-4">Scan QR Code</h1>
+        <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
 
-            {error && (
-                <div className="bg-red-500 text-white p-3 rounded mb-4 w-full max-w-sm text-center">
-                    {error}
-                </div>
-            )}
+            {/* Background elements */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black z-0"></div>
 
-            <div className="w-full max-w-sm bg-white rounded-lg overflow-hidden shadow-xl relative">
-                {!scanResult && <div id="reader" className="w-full"></div>}
+            {/* Header */}
+            <div className="relative z-10 w-full max-w-sm mb-8 flex justify-between items-center">
+                <button
+                    onClick={() => navigate('/points')}
+                    className="flex items-center text-white/80 hover:text-white transition-colors"
+                >
+                    <svg className="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    戻る
+                </button>
+                <div className="font-bold text-lg">QRスキャン</div>
+                <div className="w-12"></div> {/* Spacer for centering */}
+            </div>
 
-                {isProcessing && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 z-10">
-                        <div className="text-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-                            <p>Verifying Location & Points...</p>
+            {/* Scanner Container */}
+            <div className="relative z-10 w-full max-w-sm bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 aspect-square flex flex-col">
+
+                {/* Error Message Overlay */}
+                {error && (
+                    <div className="absolute top-4 left-4 right-4 bg-red-500/90 text-white p-3 rounded-xl text-center text-sm backdrop-blur-sm z-50 animate-bounce">
+                        {error}
+                    </div>
+                )}
+
+                {/* Scanner Area */}
+                <div className="flex-1 relative bg-black">
+                    {!scanResult && <div id="reader" className="w-full h-full"></div>}
+
+                    {/* Custom Overlay Guide (Visual only) */}
+                    {!scanResult && !isProcessing && (
+                        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                            <div className="w-64 h-64 border-2 border-white/30 rounded-3xl relative">
+                                <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-green-500 rounded-tl-xl"></div>
+                                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-green-500 rounded-tr-xl"></div>
+                                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-green-500 rounded-bl-xl"></div>
+                                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-green-500 rounded-br-xl"></div>
+                            </div>
                         </div>
+                    )}
+                </div>
+
+                {/* Loading / Processing State */}
+                {isProcessing && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm z-40">
+                        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 mb-4"></div>
+                        <p className="text-xl font-bold animate-pulse">確認中...</p>
                     </div>
                 )}
             </div>
 
-            <button
-                onClick={() => navigate('/points')}
-                className="mt-8 text-gray-400 hover:text-white underline"
-            >
-                Back to Point Card
-            </button>
+            {/* Instruction Text */}
+            <div className="relative z-10 mt-8 text-center text-gray-400 max-w-xs text-sm">
+                枠内にQRコードを合わせて<br />ポイントを獲得してください
+            </div>
         </div>
     );
 };

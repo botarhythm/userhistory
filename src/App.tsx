@@ -3,12 +3,18 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import { LiffProvider, useLiff } from './contexts/LiffContext';
 import Purchase from './pages/purchase';
 import History from './pages/history';
+import PointCard from './pages/PointCard';
+import QRScanner from './pages/QRScanner';
+import Admin from './pages/Admin';
 import Debug from './pages/debug';
+
+import { isAccessAllowed } from './config/permissions';
 
 const Header: React.FC = () => {
   const location = useLocation();
   const { user, isInitialized, isLoggedIn, logout, error, retryLogin, debugInfo } = useLiff();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const showCardFeature = isAccessAllowed(user?.userId);
 
   // ページタイトルを設定
   useEffect(() => {
@@ -183,6 +189,17 @@ const Header: React.FC = () => {
           >
             📜 履歴
           </Link>
+          {showCardFeature && (
+            <Link
+              to="/points"
+              className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/points'
+                ? 'bg-red-500 text-white'
+                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+            >
+              💳 カード
+            </Link>
+          )}
         </nav>
       </div>
     </header>
@@ -198,6 +215,9 @@ const AppContent: React.FC = () => {
           <Route path="/" element={<Purchase />} />
           <Route path="/purchase" element={<Purchase />} />
           <Route path="/history" element={<History />} />
+          <Route path="/points" element={<PointCard />} />
+          <Route path="/scan" element={<QRScanner />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/debug" element={<Debug />} />
         </Routes>
       </main>

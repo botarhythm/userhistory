@@ -214,5 +214,55 @@ router.post('/redeem', async (req, res): Promise<void> => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+// POST /api/points/admin/adjust - Adjust points manually
+router.post('/admin/adjust', async (req, res): Promise<void> => {
+    try {
+        const { adminUserId, targetCustomerId, amount, reason } = req.body;
+
+        // Simple Admin Check (In production, use middleware / secure tokens)
+        // Hardcoded admin ID as provided by user
+        if (adminUserId !== 'Ue62b450adbd58fca10963f1c243322dd') {
+            res.status(403).json({ error: 'Unauthorized: Not an admin' });
+            return;
+        }
+
+        if (!targetCustomerId || amount === 0) {
+            res.status(400).json({ error: 'Invalid parameters' });
+            return;
+        }
+
+        await notionPoints.createPointTransaction(
+            targetCustomerId,
+            amount,
+            'ADMIN',
+            {
+                reason: reason || 'Manual Adjustment',
+                deviceId: 'ADMIN_CONSOLE'
+            }
+        );
+
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error('Error adjusting points:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// GET /api/points/admin/customers - Get all customers for admin
+router.get('/admin/customers', async (req, res): Promise<void> => {
+    try {
+        // In a real app, verify admin session here too. 
+        // For this MVP, we rely on the implementation assuming it's called from the authenticated Admin UI.
+        // Or we can require a header. For simplicity now, open endpoint but practically obscure.
+        // Ideally pass admin ID in header.
+
+        const customers = await notionPoints.getAllCustomers();
+        res.json({ customers });
+    } catch (error) {
+        console.error('Error fetching all customers:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 export default router;

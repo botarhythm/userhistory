@@ -296,6 +296,58 @@ export class NotionPointsAPI extends NotionAPI {
         }
     }
 
+    async getAllCustomers(): Promise<any[]> {
+        try {
+            console.log('Fetching all customers from DB:', this.customerDatabaseId);
+            if (!this.customerDatabaseId) {
+                console.error('Customer DB ID is missing');
+                return [];
+            }
+
+            const dbStructure = await this.getDatabaseStructure(this.customerDatabaseId);
+            if (!dbStructure) return [];
+
+            // We need to get point info too, which is in properties.
+            // Let's assume the properties are named standardly as per schema script.
+
+            const response = await this.client.databases.query({
+                database_id: this.customerDatabaseId,
+                sorts: [
+                    {
+                        timestamp: 'last_edited_time',
+                        direction: 'descending'
+                    }
+                ]
+            });
+
+            return response.results.map((page: any) => {
+                const props = page.properties;
+                const getVal = (name: string, type: 'title' | 'rich_text' | 'number' | 'date') => {
+                    const key = Object.keys(props).find(k => k.toLowerCase() === name.toLowerCase());
+                    if (!key) return null;
+                    const p = props[key];
+                    if (type === 'title') return p.title?.[0]?.text?.content || '';
+                    if (type === 'rich_text') return p.rich_text?.[0]?.text?.content || '';
+                    if (type === 'number') return p.number || 0;
+                    if (type === 'date') return p.date?.start || '';
+                    return null;
+                };
+
+                return {
+                    id: page.id,
+                    displayName: getVal('表示名', 'title') || 'No Name',
+                    lineUid: getVal('LINE UID', 'rich_text') || '',
+                    currentPoints: getVal('current_points', 'number') || 0,
+                    totalPoints: getVal('total_points', 'number') || 0,
+                    lastVisit: getVal('last_visit_date', 'date') || ''
+                };
+            });
+        } catch (error) {
+            console.error('Failed to fetch all customers:', error);
+            return [];
+        }
+    }
+
     // Helper to extract values safely
     private extractValue(prop: any, type: string): any {
         if (!prop) return null;
