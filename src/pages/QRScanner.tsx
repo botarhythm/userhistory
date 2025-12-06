@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { useNavigate } from 'react-router-dom';
 import { useLiff } from '../contexts/LiffContext';
 import { isAccessAllowed } from '../config/permissions';
@@ -50,15 +50,15 @@ const QRScanner: React.FC = () => {
                 if (isMountedRef.current) {
                     console.error("Camera start failed", err);
                     // Show user-friendly error
-                    let msg = "Camera failed to start.";
+                    let msg = "カメラの起動に失敗しました。";
                     if (typeof err === 'string') {
                         msg = err;
                     } else if (err.name === 'NotAllowedError') {
-                        msg = "Camera permission denied. Please allow access.";
+                        msg = "カメラの許可が必要です。設定を確認してください。";
                     } else if (err.name === 'NotFoundError') {
-                        msg = "No camera found on this device.";
+                        msg = "カメラが見つかりません。";
                     } else if (err.name === 'NotReadableError') {
-                        msg = "Camera is seemingly in use by another app.";
+                        msg = "カメラが他のアプリで使用されています。";
                     }
                     setError(msg);
                 }
