@@ -113,7 +113,28 @@ export class NotionPointsAPI extends NotionAPI {
                 ]
             });
 
-            return response.results.map(page => this.mapPageToReward(page as any, dbStructure.properties));
+            const results = response.results.map(page => this.mapPageToReward(page as any, dbStructure.properties));
+
+            if (results.length === 0) {
+                console.warn('[Points] No active rewards found. Debugging schema...');
+                try {
+                    const debugResponse = await this.client.databases.query({
+                        database_id: this.rewardDbId,
+                        page_size: 1
+                    });
+                    if (debugResponse.results.length > 0) {
+                        const sampleProps = (debugResponse.results[0] as any).properties;
+                        console.log('[Points] Reward DB Schema Keys:', Object.keys(sampleProps).join(', '));
+                        console.log('[Points] Sample Page Props:', JSON.stringify(sampleProps, null, 2));
+                    } else {
+                        console.log('[Points] Reward DB is completely empty.');
+                    }
+                } catch (e) {
+                    console.error('[Points] Failed to debug schema:', e);
+                }
+            }
+
+            return results;
         } catch (error) {
             console.error('Failed to get rewards:', error);
             return [];
