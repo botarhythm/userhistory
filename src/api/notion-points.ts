@@ -20,6 +20,23 @@ export class NotionPointsAPI extends NotionAPI {
 
     // --- Store Methods ---
 
+    // Helper to find property ID by name (case insensitive)
+    private getPropId(properties: any, possibleNames: string[]): string {
+        for (const name of possibleNames) {
+            // Exact match
+            if (properties[name]) return name;
+            // Case insensitive match
+            const key = Object.keys(properties).find(k => k.toLowerCase() === name.toLowerCase());
+            if (key) return key;
+        }
+        // Fallback: return the first name in list to rely on Notion API creating it if missing? 
+        // Or null? If we return a name that doesn't exist in 'properties', API might error or create it.
+        // Let's return the first candidate as a fallback assumption.
+        return possibleNames[0];
+    }
+
+    // --- Store Methods ---
+
     async getStore(storeId: string): Promise<Store | null> {
         try {
             if (!this.storeDbId) return null;
@@ -27,7 +44,7 @@ export class NotionPointsAPI extends NotionAPI {
             const dbStructure = await this.getDatabaseStructure(this.storeDbId);
             if (!dbStructure) return null;
 
-            const storeIdProp = this.getPropertyName(dbStructure.properties, 'title') || 'store_id';
+            const storeIdProp = this.getPropId(dbStructure.properties, ['store_id', '店舗ID', 'Store ID']);
 
             const response = await this.client.databases.query({
                 database_id: this.storeDbId,
@@ -50,29 +67,21 @@ export class NotionPointsAPI extends NotionAPI {
     }
 
     private mapPageToStore(page: any, properties: any): Store {
-        // Helper to find prop by name (case insensitive) or type
-        const getProp = (name: string, type: string) => {
-            // 1. Try exact match
-            if (page.properties[name]) return page.properties[name];
-            // 2. Try case insensitive match
-            const key = Object.keys(page.properties).find(k => k.toLowerCase() === name.toLowerCase());
-            if (key) return page.properties[key];
-            // 3. Fallback to type (using parent method if needed, but avoiding for now to prevent collisions)
-            // If we really want to fallback, we should use getPropertyName but it's risky.
-            // Let's assume the names are correct as per setup script.
-            return null;
+        const getVal = (names: string[], type: string) => {
+            const propId = this.getPropId(page.properties, names);
+            return this.extractValue(page.properties[propId], type);
         };
 
         return {
             id: page.id,
-            storeId: this.extractValue(getProp('store_id', 'title'), 'title'),
-            name: this.extractValue(getProp('name', 'rich_text'), 'rich_text'),
-            latitude: this.extractValue(getProp('latitude', 'number'), 'number'),
-            longitude: this.extractValue(getProp('longitude', 'number'), 'number'),
-            radius: this.extractValue(getProp('radius', 'number'), 'number'),
-            qrToken: this.extractValue(getProp('qr_token', 'rich_text'), 'rich_text'),
-            nfcUrl: this.extractValue(getProp('nfc_url', 'url'), 'url'),
-            isActive: this.extractValue(getProp('is_active', 'checkbox'), 'checkbox')
+            storeId: getVal(['store_id', '店舗ID'], 'title'),
+            name: getVal(['name', '店舗名'], 'rich_text'),
+            latitude: getVal(['latitude', '緯度'], 'number'),
+            longitude: getVal(['longitude', '経度'], 'number'),
+            radius: getVal(['radius', '半径'], 'number'),
+            qrToken: getVal(['qr_token', 'トークン'], 'rich_text'),
+            nfcUrl: getVal(['nfc_url', 'NFC'], 'url'),
+            isActive: getVal(['is_active', '有効'], 'checkbox')
         };
     }
 
@@ -85,8 +94,8 @@ export class NotionPointsAPI extends NotionAPI {
             const dbStructure = await this.getDatabaseStructure(this.rewardDbId);
             if (!dbStructure) return [];
 
-            const isActiveProp = this.getPropertyName(dbStructure.properties, 'checkbox') || 'is_active';
-            const orderProp = this.getPropertyName(dbStructure.properties, 'number') || 'order';
+            const isActiveProp = this.getPropId(dbStructure.properties, ['is_active', '有効']);
+            const orderProp = this.getPropId(dbStructure.properties, ['order', '表示順']);
 
             const response = await this.client.databases.query({
                 database_id: this.rewardDbId,
@@ -118,7 +127,7 @@ export class NotionPointsAPI extends NotionAPI {
             const dbStructure = await this.getDatabaseStructure(this.rewardDbId);
             if (!dbStructure) return null;
 
-            const rewardIdProp = this.getPropertyName(dbStructure.properties, 'title') || 'reward_id';
+            const rewardIdProp = this.getPropId(dbStructure.properties, ['reward_id', '特典ID']);
 
             const response = await this.client.databases.query({
                 database_id: this.rewardDbId,
@@ -140,23 +149,20 @@ export class NotionPointsAPI extends NotionAPI {
     }
 
     private mapPageToReward(page: any, properties: any): Reward {
-        const idProp = this.getPropertyName(properties, 'title') || 'reward_id';
-        const titleProp = this.getPropertyName(properties, 'rich_text') || 'title';
-        const descProp = this.getPropertyName(properties, 'rich_text') || 'description';
-        const pointsProp = this.getPropertyName(properties, 'number') || 'points_required';
-        const repeatableProp = this.getPropertyName(properties, 'checkbox') || 'is_repeatable';
-        const orderProp = this.getPropertyName(properties, 'number') || 'order';
-        const activeProp = this.getPropertyName(properties, 'checkbox') || 'is_active';
+        const getVal = (names: string[], type: string) => {
+            const propId = this.getPropId(page.properties, names);
+            return this.extractValue(page.properties[propId], type);
+        };
 
         return {
             id: page.id,
-            rewardId: this.extractValue(page.properties[idProp], 'title'),
-            title: this.extractValue(page.properties[titleProp], 'rich_text'),
-            description: this.extractValue(page.properties[descProp], 'rich_text'),
-            pointsRequired: this.extractValue(page.properties[pointsProp], 'number'),
-            isRepeatable: this.extractValue(page.properties[repeatableProp], 'checkbox'),
-            order: this.extractValue(page.properties[orderProp], 'number'),
-            isActive: this.extractValue(page.properties[activeProp], 'checkbox')
+            rewardId: getVal(['reward_id', '特典ID'], 'title'),
+            title: getVal(['title', '特典名'], 'rich_text'),
+            description: getVal(['description', '説明'], 'rich_text'),
+            pointsRequired: getVal(['points_required', '必要ポイント'], 'number'),
+            isRepeatable: getVal(['is_repeatable', '繰り返し可能'], 'checkbox'),
+            order: getVal(['order', '表示順'], 'number'),
+            isActive: getVal(['is_active', '有効'], 'checkbox')
         };
     }
 
@@ -169,8 +175,8 @@ export class NotionPointsAPI extends NotionAPI {
             const dbStructure = await this.getDatabaseStructure(this.pointHistoryDbId);
             if (!dbStructure) return [];
 
-            const customerProp = this.getPropertyName(dbStructure.properties, 'relation') || 'customer';
-            const dateProp = this.getPropertyName(dbStructure.properties, 'date') || 'date';
+            const customerProp = this.getPropId(dbStructure.properties, ['customer', '顧客']);
+            const dateProp = this.getPropId(dbStructure.properties, ['date', '日時']);
 
             const response = await this.client.databases.query({
                 database_id: this.pointHistoryDbId,
@@ -196,26 +202,24 @@ export class NotionPointsAPI extends NotionAPI {
     }
 
     private mapPageToTransaction(page: any, properties: any): PointTransaction {
-        const amountProp = this.getPropertyName(properties, 'number') || 'amount';
-        const typeProp = this.getPropertyName(properties, 'select') || 'type';
-        const dateProp = this.getPropertyName(properties, 'date') || 'date';
-        const storeProp = this.getPropertyName(properties, 'select') || 'store';
-        const locationProp = this.getPropertyName(properties, 'rich_text') || 'location';
-        const deviceProp = this.getPropertyName(properties, 'rich_text') || 'device';
-        const reasonProp = this.getPropertyName(properties, 'rich_text') || 'reason';
-        const rewardProp = this.getPropertyName(properties, 'relation') || 'reward';
+        const getVal = (names: string[], type: string) => {
+            const propId = this.getPropId(page.properties, names);
+            return this.extractValue(page.properties[propId], type);
+        };
+
+        const rewardProp = this.getPropId(page.properties, ['reward', '特典']);
 
         return {
             id: page.id,
-            customerId: '', // Not needed for internal use usually, or hard to extract from relation without another lookup
-            date: this.extractValue(page.properties[dateProp], 'date'),
-            amount: this.extractValue(page.properties[amountProp], 'number'),
-            type: this.extractValue(page.properties[typeProp], 'select'),
-            storeId: this.extractValue(page.properties[storeProp], 'select'),
-            location: this.extractValue(page.properties[locationProp], 'rich_text'),
-            deviceId: this.extractValue(page.properties[deviceProp], 'rich_text'),
-            reason: this.extractValue(page.properties[reasonProp], 'rich_text'),
-            rewardId: page.properties[rewardProp]?.relation?.[0]?.id // Extract raw ID for backend check
+            customerId: '',
+            date: getVal(['date', '日時'], 'date'),
+            amount: getVal(['amount', 'ポイント数'], 'number'),
+            type: getVal(['type', '種類'], 'select'),
+            storeId: getVal(['store', '店舗'], 'select'),
+            location: getVal(['location', '位置情報'], 'rich_text'),
+            deviceId: getVal(['device', '端末情報'], 'rich_text'),
+            reason: getVal(['reason', '理由'], 'rich_text'),
+            rewardId: page.properties[rewardProp]?.relation?.[0]?.id
         };
     }
 
@@ -224,11 +228,11 @@ export class NotionPointsAPI extends NotionAPI {
         amount: number,
         type: 'PURCHASE' | 'ADMIN' | 'REWARD',
         details: {
-            storeId?: string; // Notion Page ID of store
+            storeId?: string;
             location?: string;
             deviceId?: string;
             reason?: string;
-            rewardId?: string; // Notion Page ID of reward
+            rewardId?: string;
         }
     ): Promise<string> {
         try {
@@ -237,16 +241,16 @@ export class NotionPointsAPI extends NotionAPI {
             const dbStructure = await this.getDatabaseStructure(this.pointHistoryDbId);
             if (!dbStructure) throw new Error('Failed to get DB structure');
 
-            const customerProp = this.getPropertyName(dbStructure.properties, 'relation') || 'customer';
-            const dateProp = this.getPropertyName(dbStructure.properties, 'date') || 'date';
-            const amountProp = this.getPropertyName(dbStructure.properties, 'number') || 'amount';
-            const typeProp = this.getPropertyName(dbStructure.properties, 'select') || 'type';
-            const storeProp = this.getPropertyName(dbStructure.properties, 'select') || 'store'; // Using select for store name/ID for simplicity as per schema
-            const locationProp = this.getPropertyName(dbStructure.properties, 'rich_text') || 'location';
-            const deviceProp = this.getPropertyName(dbStructure.properties, 'rich_text') || 'device';
-            const reasonProp = this.getPropertyName(dbStructure.properties, 'rich_text') || 'reason';
-            const rewardProp = this.getPropertyName(dbStructure.properties, 'relation') || 'reward';
-            const titleProp = this.getPropertyName(dbStructure.properties, 'title') || 'ID';
+            const customerProp = this.getPropId(dbStructure.properties, ['customer', '顧客']);
+            const dateProp = this.getPropId(dbStructure.properties, ['date', '日時']);
+            const amountProp = this.getPropId(dbStructure.properties, ['amount', 'ポイント数']);
+            const typeProp = this.getPropId(dbStructure.properties, ['type', '種類']);
+            const storeProp = this.getPropId(dbStructure.properties, ['store', '店舗']);
+            const locationProp = this.getPropId(dbStructure.properties, ['location', '位置情報']);
+            const deviceProp = this.getPropId(dbStructure.properties, ['device', '端末情報']);
+            const reasonProp = this.getPropId(dbStructure.properties, ['reason', '理由']);
+            const rewardProp = this.getPropId(dbStructure.properties, ['reward', '特典']);
+            const titleProp = this.getPropId(dbStructure.properties, ['ID', 'id']);
 
             const properties: any = {
                 [titleProp]: {
@@ -267,11 +271,6 @@ export class NotionPointsAPI extends NotionAPI {
             };
 
             if (details.storeId) {
-                // If store is a relation, use relation. If select, use name.
-                // Schema said 'select' for store. Let's assume we pass the store name or ID string.
-                // For now, let's assume it's a select property storing the Store Name or ID.
-                // If we want to link to Store DB, it should be a relation.
-                // The setup script created it as 'select'.
                 properties[storeProp] = { select: { name: details.storeId } };
             }
             if (details.location) {
@@ -306,33 +305,30 @@ export class NotionPointsAPI extends NotionAPI {
         try {
             // Retrieve current customer data
             const customerPage = await this.client.pages.retrieve({ page_id: customerId }) as any;
-
-            // We need to find property names for total_points, current_points etc.
-            // These matched what update-notion-schema.ts sets up for Customer DB?
-            // Actually checkin.tsx calls Notion directly or through API?
-            // This class is used by backend.
-
             const props = customerPage.properties;
 
-            // Helper to find prop by name (key)
-            const getPropValue = (name: string) => {
-                if (props[name]) return props[name].number || 0;
-                // Fallback: search by case insensitive
-                const key = Object.keys(props).find(k => k.toLowerCase() === name.toLowerCase());
-                return key ? props[key].number || 0 : 0;
+            const getPropValue = (names: string[]) => {
+                const propId = this.getPropId(props, names);
+                return props[propId]?.number || 0;
             };
 
-            let currentTotal = getPropValue('total_points');
-            let currentAvailable = getPropValue('current_points');
-            let currentUsed = getPropValue('used_points');
-            let visitCount = getPropValue('visit_count');
+            const totalProp = this.getPropId(props, ['total_points', '総獲得ポイント']);
+            const currentProp = this.getPropId(props, ['current_points', '現在ポイント']);
+            const usedProp = this.getPropId(props, ['used_points', '使用ポイント']);
+            const visitProp = this.getPropId(props, ['visit_count', '来店回数']);
+            const lastVisitProp = this.getPropId(props, ['last_visit_date', '最終来店日']);
+
+            let currentTotal = getPropValue(['total_points', '総獲得ポイント']);
+            let currentAvailable = getPropValue(['current_points', '現在ポイント']);
+            let currentUsed = getPropValue(['used_points', '使用ポイント']);
+            let visitCount = getPropValue(['visit_count', '来店回数']);
 
             if (amountChange > 0) {
                 currentTotal += amountChange;
                 currentAvailable += amountChange;
-                visitCount += 1; // Assuming +points means a visit/purchase
+                visitCount += 1;
             } else {
-                currentAvailable += amountChange; // amountChange is negative
+                currentAvailable += amountChange;
                 currentUsed += Math.abs(amountChange);
             }
 
@@ -340,11 +336,11 @@ export class NotionPointsAPI extends NotionAPI {
             await this.client.pages.update({
                 page_id: customerId,
                 properties: {
-                    'total_points': { number: currentTotal },
-                    'current_points': { number: currentAvailable },
-                    'used_points': { number: currentUsed },
-                    'visit_count': { number: visitCount },
-                    'last_visit_date': { date: { start: new Date().toISOString() } }
+                    [totalProp]: { number: currentTotal },
+                    [currentProp]: { number: currentAvailable },
+                    [usedProp]: { number: currentUsed },
+                    [visitProp]: { number: visitCount },
+                    [lastVisitProp]: { date: { start: new Date().toISOString() } }
                 }
             });
 
@@ -355,22 +351,14 @@ export class NotionPointsAPI extends NotionAPI {
 
     async getCustomer(lineUserId: string): Promise<any | null> {
         try {
-            const customer = await this.findCustomerByLineUid(lineUserId); // Base method logic
+            const customer = await this.findCustomerByLineUid(lineUserId);
             if (!customer) return null;
-
-            // Base method returns partial data. We need point info.
-            // Since findCustomerByLineUid queries the DB, we can just reuse the page retrieval or just assume we have the ID to fetch fresh.
-            // Actually findCustomerByLineUid returns a "Customer" object which assumes standard schema.
-            // But we need totalPoints.
-            // Let's re-fetch or improve `findCustomerByLineUid`?
-            // Base class is in NotionAPI. Modifying base class is risky if other things depend on it.
-            // I'll implement a custom fetch here.
 
             if (!this.customerDatabaseId) return null;
             const dbStructure = await this.getDatabaseStructure(this.customerDatabaseId);
             if (!dbStructure) return null;
 
-            const lineUidProp = this.getPropertyName(dbStructure.properties, 'rich_text') || 'LINE UID';
+            const lineUidProp = this.getPropId(dbStructure.properties, ['LINE UID', 'LineUid']);
 
             const response = await this.client.databases.query({
                 database_id: this.customerDatabaseId,
@@ -386,22 +374,17 @@ export class NotionPointsAPI extends NotionAPI {
             const page = response.results[0] as any;
             const props = page.properties;
 
-            const getVal = (name: string, type: 'title' | 'rich_text' | 'number') => {
-                const key = Object.keys(props).find(k => k.toLowerCase() === name.toLowerCase());
-                if (!key) return null;
-                const p = props[key];
-                if (type === 'title') return p.title?.[0]?.text?.content || '';
-                if (type === 'rich_text') return p.rich_text?.[0]?.text?.content || '';
-                if (type === 'number') return p.number || 0;
-                return null;
+            const getVal = (names: string[], type: 'title' | 'rich_text' | 'number') => {
+                const propId = this.getPropId(props, names);
+                return this.extractValue(props[propId], type);
             };
 
             return {
                 id: page.id,
-                displayName: getVal('表示名', 'title') || 'No Name',
+                displayName: getVal(['表示名', 'Display Name'], 'title') || 'No Name',
                 lineUid: lineUserId,
-                currentPoints: getVal('current_points', 'number') || 0,
-                totalPoints: getVal('total_points', 'number') || 0
+                currentPoints: getVal(['current_points', '現在ポイント'], 'number') || 0,
+                totalPoints: getVal(['total_points', '総獲得ポイント'], 'number') || 0
             };
 
         } catch (error) {
@@ -412,17 +395,10 @@ export class NotionPointsAPI extends NotionAPI {
 
     async getAllCustomers(): Promise<any[]> {
         try {
-            console.log('Fetching all customers from DB:', this.customerDatabaseId);
-            if (!this.customerDatabaseId) {
-                console.error('Customer DB ID is missing');
-                return [];
-            }
+            if (!this.customerDatabaseId) return [];
 
-            const dbStructure = await this.getDatabaseStructure(this.customerDatabaseId);
-            if (!dbStructure) return [];
-
-            // We need to get point info too, which is in properties.
-            // Let's assume the properties are named standardly as per schema script.
+            // Fetch to get properties if needed, or just query.
+            // Query returns pages, we can just inspect properties on pages.
 
             const response = await this.client.databases.query({
                 database_id: this.customerDatabaseId,
@@ -436,24 +412,18 @@ export class NotionPointsAPI extends NotionAPI {
 
             return response.results.map((page: any) => {
                 const props = page.properties;
-                const getVal = (name: string, type: 'title' | 'rich_text' | 'number' | 'date') => {
-                    const key = Object.keys(props).find(k => k.toLowerCase() === name.toLowerCase());
-                    if (!key) return null;
-                    const p = props[key];
-                    if (type === 'title') return p.title?.[0]?.text?.content || '';
-                    if (type === 'rich_text') return p.rich_text?.[0]?.text?.content || '';
-                    if (type === 'number') return p.number || 0;
-                    if (type === 'date') return p.date?.start || '';
-                    return null;
+                const getVal = (names: string[], type: 'title' | 'rich_text' | 'number' | 'date') => {
+                    const propId = this.getPropId(props, names);
+                    return this.extractValue(props[propId], type);
                 };
 
                 return {
                     id: page.id,
-                    displayName: getVal('表示名', 'title') || 'No Name',
-                    lineUid: getVal('LINE UID', 'rich_text') || '',
-                    currentPoints: getVal('current_points', 'number') || 0,
-                    totalPoints: getVal('total_points', 'number') || 0,
-                    lastVisit: getVal('last_visit_date', 'date') || ''
+                    displayName: getVal(['表示名', 'Display Name'], 'title') || 'No Name',
+                    lineUid: getVal(['LINE UID'], 'rich_text') || '',
+                    currentPoints: getVal(['current_points', '現在ポイント'], 'number') || 0,
+                    totalPoints: getVal(['total_points', '総獲得ポイント'], 'number') || 0,
+                    lastVisit: getVal(['last_visit_date', '最終来店日'], 'date') || ''
                 };
             });
         } catch (error) {
@@ -475,5 +445,18 @@ export class NotionPointsAPI extends NotionAPI {
             case 'date': return prop.date?.start || '';
             default: return null;
         }
+    }
+}
+if (!prop) return null;
+switch (type) {
+    case 'title': return prop.title?.[0]?.text?.content || '';
+    case 'rich_text': return prop.rich_text?.[0]?.text?.content || '';
+    case 'number': return prop.number || 0;
+    case 'checkbox': return prop.checkbox || false;
+    case 'url': return prop.url || '';
+    case 'select': return prop.select?.name || '';
+    case 'date': return prop.date?.start || '';
+    default: return null;
+}
     }
 }
