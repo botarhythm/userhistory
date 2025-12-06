@@ -149,20 +149,21 @@ export class NotionPointsAPI extends NotionAPI {
     }
 
     private mapPageToReward(page: any, properties: any): Reward {
-        const getVal = (names: string[], type: string) => {
+        const getVal = (names: string[]) => {
             const propId = this.getPropId(page.properties, names);
-            return this.extractValue(page.properties[propId], type);
+            return this.extractValue(page.properties[propId]);
         };
 
+        // Improved aliases for robust matching
         return {
             id: page.id,
-            rewardId: getVal(['reward_id', '特典ID'], 'title'),
-            title: getVal(['title', '特典名'], 'rich_text'),
-            description: getVal(['description', '説明'], 'rich_text'),
-            pointsRequired: getVal(['points_required', '必要ポイント'], 'number'),
-            isRepeatable: getVal(['is_repeatable', '繰り返し可能'], 'checkbox'),
-            order: getVal(['order', '表示順'], 'number'),
-            isActive: getVal(['is_active', '有効'], 'checkbox')
+            rewardId: getVal(['reward_id', '特典ID', 'ID', 'id']),
+            title: getVal(['title', '特典名', 'name', '名前', 'Display Name']),
+            description: getVal(['description', '説明']),
+            pointsRequired: getVal(['points_required', '必要ポイント']),
+            isRepeatable: getVal(['is_repeatable', '繰り返し可能']),
+            order: getVal(['order', '表示順']),
+            isActive: getVal(['is_active', '有効'])
         };
     }
 
@@ -433,8 +434,10 @@ export class NotionPointsAPI extends NotionAPI {
     }
 
     // Helper to extract values safely
-    private extractValue(prop: any, type: string): any {
+    private extractValue(prop: any, _typeHint?: string): any {
         if (!prop) return null;
+        // Use the actual property type from Notion response
+        const type = prop.type;
         switch (type) {
             case 'title': return prop.title?.[0]?.text?.content || '';
             case 'rich_text': return prop.rich_text?.[0]?.text?.content || '';
@@ -443,6 +446,7 @@ export class NotionPointsAPI extends NotionAPI {
             case 'url': return prop.url || '';
             case 'select': return prop.select?.name || '';
             case 'date': return prop.date?.start || '';
+            // Backward compatibility for mapped 'relation' if needed (usually handled by caller accessing .relation)
             default: return null;
         }
     }
