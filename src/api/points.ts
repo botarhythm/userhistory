@@ -78,25 +78,82 @@ router.get('/status/:lineUserId', async (req, res): Promise<void> => {
         const currentPoints = getPropValue('current_points');
         const totalPoints = getPropValue('total_points');
 
-        // Calculate next reward
-        const rewards = await notionPoints.getActiveRewards();
-        // Sort rewards by cost (ascending)
-        const sortedRewards = rewards.sort((a, b) => a.pointsRequired - b.pointsRequired);
-        // Find first reward that costs more than current points (or the next tier if we have enough for some)
-        // Actually usually "Next Reward" is the closest one we haven't reached yet? 
-        // Or if we have enough for small ones, maybe the next big one? 
-        // Simple logic: First reward where pointsRequired > currentPoints.
-        // If currentPoints > all rewards, maybe show "Redeem now!" or max tier?
-        let nextReward = sortedRewards.find(r => r.pointsRequired > currentPoints);
+        // Calculate 30-point cycle logic
+        // 0-29: Bronze (Rank 0)
+        // 30-59: Silver (Rank 1)
+        // 60-89: Gold (Rank 2)
+        // 90-119: Platinum (Rank 3)
+        // 120+: Black (Rank 4)
+
+        const pointsInCycle = currentPoints % 30; // 0..29 ideally (but currentPoints accumulates total? User implied accum?)
+        // Wait, "currentPoints" in PointStatus is accumulated display points? Or reset per rank?
+        // User history implies "rank up" accumulates. Usually "Total Points" drives rank.
+        // Let's assume totalPoints drives rank and rewards for now.
+        // BUT, `currentPoints` usually means "spendable". The user didn't mention spending.
+        // The user says "10pt... next 10pt...". This implies linear accumulation triggers rewards.
+        // Let's use `totalPoints` for everything for now to be safe, assuming no spending yet.
+        // Actually, let's stick to `formattedPoints` which is effectively `totalPoints` if no redemption.
+
+        // Logic based on remainder of 30:
+        // Reward 1 at 10 (target: 10, remaining: 10 - mod)
+        // Reward 2 at 20 (target: 20, remaining: 20 - mod)
+        // Reward 3 at 30 (target: 30, remaining: 30 - mod)
+
+        const cycleProgress = totalPoints % 30;
+        let nextReward = null;
         let pointsToNext = 0;
 
-        if (nextReward) {
-            pointsToNext = nextReward.pointsRequired - currentPoints;
-        } else if (sortedRewards.length > 0) {
-            // User has enough for all rewards, or no rewards exist
-            // Maybe just show the most expensive one as "Redeemable"?
-            // For "Next Goal" logic, if we maxed out, maybe we show nothing or "Max Level".
-            // Let's default to null if no "next" reward exists.
+        if (totalPoints >= 120) {
+            // Black Rank
+            nextReward = {
+                id: 'black_status',
+                rewardId: 'black_reward',
+                title: '特典は将来的に考えます',
+                pointsRequired: 9999,
+                description: 'ブラックランク到達！',
+                isActive: true,
+                isRepeatable: false,
+                order: 99
+            };
+            pointsToNext = 0;
+        } else {
+            if (cycleProgress < 10) {
+                nextReward = {
+                    id: 'reward_coffee_1',
+                    rewardId: 'coffee_1',
+                    title: 'コーヒー1杯',
+                    pointsRequired: 10, // within cycle
+                    description: '美味しいコーヒーをプレゼント',
+                    isActive: true,
+                    isRepeatable: true,
+                    order: 1
+                };
+                pointsToNext = 10 - cycleProgress;
+            } else if (cycleProgress < 20) {
+                nextReward = {
+                    id: 'reward_coffee_2',
+                    rewardId: 'coffee_2',
+                    title: 'コーヒー1杯',
+                    pointsRequired: 20, // within cycle
+                    description: '美味しいコーヒーをプレゼント',
+                    isActive: true,
+                    isRepeatable: true,
+                    order: 2
+                };
+                pointsToNext = 20 - cycleProgress;
+            } else {
+                nextReward = {
+                    id: 'reward_beans',
+                    rewardId: 'beans_100g',
+                    title: 'お好きなコーヒー豆100g',
+                    pointsRequired: 30, // within cycle
+                    description: 'ランクアップ特典！',
+                    isActive: true,
+                    isRepeatable: true,
+                    order: 3
+                };
+                pointsToNext = 30 - cycleProgress;
+            }
         }
 
         res.json({

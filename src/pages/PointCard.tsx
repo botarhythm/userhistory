@@ -16,10 +16,10 @@ interface PointStatus {
 
 const MEMBER_RANKS = [
     { name: 'BRONZE', min: 0, color: 'from-orange-400 to-orange-600', badgeBorder: 'border-orange-200', text: 'text-orange-100' },
-    { name: 'SILVER', min: 50, color: 'from-slate-300 to-slate-400', badgeBorder: 'border-slate-200', text: 'text-slate-100' },
-    { name: 'GOLD', min: 100, color: 'from-yellow-400 to-yellow-600', badgeBorder: 'border-yellow-200', text: 'text-yellow-100' },
-    { name: 'PLATINUM', min: 300, color: 'from-cyan-400 to-cyan-600', badgeBorder: 'border-cyan-200', text: 'text-cyan-100' },
-    { name: 'BLACK', min: 1000, color: 'from-gray-800 to-black', badgeBorder: 'border-gray-500', text: 'text-gray-300' }
+    { name: 'SILVER', min: 30, color: 'from-slate-300 to-slate-400', badgeBorder: 'border-slate-200', text: 'text-slate-100' },
+    { name: 'GOLD', min: 60, color: 'from-yellow-400 to-yellow-600', badgeBorder: 'border-yellow-200', text: 'text-yellow-100' },
+    { name: 'PLATINUM', min: 90, color: 'from-cyan-400 to-cyan-600', badgeBorder: 'border-cyan-200', text: 'text-cyan-100' },
+    { name: 'BLACK', min: 120, color: 'from-gray-800 to-black', badgeBorder: 'border-gray-500', text: 'text-gray-300' }
 ];
 
 const getRank = (totalPoints: number) => {
