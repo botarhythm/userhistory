@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { useNavigate } from 'react-router-dom';
 import { useLiff } from '../contexts/LiffContext';
 import { isAccessAllowed } from '../config/permissions';
@@ -7,53 +7,92 @@ import { isAccessAllowed } from '../config/permissions';
 const QRScanner: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useLiff();
-    const [scanResult, setScanResult] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
-    const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+    const scannerRef = useRef<Html5Qrcode | null>(null);
+    const isMountedRef = useRef(false);
 
     useEffect(() => {
+        isMountedRef.current = true;
+
         // Permission Check
         if (user?.userId && !isAccessAllowed(user.userId)) {
             navigate('/');
             return;
         }
 
-        // Initialize Scanner
-        const scanner = new Html5QrcodeScanner(
-            "reader",
-            {
-                fps: 10,
-                qrbox: { width: 250, height: 250 },
-                formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-                supportedScanTypes: [] // Default
-            },
-            /* verbose= */ false
-        );
+        const initializeScanner = async () => {
+            try {
+                // Determine config
+                const config = {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0
+                };
 
-        scannerRef.current = scanner;
+                // If scanner already exists, don't re-init immediately
+                if (!scannerRef.current) {
+                    scannerRef.current = new Html5Qrcode("reader");
+                }
 
-        scanner.render(onScanSuccess, onScanFailure);
+                await scannerRef.current.start(
+                    { facingMode: "environment" }, // Prefer back camera
+                    config,
+                    (decodedText) => {
+                        onScanSuccess(decodedText);
+                    },
+                    (_errorMessage) => {
+                        // ignore scan errors (too noisy)
+                    }
+                );
+            } catch (err: any) {
+                if (isMountedRef.current) {
+                    console.error("Camera start failed", err);
+                    // Show user-friendly error
+                    let msg = "Camera failed to start.";
+                    if (typeof err === 'string') {
+                        msg = err;
+                    } else if (err.name === 'NotAllowedError') {
+                        msg = "Camera permission denied. Please allow access.";
+                    } else if (err.name === 'NotFoundError') {
+                        msg = "No camera found on this device.";
+                    } else if (err.name === 'NotReadableError') {
+                        msg = "Camera is seemingly in use by another app.";
+                    }
+                    setError(msg);
+                }
+            }
+        };
+
+        // Small delay to ensure DOM is ready
+        const timer = setTimeout(() => {
+            initializeScanner();
+        }, 500);
 
         return () => {
-            scanner.clear().catch(console.error);
+            isMountedRef.current = false;
+            clearTimeout(timer);
+            if (scannerRef.current && scannerRef.current.isScanning) {
+                scannerRef.current.stop().then(() => {
+                    scannerRef.current?.clear();
+                }).catch(console.error);
+            }
         };
     }, []);
 
-    const onScanSuccess = async (decodedText: string, _decodedResult: any) => {
+    const onScanSuccess = async (decodedText: string) => {
         if (isProcessing) return;
         setIsProcessing(true);
 
-        // Stop scanning temporarily
+        // Stop scanning
         if (scannerRef.current) {
             try {
-                await scannerRef.current.clear();
+                await scannerRef.current.stop();
+                scannerRef.current.clear();
             } catch (e) {
-                console.error("Failed to clear scanner", e);
+                console.error("Failed to stop scanner", e);
             }
         }
-
-        setScanResult(decodedText);
 
         // Get Location
         if (!navigator.geolocation) {
@@ -78,10 +117,6 @@ const QRScanner: React.FC = () => {
         );
     };
 
-    const onScanFailure = (_error: any) => {
-        // console.warn(`Code scan error = ${error}`);
-    };
-
     const submitPointEarn = async (qrToken: string, latitude: number, longitude: number) => {
         if (!user?.userId) {
             setError("User not authenticated");
@@ -96,18 +131,7 @@ const QRScanner: React.FC = () => {
                 },
                 body: JSON.stringify({
                     lineUserId: user.userId,
-                    storeId: 'test-store-001', // Using test store for verification
-                    // Actually, the QR token should probably contain the store ID or be unique enough.
-                    // Our API expects storeId AND qrToken.
-                    // Let's assume the QR code contains JSON: { "storeId": "...", "token": "..." }
-                    // OR we just send the token and let backend figure it out? 
-                    // Backend expects storeId in body.
-                    // Let's assume for this MVP the QR code IS the token, and we hardcode storeId or fetch it.
-                    // Better: The QR code contains a URL or string.
-                    // Let's assume the QR code string IS the token.
-                    // We need to know WHICH store we are at.
-                    // Ideally, we get storeId from the QR code too.
-                    // Let's try to parse the QR code as JSON.
+                    storeId: 'test-store-001',
                     qrToken: qrToken,
                     latitude,
                     longitude
@@ -117,15 +141,12 @@ const QRScanner: React.FC = () => {
             const data = await response.json();
 
             if (response.ok) {
-                // Success Animation & Redirect
-                // navigate('/points/success', { state: { points: data.gainedPoints } });
                 alert(`Success! You earned ${data.gainedPoints} point(s)!`);
                 navigate('/points');
             } else {
                 setError(data.error || 'Failed to earn points');
                 setIsProcessing(false);
-                // Restart scanner if needed
-                window.location.reload();
+                // Ideally give a button to restart scanner here instead of full reload
             }
         } catch (err) {
             setError('Network error');
@@ -151,7 +172,7 @@ const QRScanner: React.FC = () => {
                     戻る
                 </button>
                 <div className="font-bold text-lg">QRスキャン</div>
-                <div className="w-12"></div> {/* Spacer for centering */}
+                <div className="w-12"></div>
             </div>
 
             {/* Scanner Container */}
@@ -161,15 +182,21 @@ const QRScanner: React.FC = () => {
                 {error && (
                     <div className="absolute top-4 left-4 right-4 bg-red-500/90 text-white p-3 rounded-xl text-center text-sm backdrop-blur-sm z-50 animate-bounce">
                         {error}
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="block mt-2 mx-auto bg-white/20 px-3 py-1 rounded text-xs hover:bg-white/30"
+                        >
+                            Reload
+                        </button>
                     </div>
                 )}
 
                 {/* Scanner Area */}
                 <div className="flex-1 relative bg-black">
-                    {!scanResult && <div id="reader" className="w-full h-full"></div>}
+                    <div id="reader" className="w-full h-full"></div>
 
                     {/* Custom Overlay Guide (Visual only) */}
-                    {!scanResult && !isProcessing && (
+                    {!isProcessing && !error && (
                         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                             <div className="w-64 h-64 border-2 border-white/30 rounded-3xl relative">
                                 <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-green-500 rounded-tl-xl"></div>
