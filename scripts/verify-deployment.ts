@@ -15,12 +15,27 @@ async function getCurrentCommitSha(): Promise<string> {
         console.error('Failed to get current git commit SHA');
         process.exit(1);
     }
-    return true;
 }
-return false;
+
+async function checkHealth(targetSha: string): Promise<boolean> {
+    try {
+        const res = await fetch(`${BASE_URL}/health`);
+        if (!res.ok) return false;
+
+        const data = await res.json() as any;
+        const remoteSha = data.gitCommit;
+
+        console.log(`Remote Commit: ${remoteSha} | Target: ${targetSha}`);
+
+        // Check if remote SHA starts with target SHA (short hash vs long hash)
+        // or exact match
+        if (remoteSha && (remoteSha.startsWith(targetSha) || targetSha.startsWith(remoteSha))) {
+            return true;
+        }
+        return false;
     } catch (error) {
-    return false;
-}
+        return false;
+    }
 }
 
 async function main() {
