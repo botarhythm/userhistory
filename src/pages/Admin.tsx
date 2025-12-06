@@ -213,21 +213,37 @@ const Admin: React.FC = () => {
                             className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] overflow-y-auto"
                         >
                             <div className="p-6 border-b border-gray-100 bg-gray-50">
-                                <h3 className="text-lg font-bold text-gray-900">顧客詳細・ポイント修正</h3>
-                                <div className="text-sm text-gray-500">{selectedCustomer.displayName}</div>
-                                <div className="text-xs text-gray-400 font-mono">{selectedCustomer.lineUid}</div>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <div className="flex items-center space-x-2">
+                                            <h3 className="text-lg font-bold text-gray-900">顧客詳細・ポイント修正</h3>
+                                            <span
+                                                className="px-2 py-0.5 rounded text-xs font-bold text-white shadow-sm"
+                                                style={{ backgroundColor: getRank(selectedCustomer.totalPoints).colorCode }}
+                                            >
+                                                {getRank(selectedCustomer.totalPoints).name}
+                                            </span>
+                                        </div>
+                                        <div className="text-sm text-gray-500 mt-1">{selectedCustomer.displayName}</div>
+                                        <div className="text-xs text-gray-400 font-mono">{selectedCustomer.lineUid}</div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-2xl font-bold text-gray-800">{selectedCustomer.totalPoints} <span className="text-sm font-normal text-gray-500">pt</span></div>
+                                        <div className="text-xs text-gray-500">累積獲得</div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="p-6 space-y-6">
                                 {/* Detailed Status Section */}
-                                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                                    <h4 className="text-sm font-bold text-blue-800 mb-2">現在のステータス</h4>
+                                <div className={`p-4 rounded-xl border border-gray-100 bg-gradient-to-br ${getRank(selectedCustomer.totalPoints).color} text-white`}>
+                                    <h4 className="text-sm font-bold opacity-90 mb-3 border-b border-white/20 pb-2">現在のステータス</h4>
                                     {statusLoading ? (
-                                        <div className="text-center text-xs text-blue-500">読み込み中...</div>
+                                        <div className="text-center text-xs opacity-80">読み込み中...</div>
                                     ) : (
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <div className="text-xs text-blue-600">保有チケット</div>
+                                                <div className="text-xs opacity-70 mb-1">獲得済み/利用可能チケット</div>
                                                 {detailedStatus?.availableRewards && detailedStatus.availableRewards.length > 0 ? (
                                                     <ul className="text-sm font-bold list-disc list-inside">
                                                         {detailedStatus.availableRewards.map((r, i) => (
@@ -235,14 +251,14 @@ const Admin: React.FC = () => {
                                                         ))}
                                                     </ul>
                                                 ) : (
-                                                    <div className="text-sm font-bold text-gray-400">なし</div>
+                                                    <div className="text-sm font-bold opacity-50">なし</div>
                                                 )}
                                             </div>
                                             <div>
-                                                <div className="text-xs text-blue-600">次の特典</div>
-                                                <div className="text-sm font-bold">{detailedStatus?.nextReward?.title || 'なし'}</div>
+                                                <div className="text-xs opacity-70 mb-1">次の特典</div>
+                                                <div className="text-sm font-bold">{detailedStatus?.nextReward?.title || 'すべての特典を獲得済み'}</div>
                                                 {detailedStatus?.pointsToNextReward !== undefined && detailedStatus.pointsToNextReward > 0 && (
-                                                    <div className="text-xs text-blue-500">あと {detailedStatus.pointsToNextReward} pt</div>
+                                                    <div className="text-xs font-bold mt-1 bg-white/20 inline-block px-2 py-0.5 rounded">あと {detailedStatus.pointsToNextReward} pt</div>
                                                 )}
                                             </div>
                                         </div>
@@ -302,10 +318,10 @@ const Admin: React.FC = () => {
                                     onClick={handleAdjustPoints}
                                     disabled={adjustAmount === 0 || isSubmitting}
                                     className={`flex-1 px-4 py-3 rounded-xl text-white font-bold shadow-md transition-all ${adjustAmount === 0
-                                            ? 'bg-gray-300 cursor-not-allowed'
-                                            : adjustAmount > 0
-                                                ? 'bg-green-500 hover:bg-green-600 hover:scale-[1.02]'
-                                                : 'bg-red-500 hover:bg-red-600 hover:scale-[1.02]'
+                                        ? 'bg-gray-300 cursor-not-allowed'
+                                        : adjustAmount > 0
+                                            ? 'bg-green-500 hover:bg-green-600 hover:scale-[1.02]'
+                                            : 'bg-red-500 hover:bg-red-600 hover:scale-[1.02]'
                                         }`}
                                 >
                                     {isSubmitting ? '保存中...' : (adjustAmount > 0 ? 'ポイント付与' : 'ポイント修正')}
