@@ -12,6 +12,13 @@ interface PointStatus {
     displayName: string;
     nextReward?: Reward;
     pointsToNextReward?: number;
+    availableRewards?: {
+        id: string;
+        rewardId: string;
+        title: string;
+        description: string;
+        count: number;
+    }[];
 }
 
 const MEMBER_RANKS = [
@@ -24,7 +31,6 @@ const MEMBER_RANKS = [
 
 const getRank = (totalPoints: number) => {
     // Find highest rank where min <= totalPoints
-    // Reverse sort first to safeguard
     const sortedRanks = [...MEMBER_RANKS].sort((a, b) => b.min - a.min);
     return sortedRanks.find(r => totalPoints >= r.min) || MEMBER_RANKS[0]; // Default to Bronze
 };
@@ -36,19 +42,6 @@ const PointCard: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     const rank = getRank(status?.totalPoints || 0);
-
-    useEffect(() => {
-        if (!loading && user?.userId && !isAccessAllowed(user.userId)) {
-            navigate('/'); // Redirect unauthorized users
-            return;
-        }
-
-        if (user?.userId) {
-            fetchPointStatus(user.userId);
-        } else {
-            setLoading(false);
-        }
-    }, [user, loading, navigate]);
 
     const fetchPointStatus = async (userId: string) => {
         try {
@@ -64,6 +57,41 @@ const PointCard: React.FC = () => {
         }
     };
 
+    useEffect(() => {
+        if (!loading && user?.userId && !isAccessAllowed(user.userId)) {
+            navigate('/'); // Redirect unauthorized users
+            return;
+        }
+
+        if (user?.userId) {
+            fetchPointStatus(user.userId);
+        } else {
+            setLoading(false);
+        }
+    }, [user, loading, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const handleRedeem = async (rewardType: string, rewardName: string) => {
+        if (!window.confirm(`${rewardName}を利用しますか？`)) return;
+
+        try {
+            const res = await fetch('/api/points/redeem', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lineUserId: user?.userId, rewardType })
+            });
+
+            if (res.ok) {
+                alert(`${rewardName}を利用しました！`);
+                if (user?.userId) fetchPointStatus(user?.userId);
+            } else {
+                const err = await res.json();
+                alert(`利用に失敗しました: ${err.error || '不明なエラー'}`);
+            }
+        } catch (e) {
+            alert('通信エラーが発生しました');
+        }
+    };
+
     if (!isLoggedIn) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -74,6 +102,19 @@ const PointCard: React.FC = () => {
                 </div>
             </div>
         );
+    }
+
+    // Rank Progress Calculation
+    const currentRankIdx = MEMBER_RANKS.findIndex(r => r.name === rank.name);
+    const nextRank = MEMBER_RANKS[currentRankIdx + 1];
+    let progressPercent = 100;
+    let pointsToRankUp = 0;
+
+    if (nextRank) {
+        const range = nextRank.min - rank.min;
+        const currentInRank = (status?.totalPoints || 0) - rank.min;
+        progressPercent = Math.min(100, Math.max(0, (currentInRank / range) * 100));
+        pointsToRankUp = nextRank.min - (status?.totalPoints || 0);
     }
 
     return (
@@ -113,7 +154,7 @@ const PointCard: React.FC = () => {
                         <div>
                             <div className="flex items-baseline space-x-2">
                                 <span className="text-5xl font-bold tracking-tight drop-shadow-sm">
-                                    {loading ? '...' : (status?.currentPoints || 0)}
+                                    {loading ? '...' : (status?.totalPoints || 0)}
                                 </span>
                                 <span className="text-lg font-medium opacity-80">pt</span>
                             </div>
@@ -122,11 +163,31 @@ const PointCard: React.FC = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* Rank Progress Bar (Inside Card) */}
+                    {nextRank && (
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/20">
+                            <motion.div
+                                className="h-full bg-white/50"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progressPercent}%` }}
+                                transition={{ duration: 1, delay: 0.5 }}
+                            />
+                        </div>
+                    )}
                 </motion.div>
+
+                {/* Rank Status Text */}
+                {nextRank && (
+                    <div className="mt-3 flex justify-between text-xs font-medium text-gray-500 px-1">
+                        <span>{rank.name}</span>
+                        <span>Next: {nextRank.name} (あと {pointsToRankUp} pt)</span>
+                    </div>
+                )}
             </div>
 
             {/* Main Actions */}
-            <div className="px-4 -mt-4 relative z-20">
+            <div className="px-4 mt-6">
                 <Link to="/scan">
                     <motion.button
                         whileHover={{ scale: 1.02, translateY: -2 }}
@@ -143,42 +204,68 @@ const PointCard: React.FC = () => {
                 </Link>
             </div>
 
-            {/* Stats Grid */}
-            <div className="px-4 mt-6 grid grid-cols-2 gap-4">
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center"
-                >
-                    <div className="text-gray-400 text-xs font-bold uppercase mb-1">獲得総ポイント</div>
-                    <div className="text-2xl font-bold text-gray-800">{status?.totalPoints || 0}</div>
-                </motion.div>
+            {/* Reward Wallet Section */}
+            {status?.availableRewards && status.availableRewards.length > 0 && (
+                <div className="px-4 mt-8">
+                    <h3 className="text-gray-800 font-bold text-lg mb-3 flex items-center">
+                        <svg className="w-5 h-5 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                        </svg>
+                        保有チケット (利用可能)
+                    </h3>
+                    <div className="space-y-3">
+                        {status.availableRewards.map((reward) => (
+                            <motion.div
+                                key={reward.id}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="bg-white p-4 rounded-xl shadow-sm border border-orange-100 flex justify-between items-center"
+                            >
+                                <div>
+                                    <div className="font-bold text-gray-800">{reward.title}</div>
+                                    <div className="text-xs text-gray-400 mt-1">{reward.description}</div>
+                                    <div className="text-xs font-bold text-orange-500 mt-1">保有数: {reward.count}枚</div>
+                                </div>
+                                <button
+                                    onClick={() => handleRedeem(reward.rewardId, reward.title)}
+                                    className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold py-2 px-4 rounded-lg shadow transition-colors"
+                                >
+                                    利用する
+                                </button>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center relative overflow-hidden"
-                >
-                    <div className="absolute top-0 right-0 w-8 h-8 bg-yellow-400 opacity-20 rounded-bl-xl"></div>
-                    <div className="text-gray-400 text-xs font-bold uppercase mb-1">次の特典</div>
-                    {status?.nextReward ? (
-                        <>
-                            <div className="text-sm font-bold text-gray-800 truncate w-full px-2" title={status.nextReward.title}>
-                                {status.nextReward.title}
-                            </div>
-                            <div className="text-xs text-green-600 font-medium mt-1">
-                                あと {status.pointsToNextReward} pt
-                            </div>
-                        </>
-                    ) : (
-                        <>
+            {/* Next Reward Status (Stats Grid) */}
+            <div className="px-4 mt-6">
+                <h3 className="text-gray-400 text-xs font-bold uppercase mb-2">次の目標</h3>
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-12 h-12 bg-green-500 opacity-10 rounded-bl-full"></div>
+                    <div>
+                        {status?.nextReward ? (
+                            status.nextReward.pointsRequired === 9999 ? (
+                                <div>
+                                    <div className="text-sm font-bold text-gray-800">{status.nextReward.title}</div>
+                                    <div className="text-xs text-gray-400 font-medium mt-1">{status.nextReward.description}</div>
+                                </div>
+                            ) : (
+                                <div>
+                                    <div className="text-xs text-green-600 font-bold mb-1">あと {status.pointsToNextReward} pt でGET</div>
+                                    <div className="text-lg font-bold text-gray-800">{status.nextReward.title}</div>
+                                </div>
+                            )
+                        ) : (
                             <div className="text-sm font-bold text-gray-800">すべての特典を獲得可能</div>
-                            <div className="text-xs text-green-600 font-medium mt-1">交換へ</div>
-                        </>
-                    )}
-                </motion.div>
+                        )}
+                    </div>
+                    <div className="bg-green-50 p-3 rounded-full">
+                        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                        </svg>
+                    </div>
+                </div>
             </div>
 
             {/* Recent History Preview */}

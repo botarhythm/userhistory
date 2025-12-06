@@ -162,6 +162,63 @@ export class NotionPointsAPI extends NotionAPI {
 
     // --- Point Transaction Methods ---
 
+    async getTransactions(customerId: string): Promise<PointTransaction[]> {
+        try {
+            if (!this.pointHistoryDbId) return [];
+
+            const dbStructure = await this.getDatabaseStructure(this.pointHistoryDbId);
+            if (!dbStructure) return [];
+
+            const customerProp = this.getPropertyName(dbStructure.properties, 'relation') || 'customer';
+            const dateProp = this.getPropertyName(dbStructure.properties, 'date') || 'date';
+
+            const response = await this.client.databases.query({
+                database_id: this.pointHistoryDbId,
+                filter: {
+                    property: customerProp,
+                    relation: {
+                        contains: customerId
+                    }
+                },
+                sorts: [
+                    {
+                        property: dateProp,
+                        direction: 'descending'
+                    }
+                ]
+            });
+
+            return response.results.map(page => this.mapPageToTransaction(page as any, dbStructure.properties));
+        } catch (error) {
+            console.error('Failed to get transactions:', error);
+            return [];
+        }
+    }
+
+    private mapPageToTransaction(page: any, properties: any): PointTransaction {
+        const amountProp = this.getPropertyName(properties, 'number') || 'amount';
+        const typeProp = this.getPropertyName(properties, 'select') || 'type';
+        const dateProp = this.getPropertyName(properties, 'date') || 'date';
+        const storeProp = this.getPropertyName(properties, 'select') || 'store';
+        const locationProp = this.getPropertyName(properties, 'rich_text') || 'location';
+        const deviceProp = this.getPropertyName(properties, 'rich_text') || 'device';
+        const reasonProp = this.getPropertyName(properties, 'rich_text') || 'reason';
+        const rewardProp = this.getPropertyName(properties, 'relation') || 'reward';
+
+        return {
+            id: page.id,
+            customerId: '', // Not needed for internal use usually, or hard to extract from relation without another lookup
+            date: this.extractValue(page.properties[dateProp], 'date'),
+            amount: this.extractValue(page.properties[amountProp], 'number'),
+            type: this.extractValue(page.properties[typeProp], 'select'),
+            storeId: this.extractValue(page.properties[storeProp], 'select'),
+            location: this.extractValue(page.properties[locationProp], 'rich_text'),
+            deviceId: this.extractValue(page.properties[deviceProp], 'rich_text'),
+            reason: this.extractValue(page.properties[reasonProp], 'rich_text'),
+            rewardId: page.properties[rewardProp]?.relation?.[0]?.id // Extract raw ID for backend check
+        };
+    }
+
     async createPointTransaction(
         customerId: string,
         amount: number,
@@ -293,6 +350,63 @@ export class NotionPointsAPI extends NotionAPI {
 
         } catch (error) {
             console.error('Failed to update customer totals:', error);
+        }
+    }
+
+    async getCustomer(lineUserId: string): Promise<any | null> {
+        try {
+            const customer = await this.findCustomerByLineUid(lineUserId); // Base method logic
+            if (!customer) return null;
+
+            // Base method returns partial data. We need point info.
+            // Since findCustomerByLineUid queries the DB, we can just reuse the page retrieval or just assume we have the ID to fetch fresh.
+            // Actually findCustomerByLineUid returns a "Customer" object which assumes standard schema.
+            // But we need totalPoints.
+            // Let's re-fetch or improve `findCustomerByLineUid`?
+            // Base class is in NotionAPI. Modifying base class is risky if other things depend on it.
+            // I'll implement a custom fetch here.
+
+            if (!this.customerDatabaseId) return null;
+            const dbStructure = await this.getDatabaseStructure(this.customerDatabaseId);
+            if (!dbStructure) return null;
+
+            const lineUidProp = this.getPropertyName(dbStructure.properties, 'rich_text') || 'LINE UID';
+
+            const response = await this.client.databases.query({
+                database_id: this.customerDatabaseId,
+                filter: {
+                    property: lineUidProp,
+                    rich_text: {
+                        equals: lineUserId
+                    }
+                }
+            });
+
+            if (response.results.length === 0) return null;
+            const page = response.results[0] as any;
+            const props = page.properties;
+
+            const getVal = (name: string, type: 'title' | 'rich_text' | 'number') => {
+                const key = Object.keys(props).find(k => k.toLowerCase() === name.toLowerCase());
+                if (!key) return null;
+                const p = props[key];
+                if (type === 'title') return p.title?.[0]?.text?.content || '';
+                if (type === 'rich_text') return p.rich_text?.[0]?.text?.content || '';
+                if (type === 'number') return p.number || 0;
+                return null;
+            };
+
+            return {
+                id: page.id,
+                displayName: getVal('表示名', 'title') || 'No Name',
+                lineUid: lineUserId,
+                currentPoints: getVal('current_points', 'number') || 0,
+                totalPoints: getVal('total_points', 'number') || 0
+            };
+
+        } catch (error) {
+            console.error('Get customer error:', error);
+            return null;
         }
     }
 

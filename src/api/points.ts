@@ -156,16 +156,159 @@ router.get('/status/:lineUserId', async (req, res): Promise<void> => {
             }
         }
 
+        // Fetch all active rewards for mapping
+        const allRewards = await notionPoints.getActiveRewards();
+        const rewardMap = new Map(allRewards.map(r => [r.id, r.rewardId])); // PageID -> 'coffee' etc.
+        const rewardObjMap = new Map(allRewards.map(r => [r.rewardId, r])); // 'coffee' -> Reward Object
+
+        // Fetch user history to count usages
+        const history = await notionPoints.getTransactions(customer.id);
+        const usedRewards = history.filter(t => t.type === 'REWARD');
+
+        // Milestone Calculation
+        // 30pt Cycle: 10(Coffee), 20(Coffee), 30(Beans)
+        const cycles = Math.floor(totalPoints / 30);
+        const remainder = totalPoints % 30;
+
+        let totalCoffeeEarned = cycles * 2;
+        if (remainder >= 10) totalCoffeeEarned++;
+        if (remainder >= 20) totalCoffeeEarned++;
+
+        let totalBeansEarned = cycles;
+        // Exact 30 multiples are handled by floor. Logic check:
+        // 29 pts: floor=0, rem=29. Coffee=2, Beans=0. Correct.
+        // 30 pts: floor=1, rem=0. Coffee=2, Beans=1. Correct.
+
+        // Count Used
+        let usedCoffee = 0;
+        let usedBeans = 0;
+
+        usedRewards.forEach(tx => {
+            if (!tx.rewardId) return;
+            // tx.rewardId is the Notion Page ID (relation id)
+            const rKey = rewardMap.get(tx.rewardId);
+            if (!rKey) return;
+
+            // Map specific keys to generic types
+            // Assuming rewardIds in DB are like 'coffee_1', 'coffee_2', 'beans_100g'
+            if (rKey.includes('coffee')) usedCoffee++;
+            if (rKey.includes('beans')) usedBeans++;
+        });
+
+        const availableCoffee = Math.max(0, totalCoffeeEarned - usedCoffee);
+        const availableBeans = Math.max(0, totalBeansEarned - usedBeans);
+
+        const availableRewardsList = [];
+        if (availableCoffee > 0) {
+            // Find a coffee reward object to use for display
+            const rObj = allRewards.find(r => r.rewardId.includes('coffee')) || { title: 'コーヒー1杯', description: '美味しいコーヒー' };
+            availableRewardsList.push({
+                ...rObj,
+                id: 'generic_coffee', // UI Key
+                rewardId: 'reward_coffee', // Logic Key for redeem
+                title: 'コーヒー1杯',
+                count: availableCoffee
+            });
+        }
+        if (availableBeans > 0) {
+            const rObj = allRewards.find(r => r.rewardId.includes('beans')) || { title: 'コーヒー豆100g', description: 'お好きな豆' };
+            availableRewardsList.push({
+                ...rObj,
+                id: 'generic_beans',
+                rewardId: 'reward_beans',
+                title: 'お好きなコーヒー豆100g',
+                count: availableBeans
+            });
+        }
+
         res.json({
             currentPoints,
             totalPoints,
             displayName: customer.displayName,
             nextReward,
-            pointsToNextReward: pointsToNext
+            pointsToNextReward: pointsToNext,
+            availableRewards: availableRewardsList
         });
     } catch (error) {
         console.error('Error fetching status:', error);
         res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Redeem Reward
+router.post('/redeem', async (req: any, res: any) => {
+    try {
+        const { lineUserId, rewardType } = req.body; // rewardType: 'reward_coffee' or 'reward_beans'
+
+        const customer = await notionPoints.getCustomer(lineUserId);
+        if (!customer) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Re-calculate availability (Security Check)
+        const totalPoints = customer.totalPoints;
+        const history = await notionPoints.getTransactions(customer.id);
+        const usedRewards = history.filter(t => t.type === 'REWARD');
+        const allRewards = await notionPoints.getActiveRewards();
+        const rewardMap = new Map(allRewards.map(r => [r.id, r.rewardId]));
+
+        const cycles = Math.floor(totalPoints / 30);
+        const remainder = totalPoints % 30;
+
+        // Calculate Totals
+        let totalCoffee = cycles * 2;
+        if (remainder >= 10) totalCoffee++;
+        if (remainder >= 20) totalCoffee++;
+        let totalBeans = cycles;
+
+        // Calculate Used
+        let usedCoffee = 0;
+        let usedBeans = 0;
+        usedRewards.forEach(tx => {
+            const rKey = rewardMap.get(tx.rewardId || '');
+            if (rKey?.includes('coffee')) usedCoffee++;
+            if (rKey?.includes('beans')) usedBeans++;
+        });
+
+        // Check Availability and determine exact Notion Reward ID to link
+        let targetRewardPageId = '';
+        if (rewardType === 'reward_coffee') {
+            if (totalCoffee <= usedCoffee) {
+                return res.status(400).json({ error: 'No coffee rewards available' });
+            }
+            // Link to any active coffee reward page (e.g. coffee_1)
+            const r = allRewards.find(r => r.rewardId.includes('coffee'));
+            if (r) targetRewardPageId = r.id;
+        } else if (rewardType === 'reward_beans') {
+            if (totalBeans <= usedBeans) {
+                return res.status(400).json({ error: 'No beans rewards available' });
+            }
+            const r = allRewards.find(r => r.rewardId.includes('beans'));
+            if (r) targetRewardPageId = r.id;
+        } else {
+            return res.status(400).json({ error: 'Invalid reward type' });
+        }
+
+        if (!targetRewardPageId) {
+            return res.status(500).json({ error: 'Reward configuration missing in database' });
+        }
+
+        // Execute Redemption
+        await notionPoints.createPointTransaction(
+            customer.id,
+            0, // No point cost, just record
+            'REWARD',
+            {
+                reason: `Redeemed ${rewardType}`,
+                rewardId: targetRewardPageId
+            }
+        );
+
+        res.json({ success: true, message: 'Reward redeemed successfully' });
+
+    } catch (error) {
+        console.error('Redeem error:', error);
+        res.status(500).json({ error: 'Redemption failed' });
     }
 });
 
