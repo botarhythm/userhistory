@@ -172,13 +172,13 @@ const Header: React.FC = () => {
         {/* ナビゲーション: モバイルではタブ形式 */}
         <nav className="flex space-x-1 sm:space-x-4 pb-2 sm:pb-0">
           <Link
-            to="/purchase"
-            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/' || location.pathname === '/purchase'
+            to="/admin"
+            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/admin'
               ? 'bg-red-500 text-white'
               : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
               }`}
           >
-            🔍 デバッグ
+            🛠 管理
           </Link>
           <Link
             to="/history"
