@@ -85,6 +85,7 @@ app.get('/health', (_req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env['NODE_ENV'] || 'development',
     version: '1.0.0',
+    gitCommit: process.env['RAILWAY_GIT_COMMIT_SHA'] || 'unknown',
     notion: 'connected'
   });
 });
