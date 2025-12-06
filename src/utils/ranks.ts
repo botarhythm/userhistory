@@ -18,5 +18,5 @@ export const MEMBER_RANKS: Rank[] = [
 export const getRank = (totalPoints: number): Rank => {
     // Find highest rank where min <= totalPoints
     const sortedRanks = [...MEMBER_RANKS].sort((a, b) => b.min - a.min);
-    return sortedRanks.find(r => totalPoints >= r.min) || MEMBER_RANKS[0];
+    return sortedRanks.find(r => totalPoints >= r.min) || MEMBER_RANKS[0] as Rank;
 };
