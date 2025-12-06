@@ -78,10 +78,33 @@ router.get('/status/:lineUserId', async (req, res): Promise<void> => {
         const currentPoints = getPropValue('current_points');
         const totalPoints = getPropValue('total_points');
 
+        // Calculate next reward
+        const rewards = await notionPoints.getActiveRewards();
+        // Sort rewards by cost (ascending)
+        const sortedRewards = rewards.sort((a, b) => a.pointsRequired - b.pointsRequired);
+        // Find first reward that costs more than current points (or the next tier if we have enough for some)
+        // Actually usually "Next Reward" is the closest one we haven't reached yet? 
+        // Or if we have enough for small ones, maybe the next big one? 
+        // Simple logic: First reward where pointsRequired > currentPoints.
+        // If currentPoints > all rewards, maybe show "Redeem now!" or max tier?
+        let nextReward = sortedRewards.find(r => r.pointsRequired > currentPoints);
+        let pointsToNext = 0;
+
+        if (nextReward) {
+            pointsToNext = nextReward.pointsRequired - currentPoints;
+        } else if (sortedRewards.length > 0) {
+            // User has enough for all rewards, or no rewards exist
+            // Maybe just show the most expensive one as "Redeemable"?
+            // For "Next Goal" logic, if we maxed out, maybe we show nothing or "Max Level".
+            // Let's default to null if no "next" reward exists.
+        }
+
         res.json({
             currentPoints,
             totalPoints,
-            displayName: customer.displayName
+            displayName: customer.displayName,
+            nextReward,
+            pointsToNextReward: pointsToNext
         });
     } catch (error) {
         console.error('Error fetching status:', error);
