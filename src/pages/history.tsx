@@ -353,7 +353,7 @@ const HistoryPage: React.FC = () => {
                     {record.items && record.items.length > 0 && (
                       <div className="text-gray-900 font-bold text-lg mb-1">
                         {formatItems(record.items)}
-                        {record.total && (
+                        {!!record.total && (
                           <span className="ml-2 text-gray-400 text-sm font-normal">
                             (計{record.total}点)
                           </span>
