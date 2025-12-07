@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import { LiffProvider, useLiff } from './contexts/LiffContext';
 import Purchase from './pages/purchase';
 import History from './pages/history';
+import PointHistory from './pages/PointHistory';
 import PointCard from './pages/PointCard';
 import QRScanner from './pages/QRScanner';
 import Admin from './pages/Admin';
@@ -167,8 +168,8 @@ const Header: React.FC = () => {
               <button
                 onClick={() => setIsDebugUserMode(!isDebugUserMode)}
                 className={`text-xs px-2 py-1 rounded border ${isDebugUserMode
-                    ? 'bg-gray-200 text-gray-700 border-gray-300'
-                    : 'bg-orange-100 text-orange-700 border-orange-300'
+                  ? 'bg-gray-200 text-gray-700 border-gray-300'
+                  : 'bg-orange-100 text-orange-700 border-orange-300'
                   }`}
               >
                 {isDebugUserMode ? '👀 ユーザー表示中' : '⚙️ 管理者表示'}
@@ -187,10 +188,7 @@ const Header: React.FC = () => {
         {/* 中央: ロゴとブランド名（クリック可能） */}
         <div className="flex justify-center items-center py-3 border-t border-gray-100">
           <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-            <img src="/assets/symbolmark.gif" alt="Botarhythm Coffee Roaster Symbol" className="h-8 w-8" />
-            <h1 className="text-lg font-bold text-gray-900">
-              Botarhythm Coffee Roaster
-            </h1>
+            <img src="/assets/logo_long.png" alt="Botarhythm Coffee Roaster" className="h-10 w-auto" />
           </Link>
         </div>
 
@@ -208,25 +206,23 @@ const Header: React.FC = () => {
             </Link>
           )}
           <Link
-            to="/history"
-            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/history'
-              ? 'bg-red-500 text-white'
+            to="/"
+            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/' || location.pathname === '/purchase'
+              ? 'bg-blue-600 text-white'
               : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
               }`}
           >
-            📝 メモ
+            ☕ 作成
           </Link>
-          {showCardFeature && (
-            <Link
-              to="/points"
-              className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/points'
-                ? 'bg-red-500 text-white'
-                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-            >
-              💳 カード
-            </Link>
-          )}
+          <Link
+            to="/history"
+            className={`flex-1 sm:flex-none px-3 py-2 rounded-md text-sm font-medium text-center ${location.pathname === '/history'
+              ? 'bg-blue-600 text-white'
+              : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+          >
+            📝 履歴
+          </Link>
         </nav>
       </div>
     </header>
@@ -242,7 +238,6 @@ const AppContent: React.FC = () => {
           <Route path="/" element={<Purchase />} />
           <Route path="/purchase" element={<Purchase />} />
           <Route path="/history" element={<History />} />
-          <Route path="/points" element={<PointCard />} />
           <Route path="/scan" element={<QRScanner />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/debug" element={<Debug />} />

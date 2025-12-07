@@ -121,9 +121,9 @@ router.get('/status/:lineUserId', async (req, res): Promise<void> => {
                 nextReward = {
                     id: 'reward_coffee_1',
                     rewardId: 'coffee_1',
-                    title: 'コーヒー1杯',
+                    title: 'ハンドドリップコーヒー１杯',
                     pointsRequired: 10, // within cycle
-                    description: '美味しいコーヒーをプレゼント',
+                    description: 'お好みの豆からお選びください',
                     isActive: true,
                     isRepeatable: true,
                     order: 1
@@ -133,9 +133,9 @@ router.get('/status/:lineUserId', async (req, res): Promise<void> => {
                 nextReward = {
                     id: 'reward_coffee_2',
                     rewardId: 'coffee_2',
-                    title: 'コーヒー1杯',
+                    title: 'ハンドドリップコーヒー１杯',
                     pointsRequired: 20, // within cycle
-                    description: '美味しいコーヒーをプレゼント',
+                    description: 'お好みの豆からお選びください',
                     isActive: true,
                     isRepeatable: true,
                     order: 2
@@ -206,7 +206,7 @@ router.get('/status/:lineUserId', async (req, res): Promise<void> => {
                 ...rObj,
                 id: 'generic_coffee', // UI Key
                 rewardId: 'reward_coffee', // Logic Key for redeem
-                title: 'コーヒー1杯',
+                title: 'ハンドドリップコーヒー１杯',
                 count: availableCoffee
             });
         }
@@ -372,7 +372,7 @@ router.post('/earn', async (req, res): Promise<void> => {
             {
                 storeId: store.name, // Storing name for readability in history
                 location: `${latitude},${longitude}`,
-                reason: 'Store Purchase'
+                reason: '来店ポイント'
             }
         );
 

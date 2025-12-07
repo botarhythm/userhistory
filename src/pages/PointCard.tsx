@@ -23,10 +23,23 @@ interface PointStatus {
 
 import { MEMBER_RANKS, getRank } from '../utils/ranks';
 
+interface HistoryRecord {
+    id: string;
+    type: 'checkin' | 'purchase' | 'usage';
+    timestamp: string;
+    items?: Array<{
+        name: string;
+        quantity: number;
+    }>;
+    total?: number;
+    memo?: string;
+}
+
 const PointCard: React.FC = () => {
     const { user, isLoggedIn } = useLiff();
     const navigate = useNavigate();
     const [status, setStatus] = useState<PointStatus | null>(null);
+    const [recentHistory, setRecentHistory] = useState<HistoryRecord[]>([]);
     const [loading, setLoading] = useState(true);
 
     const rank = getRank(status?.totalPoints || 0);
@@ -45,6 +58,18 @@ const PointCard: React.FC = () => {
         }
     };
 
+    const fetchRecentHistory = async (userId: string) => {
+        try {
+            const res = await fetch(`/api/history/${userId}?limit=3`);
+            if (res.ok) {
+                const data = await res.json();
+                setRecentHistory(data.history || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch history', error);
+        }
+    };
+
     useEffect(() => {
         if (!loading && user?.userId && !isAccessAllowed(user.userId)) {
             navigate('/'); // Redirect unauthorized users
@@ -53,6 +78,7 @@ const PointCard: React.FC = () => {
 
         if (user?.userId) {
             fetchPointStatus(user.userId);
+            fetchRecentHistory(user.userId);
         } else {
             setLoading(false);
         }
@@ -98,7 +124,10 @@ const PointCard: React.FC = () => {
                     message: `${rewardName}を利用しました！`,
                     type: 'success'
                 });
-                if (user?.userId) fetchPointStatus(user?.userId);
+                if (user?.userId) {
+                    fetchPointStatus(user?.userId);
+                    fetchRecentHistory(user?.userId);
+                }
             } else {
                 const err = await res.json();
                 setAlertModal({
@@ -321,19 +350,36 @@ const PointCard: React.FC = () => {
                                 key={reward.id}
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="bg-white p-4 rounded-xl shadow-sm border border-orange-100 flex justify-between items-center"
+                                className="relative overflow-hidden rounded-xl shadow-md border border-gray-100 group"
                             >
-                                <div>
-                                    <div className="font-bold text-gray-800">{reward.title}</div>
-                                    <div className="text-xs text-gray-400 mt-1">{reward.description}</div>
-                                    <div className="text-xs font-bold text-orange-500 mt-1">保有数: {reward.count}枚</div>
+                                {/* Background Image with Overlay */}
+                                <div className="absolute inset-0 z-0">
+                                    <img
+                                        src={reward.rewardId.includes('bean') ? '/assets/ticket_beans.png' : '/assets/ticket_coffee.png'}
+                                        alt={reward.title}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent"></div>
                                 </div>
-                                <button
-                                    onClick={() => handleRedeemClick(reward.rewardId, reward.title)}
-                                    className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold py-2 px-4 rounded-lg shadow transition-colors"
-                                >
-                                    利用する
-                                </button>
+
+                                <div className="relative z-10 p-5 flex justify-between items-center text-white">
+                                    <div>
+                                        <div className="font-bold text-lg">{reward.title}</div>
+                                        <div className="text-xs text-gray-200 mt-1">{reward.description}</div>
+                                        <div className="inline-flex items-center mt-3 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30">
+                                            <svg className="w-4 h-4 text-orange-400 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                                            </svg>
+                                            <span className="text-xs font-bold">保有数: {reward.count}枚</span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => handleRedeemClick(reward.rewardId, reward.title)}
+                                        className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold py-3 px-6 rounded-xl shadow-lg transform transition active:scale-95 border border-orange-400/50 backdrop-blur-sm"
+                                    >
+                                        利用する
+                                    </button>
+                                </div>
                             </motion.div>
                         ))}
                     </div>
@@ -374,24 +420,45 @@ const PointCard: React.FC = () => {
             <div className="mt-8 px-4">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="font-bold text-gray-800">最近のアクティビティ</h3>
-                    <Link to="/history" className="text-xs text-green-600 font-bold hover:underline">すべて見る</Link>
+                    <Link to="/point-history" className="text-xs text-green-600 font-bold hover:underline">すべて見る</Link>
                 </div>
 
                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-4">
-                    {[1, 2, 3].map((_, i) => (
-                        <div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0 last:pb-0 first:pt-0">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-lg">
-                                    ☕
+                    {loading ? (
+                        <div className="text-center py-4 text-gray-400 text-xs">読み込み中...</div>
+                    ) : recentHistory.length === 0 ? (
+                        <div className="text-center py-4 text-gray-400 text-xs">まだ履歴がありません</div>
+                    ) : (
+                        recentHistory.map((record) => (
+                            <div key={record.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0 last:pb-0 first:pt-0">
+                                <div className="flex items-center space-x-3">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${record.type === 'checkin' ? 'bg-green-100' :
+                                        record.type === 'usage' ? 'bg-orange-100' : 'bg-blue-100'
+                                        }`}>
+                                        {record.type === 'checkin' ? '☕' :
+                                            record.type === 'usage' ? '🎫' : '🛒'}
+                                    </div>
+                                    <div>
+                                        <div className="font-bold text-sm text-gray-800">
+                                            {record.type === 'checkin' ? 'ご来店・お買い物' :
+                                                record.type === 'usage' ? (record.items?.[0]?.name || 'チケット利用') :
+                                                    '商品購入'}
+                                        </div>
+                                        <div className="text-xs text-gray-400">
+                                            {new Date(record.timestamp).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div className="font-bold text-sm text-gray-800">ご来店</div>
-                                    <div className="text-xs text-gray-400">2025/12/{6 - i}</div>
+                                <div className={`font-bold text-sm ${record.type === 'checkin' ? 'text-green-600' :
+                                    record.type === 'usage' ? 'text-orange-500' : 'text-blue-600'
+                                    }`}>
+                                    {record.type === 'checkin' ? '+1 pt' :
+                                        record.type === 'usage' ? '使用' :
+                                            '+1 pt'}
                                 </div>
                             </div>
-                            <div className="font-bold text-green-600 text-sm">+1 pt</div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </div>
         </div>

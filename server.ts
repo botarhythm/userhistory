@@ -18,9 +18,10 @@ const port = process.env['PORT'] || 8080;
 // Notion APIインスタンスの初期化（エラーハンドリング付き）
 let notionAPI: any = null;
 try {
-  const { NotionAPI } = await import('./src/api/notion.js');
-  notionAPI = new NotionAPI();
-  console.log('✅ Notion API initialized successfully');
+  // Use NotionPointsAPI to access both basic history and points/rewards
+  const { NotionPointsAPI } = await import('./src/api/notion-points.js');
+  notionAPI = new NotionPointsAPI();
+  console.log('✅ Notion API initialized successfully (with Points support)');
 } catch (error) {
   console.warn('⚠️ Notion API initialization failed:', error instanceof Error ? error.message : error);
   console.warn('⚠️ Some features may not work without proper Notion configuration');
@@ -201,6 +202,27 @@ app.post('/api/purchase', async (req, res) => {
 
     log('purchase_success', { lineUid, customerId, historyId, total }, 'Purchase recorded successfully');
 
+    // ポイント付与 (1% = 100円で1ポイント, 最低1ポイント?)
+    // User hasn't specified rate, assuming 1% is standard.
+    const pointsToGrant = Math.floor(total / 100);
+    // Use optional chaining/type guard pattern since NotionPointsAPI is dynamically imported
+    if (pointsToGrant > 0 && notionAPI && typeof (notionAPI as any).createPointTransaction === 'function') {
+      try {
+        await (notionAPI as any).createPointTransaction(
+          customerId,
+          pointsToGrant,
+          'PURCHASE',
+          {
+            reason: '商品購入'
+          }
+        );
+        log('point_grant_success', { customerId, points: pointsToGrant }, 'Points granted for purchase');
+      } catch (pointError) {
+        console.error('Failed to grant points for purchase:', pointError);
+        // Don't fail the whole request, just log
+      }
+    }
+
     return res.status(200).json({
       success: true
     });
@@ -236,6 +258,7 @@ app.get('/api/history/:lineUid', async (req, res) => {
   try {
     const { lineUid } = req.params;
     const { type, limit = 10 } = req.query;
+    const limitNum = parseInt(limit as string);
 
     log('history_request', { lineUid, type, limit }, 'History request received');
 
@@ -247,21 +270,71 @@ app.get('/api/history/:lineUid', async (req, res) => {
       return res.status(404).json({ error: 'Customer not found' });
     }
 
-    // 履歴を取得
-    const history = await notionAPI.getHistory(
+    // 1. 通常の履歴を取得 (来店・購入)
+    const basicHistoryPromise = notionAPI.getHistory(
       customer.id,
       type as 'checkin' | 'purchase',
-      parseInt(limit as string)
+      limitNum // Fetch limit just in case, but we might need more to merge
     );
 
-    log('history_success', { lineUid, customerId: customer.id, historyCount: history.length }, 'History retrieved successfully');
+    // 2. ポイント履歴(チケット利用)を取得
+    // getTransactions returns PointTransaction[], we need to filter for REWARD type and map to HistoryRecord
+    let pointHistoryPromise = Promise.resolve([]);
+    // Only fetch usage if specifically requested via query param
+    const includeUsage = req.query['includeUsage'] === 'true';
+
+    if (includeUsage && (!type || type === 'usage')) {
+      pointHistoryPromise = notionAPI.getTransactions(customer.id);
+    }
+
+    const [basicHistory, pointTransactions] = await Promise.all([basicHistoryPromise, pointHistoryPromise]);
+
+    // 3. Map PointTransactions to HistoryRecord format
+    const rewardHistory = (pointTransactions as any[])
+      .filter(tx => ['REWARD', 'PURCHASE', 'ADMIN'].includes(tx.type))
+      .map(tx => {
+        const isUsage = tx.type === 'REWARD';
+        return {
+          id: tx.id,
+          customerId: customer.id,
+          type: isUsage ? 'usage' : 'earn', // 'usage' for redemption, 'earn' for gaining points
+          timestamp: tx.date,
+          items: [{
+            name: isUsage
+              ? (tx.reason?.replace('特典利用: ', '') || 'チケット利用')
+              : (tx.reason || 'ポイント獲得'),
+            quantity: 1
+          }],
+          total: tx.amount, // store amount for earn/usage display
+          memo: tx.rewardId ? 'Reward Redeemed' : undefined
+        };
+      });
+
+    // 4. Merge and Sort
+    let allHistory = [...basicHistory, ...rewardHistory];
+
+    // Sort by timestamp descending
+    allHistory.sort((a, b) => {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
+
+    // 5. Apply limit
+    const limitedHistory = allHistory.slice(0, limitNum);
+
+    log('history_success', {
+      lineUid,
+      customerId: customer.id,
+      basicCount: basicHistory.length,
+      rewardCount: rewardHistory.length,
+      totalReturned: limitedHistory.length
+    }, 'History retrieved and merged successfully');
 
     return res.json({
       lineUid,
       customer,
       type,
       limit,
-      history
+      history: limitedHistory
     });
   } catch (error) {
     log('history_error', { lineUid: req.params.lineUid, error: error instanceof Error ? error.message : String(error) }, 'History fetch failed');

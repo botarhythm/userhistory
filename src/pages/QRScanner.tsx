@@ -132,7 +132,7 @@ const QRScanner: React.FC = () => {
                 },
                 body: JSON.stringify({
                     lineUserId: user.userId,
-                    storeId: 'test-store-001',
+                    storeId: 'store_001',
                     qrToken: qrToken,
                     latitude,
                     longitude

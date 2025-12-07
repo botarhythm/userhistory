@@ -41,8 +41,7 @@
   "include": [
     "server.ts",
     "test-server.ts",
-    "src/api/**/*",
-    "scripts/**/*"
+    "src/api/**/*"
   ],
   "exclude": [
     "node_modules",

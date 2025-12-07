@@ -2,11 +2,22 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import History from './history';
+import * as LiffContext from '../contexts/LiffContext';
 
 // fetch のモック
 global.fetch = jest.fn();
 
-const mockUserProfile = {
+// useLiff のモック
+jest.mock('../contexts/LiffContext', () => ({
+  useLiff: jest.fn()
+}));
+
+// usePageTitle のモック
+jest.mock('../hooks/usePageTitle', () => ({
+  usePageTitle: jest.fn()
+}));
+
+const mockUser = {
   userId: 'test-user-id',
   displayName: 'Test User',
   pictureUrl: 'https://example.com/avatar.jpg'
@@ -40,69 +51,62 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 describe('History', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (LiffContext.useLiff as jest.Mock).mockReturnValue({
+      user: mockUser,
+      isLoggedIn: true,
+      liff: {}
+    });
   });
 
-  it('renders history page', () => {
+  it('renders history page', async () => {
+    const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ history: [] })
+    } as Response);
+
     render(
       <TestWrapper>
-        <History userProfile={mockUserProfile} />
+        <History />
       </TestWrapper>
     );
-    expect(screen.getByText('履歴一覧')).toBeInTheDocument();
-    expect(screen.getByText('すべて')).toBeInTheDocument();
-    expect(screen.getByText('来店')).toBeInTheDocument();
-    expect(screen.getByText('購入')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText(/さん/)).toBeInTheDocument();
+      expect(screen.getByText('更新')).toBeInTheDocument();
+    });
   });
 
   it('shows loading state initially', () => {
     render(
       <TestWrapper>
-        <History userProfile={mockUserProfile} />
+        <History />
       </TestWrapper>
     );
     expect(screen.getByText('読み込み中...')).toBeInTheDocument();
   });
 
-  it('fetches and displays history data', async () => {
+  it('fetches and displays history data including usage', async () => {
     const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ history: mockHistoryData })
     } as Response);
-    render(
-      <TestWrapper>
-        <History userProfile={mockUserProfile} />
-      </TestWrapper>
-    );
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith('/api/history/test-user-id?limit=50');
-    });
-    await waitFor(() => {
-      expect(screen.getByText('テスト商品1 x1')).toBeInTheDocument();
-      expect(screen.getByText('¥500')).toBeInTheDocument();
-      expect(screen.getByText('メモ1')).toBeInTheDocument();
-    });
-  });
 
-  it('filters history by type', async () => {
-    const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ history: mockHistoryData })
-    } as Response);
-    const user = userEvent.setup();
     render(
       <TestWrapper>
-        <History userProfile={mockUserProfile} />
+        <History />
       </TestWrapper>
     );
+
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith('/api/history/test-user-id?limit=50');
+      expect(mockFetch).toHaveBeenCalledWith('/api/history/test-user-id?includeUsage=false');
     });
-    const purchaseFilter = screen.getByText('購入');
-    await user.click(purchaseFilter);
+
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith('/api/history/test-user-id?type=purchase&limit=50');
+      expect(screen.getByText('テスト商品1')).toBeInTheDocument();
+      expect(screen.getByText('ご来店・お買い物')).toBeInTheDocument();
+      expect(screen.getByText('ご来店・お買い物')).toBeInTheDocument();
     });
   });
 
@@ -112,15 +116,17 @@ describe('History', () => {
       ok: false,
       json: async () => ({ error: 'Failed to fetch history' })
     } as Response);
+
     render(
       <TestWrapper>
-        <History userProfile={mockUserProfile} />
+        <History />
       </TestWrapper>
     );
+
     await waitFor(() => {
-      expect(screen.getByText('Failed to fetch history')).toBeInTheDocument();
+      expect(screen.getByText(/履歴の取得に失敗しました/)).toBeInTheDocument();
     });
-    expect(screen.getByText('再試行')).toBeInTheDocument();
+    expect(screen.getByText('再読み込み')).toBeInTheDocument();
   });
 
   it('shows empty state when no history', async () => {
@@ -129,23 +135,30 @@ describe('History', () => {
       ok: true,
       json: async () => ({ history: [] })
     } as Response);
+
     render(
       <TestWrapper>
-        <History userProfile={mockUserProfile} />
+        <History />
       </TestWrapper>
     );
+
     await waitFor(() => {
       expect(screen.getByText('履歴がありません')).toBeInTheDocument();
     });
   });
 
-  it('shows error when user profile is null', () => {
+  it('redirects/shows login message when not logged in', () => {
+    (LiffContext.useLiff as jest.Mock).mockReturnValue({
+      user: null,
+      isLoggedIn: false
+    });
+
     render(
       <TestWrapper>
-        <History userProfile={null} />
+        <History />
       </TestWrapper>
     );
-    expect(screen.getByText('ユーザー情報が取得できませんでした')).toBeInTheDocument();
+    expect(screen.getByText('LINEログインが必要です')).toBeInTheDocument();
   });
 
   it('formats date correctly', async () => {
@@ -154,13 +167,16 @@ describe('History', () => {
       ok: true,
       json: async () => ({ history: mockHistoryData })
     } as Response);
+
     render(
       <TestWrapper>
-        <History userProfile={mockUserProfile} />
+        <History />
       </TestWrapper>
     );
+
     await waitFor(() => {
-      expect(screen.getByText(/2024年1月1日/)).toBeInTheDocument();
+      // 2024/01/01
+      expect(screen.getByText(/2024\/01\/01/)).toBeInTheDocument();
     });
   });
 
@@ -170,14 +186,18 @@ describe('History', () => {
       ok: true,
       json: async () => ({ history: mockHistoryData })
     } as Response);
+
     render(
       <TestWrapper>
-        <History userProfile={mockUserProfile} />
+        <History />
       </TestWrapper>
     );
+
     await waitFor(() => {
-      expect(screen.getByText('購入')).toBeInTheDocument();
-      expect(screen.getByText('来店')).toBeInTheDocument();
+      expect(screen.getByText('購入')).toHaveClass('bg-blue-100');
+      expect(screen.getByText('ご来店・お買い物')).toHaveClass('bg-green-100');
+      expect(screen.getByText('購入')).toHaveClass('bg-blue-100');
+      expect(screen.getByText('ご来店・お買い物')).toHaveClass('bg-green-100');
     });
   });
 });

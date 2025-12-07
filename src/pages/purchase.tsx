@@ -193,65 +193,86 @@ const PurchasePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-4 sm:py-8">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-6 mx-4 sm:mx-auto border border-gray-200">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 text-center">
-          購入メモ
-        </h1>
+    <div className="min-h-screen bg-gray-50 py-6 sm:py-12 px-4">
+      <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        {/* Header Section */}
+        <div className="bg-gradient-to-r from-green-700 to-green-600 p-6 text-center">
+          <h1 className="text-2xl font-bold text-white mb-1">
+            購入メモ
+          </h1>
+          <p className="text-green-100 text-sm">
+            本日のコーヒーを記録しましょう
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-          {/* 商品選択 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              商品を選択
-            </label>
-            <select
-              value={selectedProduct}
-              onChange={(e) => handleProductChange(e.target.value)}
-              className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
-            >
-              <option value="">商品を選択してください</option>
-              {products.map((product) => (
-                <option key={product.id} value={product.id}>
-                  {product.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* メモ入力 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              メモ
-            </label>
-            <textarea
-              value={memo}
-              onChange={(e) => setMemo(e.target.value)}
-              placeholder="備考があれば入力してください"
-              rows={4}
-              className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
-            />
-          </div>
-
-          {/* 送信ボタン */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-green-600 text-white py-4 sm:py-3 px-6 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-lg sm:text-base font-medium transition-colors"
-          >
-            {isSubmitting ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        <div className="p-6 sm:p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* 商品選択 */}
+            <div className="group">
+              <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
-                記録中...
-              </span>
-            ) : (
-              '記録する'
-            )}
-          </button>
-        </form>
+                商品を選択
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedProduct}
+                  onChange={(e) => handleProductChange(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all text-base appearance-none cursor-pointer hover:bg-gray-100 font-medium"
+                >
+                  <option value="">商品を選択してください</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* メモ入力 */}
+            <div className="group">
+              <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                メモ
+              </label>
+              <textarea
+                value={memo}
+                onChange={(e) => setMemo(e.target.value)}
+                placeholder="味の感想や備考を入力..."
+                rows={4}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition-all text-base resize-none font-medium placeholder-gray-400"
+              />
+            </div>
+
+            {/* 送信ボタン */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-gradient-to-r from-green-600 to-green-500 text-white py-4 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none font-bold text-lg"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  記録中...
+                </span>
+              ) : (
+                '記録する'
+              )}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
