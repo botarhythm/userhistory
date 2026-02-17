@@ -22,6 +22,7 @@ interface RailwayService {
 class RailwayMCPManager {
   private railwayToken: string;
   private projectId: string;
+  private serviceName: string = 'userhistory';
 
   constructor() {
     this.railwayToken = process.env['RAILWAY_TOKEN'] || '';
@@ -52,7 +53,7 @@ class RailwayMCPManager {
    * ログを取得
    */
   async getLogs(follow: boolean = false): Promise<void> {
-    const args = ['logs'];
+    const args = ['logs', '--service', this.serviceName];
     if (follow) {
       args.push('--follow');
     }
@@ -73,7 +74,7 @@ class RailwayMCPManager {
     console.log(`🚀 Starting deployment to ${environment}...`);
 
     try {
-      const args = ['up'];
+      const args = ['up', '--service', this.serviceName];
       if (environment !== 'production') {
         args.push('--environment', environment);
       }

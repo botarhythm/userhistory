@@ -38,11 +38,27 @@ const log = (operation: string, context: any, message: string) => {
   }));
 };
 
+// ログ設定 (最優先)
+app.use((req, _res, next) => {
+  // Health check noise reduction - only log if it fails or every 10th request?
+  // For now, log everything to debug the crash
+  const timestamp = new Date().toISOString();
+  console.log(`[DEBUG] ${timestamp} Incoming request: ${req.method} ${req.path} from ${req.ip} (${req.get('User-Agent')})`);
+  next();
+});
+
+// ログ設定 (最優先)
+app.use((req, _res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[DEBUG] ${timestamp} Incoming request: ${req.method} ${req.path} from ${req.ip} (${req.get('User-Agent')})`);
+  next();
+});
+
 // ミドルウェア設定
 app.use(cors());
 app.use(express.json());
 
-// ログ設定
+// 詳細ログ設定
 app.use((req, _res, next) => {
   log('http_request', {
     method: req.method,
@@ -613,6 +629,17 @@ const server = app.listen(Number(port), '0.0.0.0', () => {
   console.log(`🌐 External URL: https://userhistory-production.up.railway.app`);
   console.log(`🔧 Railway Environment: ${process.env['RAILWAY_ENVIRONMENT'] || 'unknown'}`);
   console.log(`🏗️ Railway Project: ${process.env['RAILWAY_PROJECT_ID'] || 'unknown'}`);
+
+  console.log(`[DEBUG] Server listening setup complete`);
+  console.log(`[DEBUG] Registered routes:`);
+
+  if (app._router && app._router.stack) {
+    app._router.stack.forEach((r: any) => {
+      if (r.route && r.route.path) {
+        console.log(`[DEBUG] - ${Object.keys(r.route.methods).join(',').toUpperCase()} ${r.route.path}`);
+      }
+    });
+  }
 });
 
 // Railway用の最適化設定（Railway Station推奨）
