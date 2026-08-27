@@ -9,3 +9,9 @@ dist/
 # OS/エディタ
 .DS_Store
 .vscode/
+# --- 20260828 秘密情報の再混入防止（docs/dead-script-sweep-20260827.md 対応） ---
+.env.temp
+.cursor/mcp.json
+.cursor/*.backup
+*.backup
+_quarantine-*/
