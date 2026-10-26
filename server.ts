@@ -47,13 +47,6 @@ app.use((req, _res, next) => {
   next();
 });
 
-// ログ設定 (最優先)
-app.use((req, _res, next) => {
-  const timestamp = new Date().toISOString();
-  console.log(`[DEBUG] ${timestamp} Incoming request: ${req.method} ${req.path} from ${req.ip} (${req.get('User-Agent')})`);
-  next();
-});
-
 // ミドルウェア設定
 app.use(cors());
 app.use(express.json());
@@ -491,6 +484,14 @@ app.use('/api/points', pointsRouter);
 // 管理者用API
 app.use('/api/admin', adminRouter);
 
+// デバッグ用APIは ENABLE_DEBUG_ENDPOINTS=true のときだけ公開（公開リポジトリのため既定は非公開）
+app.use('/api/debug', (_req, res, next) => {
+  if (process.env['ENABLE_DEBUG_ENDPOINTS'] === 'true') {
+    return next();
+  }
+  return res.status(404).json({ error: 'API endpoint not found' });
+});
+
 // データベース構造確認API（デバッグ用）
 app.get('/api/debug/database-structure', async (req, res) => {
   if (!notionAPI) {
@@ -614,9 +615,15 @@ app.get('*', (req, res) => {
 
 // エラーハンドリング
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  // 不正なJSONなど、リクエスト側の誤り（body-parser の 4xx）はそのまま返す
+  const status = Number(err?.status || err?.statusCode);
+  if (status >= 400 && status < 500) {
+    log('client_error', { error: err.message, type: err.type }, 'Bad request');
+    return res.status(status).json({ error: status === 400 ? 'Bad request' : 'Request error' });
+  }
   log('server_error', { error: err.message, stack: err.stack }, 'Unhandled server error');
   console.error('Server error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+  return res.status(500).json({ error: 'Internal server error' });
 });
 
 // サーバー起動（Railway Station推奨設定）
@@ -658,17 +665,6 @@ server.on('error', (error) => {
 
 server.on('connection', (socket) => {
   socket.setTimeout(30000);
-});
-
-// 環境変数デバッグ用エンドポイント
-app.get('/api/debug/env', (req, res) => {
-  const envKeys = Object.keys(process.env).filter(key => key.startsWith('NOTION_') || key === 'NODE_ENV' || key === 'PORT');
-  res.json({
-    keys: envKeys,
-    hasPointHistory: !!process.env['NOTION_POINT_HISTORY_DB_ID'],
-    hasStore: !!process.env['NOTION_STORE_DB_ID'],
-    hasReward: !!process.env['NOTION_REWARD_DB_ID']
-  });
 });
 
 // グレースフルシャットダウン
