@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import liff from '@line/liff';
 import { LiffDebugger } from '../utils/debug-liff';
+import { env } from '../config/env';
 
 export interface LiffUser {
   userId: string;
@@ -45,7 +46,7 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
   const initializeLiff = async () => {
     try {
       // 開発環境でのテスト用設定
-      const liffId = import.meta.env['VITE_LIFF_ID'];
+      const liffId = env['VITE_LIFF_ID'];
       console.log('LIFF初期化開始:', {
         liffId: liffId ? '設定済み' : '未設定',
         isInClient: liff.isInClient(),
@@ -145,7 +146,7 @@ export const LiffProvider: React.FC<LiffProviderProps> = ({ children }) => {
     setIsInitialized(false);
 
     try {
-      const liffId = import.meta.env['VITE_LIFF_ID'];
+      const liffId = env['VITE_LIFF_ID'];
       if (!liffId) {
         console.log('LIFF ID未設定 - ページリロード');
         window.location.reload();

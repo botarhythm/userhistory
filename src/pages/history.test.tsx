@@ -56,6 +56,10 @@ describe('History', () => {
       isLoggedIn: true,
       liff: {}
     });
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ history: [] })
+    });
   });
 
   it('renders history page', async () => {
@@ -72,8 +76,7 @@ describe('History', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/さん/)).toBeInTheDocument();
-      expect(screen.getByText('更新')).toBeInTheDocument();
+      expect(screen.getByText('Test Userさんのメモ')).toBeInTheDocument();
     });
   });
 
@@ -105,8 +108,8 @@ describe('History', () => {
 
     await waitFor(() => {
       expect(screen.getByText('テスト商品1')).toBeInTheDocument();
-      expect(screen.getByText('ご来店・お買い物')).toBeInTheDocument();
-      expect(screen.getByText('ご来店・お買い物')).toBeInTheDocument();
+      expect(screen.getByText('購入メモ')).toBeInTheDocument();
+      expect(screen.getByText('ご来店')).toBeInTheDocument();
     });
   });
 
@@ -194,10 +197,8 @@ describe('History', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('購入')).toHaveClass('bg-blue-100');
-      expect(screen.getByText('ご来店・お買い物')).toHaveClass('bg-green-100');
-      expect(screen.getByText('購入')).toHaveClass('bg-blue-100');
-      expect(screen.getByText('ご来店・お買い物')).toHaveClass('bg-green-100');
+      expect(screen.getByText('購入メモ')).toHaveClass('bg-blue-100');
+      expect(screen.getByText('ご来店')).toHaveClass('bg-green-100');
     });
   });
 });

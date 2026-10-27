@@ -5,15 +5,19 @@ const config: Config.InitialOptions = {
     testEnvironment: 'jsdom',
     setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
     moduleNameMapper: {
+        // import.meta を含む src/config/env.ts をテスト用の値に差し替える
+        '^(\\.{1,2}/)+config/env$': '<rootDir>/src/test/env.mock.ts',
         '^@/(.*)$': '<rootDir>/src/$1',
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     },
     transform: {
         '^.+\\.(ts|tsx)$': 'ts-jest',
     },
+    // <rootDir> を testMatch に含めると Windows でパス区切りが混ざって 0 件になるため roots で絞る
+    roots: ['<rootDir>/src'],
     testMatch: [
-        '<rootDir>/src/**/*.test.(ts|tsx)',
-        '<rootDir>/src/**/*.spec.(ts|tsx)'
+        '**/*.test.(ts|tsx)',
+        '**/*.spec.(ts|tsx)'
     ],
     collectCoverageFrom: [
         'src/**/*.{ts,tsx}',
