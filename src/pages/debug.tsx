@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { useLiff } from '../contexts/LiffContext';
 import { LiffDebugger } from '../utils/debug-liff';
+import { env } from '../config/env';
 
 const DebugPage: React.FC = () => {
   const { runDiagnosis, debugInfo } = useLiff();
@@ -33,7 +34,7 @@ const DebugPage: React.FC = () => {
   };
 
   // 開発環境でない場合は表示しない
-  if (import.meta.env.PROD) {
+  if (env.PROD) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-lg p-8 text-center">

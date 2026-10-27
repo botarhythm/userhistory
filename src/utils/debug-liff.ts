@@ -3,6 +3,8 @@
  * LINE認証の問題を診断するためのツール
  */
 
+import { env } from '../config/env';
+
 export interface LiffDebugInfo {
   timestamp: string;
   userAgent: string;
@@ -35,11 +37,11 @@ export class LiffDebugger {
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       location: window.location.href,
-      liffId: import.meta.env['VITE_LIFF_ID'] || null,
+      liffId: env['VITE_LIFF_ID'] || null,
       isInClient: false,
       isLoggedIn: false,
       error: null,
-      environment: import.meta.env.MODE || 'unknown'
+      environment: env.MODE || 'unknown'
     };
 
     try {
@@ -122,13 +124,13 @@ export class LiffDebugger {
 
     console.log('📋 必須環境変数:');
     requiredVars.forEach(varName => {
-      const value = import.meta.env[varName];
+      const value = env[varName];
       console.log(`   ${varName}:`, value ? '✅ 設定済み' : '❌ 未設定');
     });
 
     console.log('📋 オプション環境変数:');
     optionalVars.forEach(varName => {
-      const value = import.meta.env[varName];
+      const value = env[varName];
       console.log(`   ${varName}:`, value ? '✅ 設定済み' : '⚠️ 未設定');
     });
 
@@ -143,7 +145,7 @@ export class LiffDebugger {
 
     try {
       const liff = (await import('@line/liff')).default;
-      const liffId = import.meta.env['VITE_LIFF_ID'];
+      const liffId = env['VITE_LIFF_ID'];
 
       if (!liffId) {
         console.error('❌ LIFF IDが設定されていないため、自動修復できません');
@@ -175,6 +177,6 @@ export class LiffDebugger {
 }
 
 // グローバルにデバッガーを公開（開発用）
-if (import.meta.env.DEV) {
+if (env.DEV) {
   (window as any).liffDebugger = LiffDebugger.getInstance();
 }

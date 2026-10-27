@@ -1,28 +1,12 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import App from './App';
-
-// import.meta.env のモック
-Object.defineProperty(import.meta, 'env', {
-  value: {
-    VITE_LIFF_ID: 'test-liff-id'
-  },
-  writable: true
-});
-
-// React Router のモック
-jest.mock('react-router-dom', () => ({
-  BrowserRouter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Routes: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  Route: ({ element }: { element: React.ReactNode }) => <div>{element}</div>,
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
-}));
 
 // LIFF のモック
 jest.mock('@line/liff', () => ({
   __esModule: true,
   default: {
     init: jest.fn().mockResolvedValue(undefined),
+    isInClient: jest.fn().mockReturnValue(false),
     isLoggedIn: jest.fn().mockReturnValue(true),
     getProfile: jest.fn().mockResolvedValue({
       userId: 'test-user-id',
@@ -37,19 +21,23 @@ jest.mock('@line/liff', () => ({
 describe('App', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({ products: [] })
+    });
   });
 
   it('renders loading state initially', () => {
     render(<App />);
-    expect(screen.getByText('LINEログインを初期化中...')).toBeInTheDocument();
+    expect(screen.getByText('LINEログイン中...')).toBeInTheDocument();
   });
 
-  it('renders login button when not logged in', async () => {
+  it('renders login prompt when not logged in', async () => {
     const liff = require('@line/liff').default;
     liff.isLoggedIn.mockReturnValue(false);
 
     render(<App />);
-    await screen.findByText('LINEでログイン');
+    await screen.findByText('LINEログインが必要です');
     expect(screen.getByText('Botarhythm Coffee Roaster')).toBeInTheDocument();
   });
 
@@ -58,9 +46,8 @@ describe('App', () => {
     liff.isLoggedIn.mockReturnValue(true);
 
     render(<App />);
-    await screen.findByText('Botarhythm Coffee');
-    expect(screen.getByText('Test User')).toBeInTheDocument();
-    expect(screen.getByText('購入履歴')).toBeInTheDocument();
-    expect(screen.getByText('履歴一覧')).toBeInTheDocument();
+    await screen.findByText('Test User');
+    expect(screen.getByText('☕ 作成')).toBeInTheDocument();
+    expect(screen.getByText('📝 履歴')).toBeInTheDocument();
   });
 });
